@@ -14,6 +14,7 @@ w0s.jp サーバーで稼働しているシェルスクリプト（Node.js）
 1. log4js.json を作成
 1. `mkdir configure` の後、そのディレクトリ内に common.jsonc を [jsonc](https://onury.io/jsonc/) 形式で記述
 1. さらに、同じディレクトリ内に実行したい機能名をファイル名にした設定ファイルを記述（e.g. src/component/Hoge.ts は configure/Hoge.jsonc を参照する）
+1. 機能によってはデータベース（SQLite）を用意する必要があります。テーブル定義はそのうち公開します。
 
 ## log4js.json サンプル
 
