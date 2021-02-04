@@ -95,11 +95,24 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 	 * @returns {string[]} 処理対象の ASIN
 	 */
 	private async _selectAsinsDiary(dbh: sqlite.Database): Promise<string[]> {
-		const asins: string[] = [];
-
-		const rows = await dbh.all('SELECT asin FROM d_amazon ORDER BY last_updated, date DESC LIMIT :limit', {
+		const sth = await dbh.prepare(`
+			SELECT
+				asin
+			FROM
+				d_amazon
+			ORDER BY
+				last_updated,
+				date DESC
+			LIMIT
+				:limit
+		`);
+		await sth.bind({
 			':limit': this.config.diary_select_limit,
 		});
+		const rows = await sth.all();
+		await sth.finalize();
+
+		const asins: string[] = [];
 		for (const row of rows) {
 			asins.push(row.asin);
 		}
@@ -117,7 +130,12 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 	private async _selectAsinsAmazonPa(dbh: sqlite.Database): Promise<string[]> {
 		const asins: string[] = [];
 
-		const rows = await dbh.all('SELECT asin FROM d_dp');
+		const rows = await dbh.all(`
+			SELECT
+				asin
+			FROM
+				d_dp
+		`);
 		for (const row of rows) {
 			asins.push(row.asin);
 		}
