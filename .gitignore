@@ -1,0 +1,6 @@
+node_modules
+/configure/
+/coverage/
+/dist/
+log4js*.json
+tsconfig.tsbuildinfo
