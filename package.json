@@ -8,7 +8,8 @@
 	"scripts": {
 		"build": "tsc -w",
 		"test": "jest --coverage",
-		"Shell:Test": "node dist/Shell.js Test 0"
+		"Shell:Test": "node dist/Shell.js Test 0",
+		"Shell:AmazondpUpdate": "node dist/Shell.js AmazondpUpdate 10"
 	},
 	"dependencies": {
 		"@saekitominaga/paapi-item-image-url-parser": "^1.0.2",

@@ -2,6 +2,11 @@
 
 w0s.jp サーバーで稼働しているシェルスクリプト（Node.js）
 
+## 機能一覧
+
+- [テスト](Test.ts)　動作確認用
+- [Amazon 商品情報チェッカー](AmazondpUpdate.ts)　Amazon 商品情報を PA-API を使用して取得し、 DB に格納済みのデータを照合して更新する
+
 ## 動作手順
 
 1. `npm install`
