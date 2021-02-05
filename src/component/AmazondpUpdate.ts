@@ -1,12 +1,27 @@
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import PaapiUtil from '../util/Paapi.js';
+import fs from 'fs';
 // @ts-expect-error: ts(7016)
 import amazonPaapi from 'amazon-paapi';
 import { GetItemsResponse, ItemResultsItem } from 'paapi5-typescript-sdk';
 import PaapiItemImageUrlParser from '@saekitominaga/paapi-item-image-url-parser';
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
+
+interface JsonAmazonPa {
+	a: string; // asin
+	t: string; // title
+	b?: string; // binding
+	d?: string; // date
+	i?: string; // image_url
+	r?: string; // image2x_url
+}
+
+interface Diff {
+	db: string;
+	api: string;
+}
 
 /**
  * Amazon 商品情報を PA-API を使用して取得し、 DB に格納済みのデータを照合して更新する
@@ -35,6 +50,8 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 			this.logger.debug('処理対象の ASIN:', targetAsins);
 
 			/* PA-API を使用してデータを取得する */
+			const diffsAmazonPa = [];
+
 			let requestCount = 0;
 			while (targetAsins.length > 0) {
 				requestCount++;
@@ -78,9 +95,16 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 						await this._diary(dbhDiary, item, asin);
 					}
 					if (targetAsinsAmazonPa.includes(asin)) {
-						await this._amazonpa(dbhAmazonPa, item, asin);
+						diffsAmazonPa.push(await this._amazonPa(dbhAmazonPa, item, asin));
 					}
 				}
+			}
+
+			this.logger.debug(diffsAmazonPa);
+
+			if (diffsAmazonPa.some((diff) => diff.size >= 1)) {
+				/* Web ページで使用する JSON ファイルを出力 */
+				await this._createJsonAmazonPa(dbhAmazonPa);
 			}
 		} finally {
 			await Promise.all([dbhDiary.close(), dbhAmazonPa.close()]);
@@ -149,8 +173,10 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 	 * @param {sqlite.Database} dbh - DB 接続情報
 	 * @param {ItemResultsItem} item - ItemResultsItem クラス
 	 * @param {string} asin - ASIN
+	 *
+	 * @returns {Map<string, Diff>} API から取得した値と DB に格納済みの値の差分情報
 	 */
-	private async _diary(dbh: sqlite.Database, item: ItemResultsItem, asin: string): Promise<void> {
+	private async _diary(dbh: sqlite.Database, item: ItemResultsItem, asin: string): Promise<Map<string, Diff>> {
 		const apiDpUrl = item.DetailPageURL; // 詳細ページURL
 		const apiTitle = item.ItemInfo?.Title?.DisplayValue ?? null; // 製品タイトル // TODO API 的には null の可能性があるが、 DB のカラムは NOT NULL
 		const apiBinding = item.ItemInfo?.Classifications?.Binding.DisplayValue ?? null; // 製品カテゴリ
@@ -202,7 +228,7 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 		const dbPublicationDate: number | null = row.date !== null ? Number(row.date) : null;
 		const dbImageUrl: string | null = row.image_url;
 
-		const diff: Map<string, { db: string; api: string }> = new Map(); // API から取得した値と DB に格納済みの値を比較し、その差分情報を格納する
+		const diff: Map<string, Diff> = new Map(); // API から取得した値と DB に格納済みの値を比較し、その差分情報を格納する
 		if (apiDpUrl !== dbDpUrl) {
 			diff.set('detailPageURL', { db: dbDpUrl, api: apiDpUrl });
 		}
@@ -231,7 +257,7 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 
 		if (diff.size === 0) {
 			this.logger.debug(`${asin} の情報に変更がないので DB の更新処理は行わない`);
-			return;
+			return diff;
 		}
 
 		/* 更新処理を行う */
@@ -277,6 +303,8 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 			dbh.exec('ROLLBACK');
 			throw e;
 		}
+
+		return diff;
 	}
 
 	/**
@@ -285,8 +313,10 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 	 * @param {sqlite.Database} dbh - DB 接続情報
 	 * @param {ItemResultsItem} item - ItemResultsItem クラス
 	 * @param {string} asin - ASIN
+	 *
+	 * @returns {Map<string, Diff>} API から取得した値と DB に格納済みの値の差分情報
 	 */
-	private async _amazonpa(dbh: sqlite.Database, item: ItemResultsItem, asin: string): Promise<void> {
+	private async _amazonPa(dbh: sqlite.Database, item: ItemResultsItem, asin: string): Promise<Map<string, Diff>> {
 		const apiDpUrl = item.DetailPageURL; // 詳細ページURL
 		const apiTitle = item.ItemInfo?.Title?.DisplayValue ?? null; // 製品タイトル // TODO API 的には null の可能性があるが、 DB のカラムは NOT NULL
 		const apiBinding = item.ItemInfo?.Classifications?.Binding.DisplayValue ?? null; // 製品カテゴリ
@@ -334,7 +364,7 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 		const dbPublicationDate: number | null = row.date !== null ? Number(row.date) : null;
 		const dbImageUrl: string | null = row.image_url;
 
-		const diff: Map<string, { db: string; api: string }> = new Map(); // API から取得した値と DB に格納済みの値を比較し、その差分情報を格納する
+		const diff: Map<string, Diff> = new Map(); // API から取得した値と DB に格納済みの値を比較し、その差分情報を格納する
 		if (apiDpUrl !== dbDpUrl) {
 			diff.set('detailPageURL', { db: dbDpUrl, api: apiDpUrl });
 		}
@@ -360,7 +390,7 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 
 		if (diff.size === 0) {
 			this.logger.debug(`${asin} の情報に変更がないので DB の更新処理は行わない`);
-			return;
+			return diff;
 		}
 
 		/* 更新処理を行う */
@@ -397,6 +427,86 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 		} catch (e) {
 			dbh.exec('ROLLBACK');
 			throw e;
+		}
+
+		return diff;
+	}
+
+	/**
+	 * Web ページで使用する JSON ファイルを出力
+	 *
+	 * @param {sqlite.Database} dbh - DB 接続情報
+	 */
+	private async _createJsonAmazonPa(dbh: sqlite.Database): Promise<void> {
+		const categoryRows = await dbh.all(`
+			SELECT
+				id,
+				json_path
+			FROM
+				m_category
+		`);
+		for (const categoryRow of categoryRows) {
+			const categoryId: string = categoryRow.id;
+			const jsonPath: string = categoryRow.json_path;
+
+			const sth = await dbh.prepare(`
+				SELECT
+					dp.asin AS asin,
+					dp.title AS title,
+					dp.binding AS binding,
+					dp.date AS date,
+					dp.image_url AS image_url,
+					dp.image2x_url AS image2x_url
+				FROM
+					d_dp dp,
+					d_category category
+				WHERE
+					dp.asin = category.asin AND
+					category.category_id = :category_id
+				ORDER BY
+					dp.date DESC
+			`);
+			await sth.bind({
+				':category_id': categoryId,
+			});
+			const rows = await sth.all();
+			await sth.finalize();
+
+			const dpList: JsonAmazonPa[] = [];
+			for (const row of rows) {
+				const dp: JsonAmazonPa = {
+					a: row.asin,
+					t: row.title,
+				};
+
+				if (row.binding) {
+					dp.b = row.binding;
+				}
+				if (row.date) {
+					const date = new Date(Number(row.date));
+					dp.d = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+				}
+				if (row.image_url) {
+					dp.i = row.image_url;
+				}
+				if (row.image2x_url) {
+					dp.r = row.image2x_url;
+				}
+
+				dpList.push(dp);
+			}
+
+			this.logger.debug(categoryId, dpList);
+
+			const path = `${this.configCommon.documentRoot}/${jsonPath}`;
+			fs.writeFile(path, JSON.stringify(dpList), (error) => {
+				if (error !== null) {
+					this.logger.error('JSON file output failed.', path, error);
+					return;
+				}
+
+				this.logger.info('JSON file output success.', path);
+			});
 		}
 	}
 }
