@@ -9,17 +9,23 @@
 		"build": "tsc -w",
 		"test": "jest --coverage",
 		"Shell:Test": "node dist/Shell.js Test 0",
-		"Shell:AmazondpUpdate": "node dist/Shell.js AmazondpUpdate 10"
+		"Shell:AmazondpUpdate": "node dist/Shell.js AmazondpUpdate 10",
+		"Shell:TwitterUserInfoHistoryKumeta": "node dist/Shell.js TwitterUserInfoHistoryKumeta 0 true",
+		"Shell:TwitterUserInfoHistoryMadoka": "node dist/Shell.js TwitterUserInfoHistoryMadoka 0"
 	},
 	"dependencies": {
 		"@saekitominaga/paapi-item-image-url-parser": "^1.0.2",
+		"@types/node-fetch": "^2.5.8",
+		"@types/twitter-text": "^3.1.0",
 		"amazon-paapi": "^1.0.3",
 		"jsonc": "^2.0.0",
 		"log4js": "^6.3.0",
+		"node-fetch": "^2.6.1",
 		"nodemailer": "^6.4.17",
 		"sqlite": "^4.0.19",
 		"sqlite3": "^5.0.1",
-		"twitter-api-v2": "^0.3.0",
+		"twitter": "^1.7.1",
+		"twitter-text": "^3.1.0",
 		"twitter-v2": "^1.0.2"
 	},
 	"devDependencies": {

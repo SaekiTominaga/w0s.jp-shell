@@ -4,6 +4,7 @@
 		"incremental": true,
 		"module": "ESNext",
 		"outDir": "dist/",
+		"sourceMap": true,
 		"target": "ESNext",
 
 		/* Strict Checks */
@@ -25,5 +26,5 @@
 		"forceConsistentCasingInFileNames": true,
 		"newLine": "LF"
 	},
-	"include": ["src/**/*.ts"]
+	"include": ["src/**/*.ts", "@types/*.ts"]
 }
