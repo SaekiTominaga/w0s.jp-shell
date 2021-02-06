@@ -28,8 +28,6 @@ interface Diff {
  */
 export default class AmazondpUpdate extends Component implements ComponentInterface {
 	async execute(): Promise<void> {
-		this.title = this.config.title;
-
 		const [dbhDiary, dbhAmazonPa] = await Promise.all([
 			sqlite.open({
 				filename: this.configCommon.sqlite.db.diary,
@@ -56,7 +54,7 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 			while (targetAsins.length > 0) {
 				requestCount++;
 				if (requestCount > 1) {
-					await new Promise((resolve) => setTimeout(resolve, this.configCommon.paapi.access_trial_interval * 1000)); // 接続間隔を空ける
+					await new Promise((resolve) => setTimeout(resolve, this.configCommon.paapi.access_interval * 1000)); // 接続間隔を空ける
 				}
 
 				const asins = targetAsins.splice(0, this.configCommon.paapi.getitems_itemids_chunk);

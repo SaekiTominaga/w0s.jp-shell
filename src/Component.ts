@@ -47,7 +47,7 @@ export default class Component {
 			await transporter.sendMail({
 				from: this.configCommon.mail.address,
 				to: this.configCommon.mail.address,
-				subject: this.title ?? this.constructor.name,
+				subject: this.config.title ?? this.constructor.name,
 				text: this.notice.join('\n\n'),
 			});
 		}
