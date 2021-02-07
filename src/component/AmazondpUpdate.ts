@@ -262,7 +262,6 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 		this.logger.info(`${asin} の情報が更新`, diff);
 
 		await dbh.exec('BEGIN');
-
 		try {
 			const sth = await dbh.prepare(`
 				UPDATE
@@ -395,7 +394,6 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 		this.logger.info(`${asin} の情報が更新`, diff);
 
 		await dbh.exec('BEGIN');
-
 		try {
 			const sth = await dbh.prepare(`
 				UPDATE

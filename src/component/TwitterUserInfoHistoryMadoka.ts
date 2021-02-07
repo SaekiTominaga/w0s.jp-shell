@@ -114,7 +114,6 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 				this.logger.info(`@${apiUsername} の情報に更新があるので DB を update`);
 
 				await dbh.exec('BEGIN');
-
 				try {
 					const userUpdateSth = await dbh.prepare(`
 						UPDATE
@@ -219,7 +218,6 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 
 			/* DB 書き込み */
 			await dbh.exec('BEGIN');
-
 			try {
 				const updateSth = await dbh.prepare(`
 					INSERT INTO
@@ -285,7 +283,6 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 
 			/* DB 書き込み */
 			await dbh.exec('BEGIN');
-
 			try {
 				const updateSth = await dbh.prepare(`
 					INSERT INTO
