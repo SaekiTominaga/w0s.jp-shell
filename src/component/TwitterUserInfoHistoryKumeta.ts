@@ -154,21 +154,21 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 
 				try {
 					const userUpdateSth = await dbh.prepare(`
-					UPDATE
-						d_user
-					SET
-						name = :name,
-						account = :username,
-						location = :location,
-						description = :description,
-						url = :url,
-						followers = :followers,
-						follows = :following,
-						favourites = :likes,
-						created = :created_at
-					WHERE
-						id = :id
-				`);
+						UPDATE
+							d_user
+						SET
+							name = :name,
+							account = :username,
+							location = :location,
+							description = :description,
+							url = :url,
+							followers = :followers,
+							follows = :following,
+							favourites = :likes,
+							created = :created_at
+						WHERE
+							id = :id
+					`);
 					await userUpdateSth.run({
 						':name': apiName,
 						':username': apiUsername,
