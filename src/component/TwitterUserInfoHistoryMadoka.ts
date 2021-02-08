@@ -1,8 +1,8 @@
+import * as sqlite from 'sqlite';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
-import fs from 'fs';
 import fetch from 'node-fetch';
-import * as sqlite from 'sqlite';
+import fs from 'fs';
 import sqlite3 from 'sqlite3';
 import Twitter from 'twitter';
 
