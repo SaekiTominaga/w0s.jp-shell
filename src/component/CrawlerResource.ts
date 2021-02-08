@@ -151,7 +151,9 @@ export default class CrawlerResource extends Component implements ComponentInter
 
 				/* 通知 */
 				this.notice.push(
-					`${targetTitle} ${targetUrl}\n変更履歴: ${this.configCommon.url}${filePath} 🔒\nファイルサイズ ${targetContentLength} → ${contentLength}`
+					`${targetTitle} ${targetUrl}\n変更履歴: ${path.dirname(
+						this.configCommon.url + filePath
+					)}/ 🔒\nファイルサイズ ${targetContentLength} → ${contentLength}`
 				);
 			}
 
