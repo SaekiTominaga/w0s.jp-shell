@@ -33,7 +33,7 @@ class Shell {
 		}
 
 		const componentName = args[0]; // 機能名
-		const timeout = Number(args[2]); // タイムアウト秒数（この値を超えたら警告する、0以下は∞）
+		const timeout = Number(args[1]); // タイムアウト秒数（この値を超えたら警告する、0以下は∞）
 
 		/* Logger 設定 */
 		const loggerComponent = Log4js.getLogger(componentName);
