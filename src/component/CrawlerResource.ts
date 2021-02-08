@@ -5,6 +5,7 @@ import fetch from 'node-fetch';
 import fs from 'fs';
 import jsdom from 'jsdom';
 import MIMEParser from '@saekitominaga/mime-parser';
+import path from 'path';
 import sqlite3 from 'sqlite3';
 
 /**
@@ -146,7 +147,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 				}
 
 				/* ファイル保存 */
-				const filePath = await this._saveFile(targetUrl, responseBody);
+				const filePath = this._saveFile(targetUrl, responseBody);
 
 				/* 通知 */
 				this.notice.push(
@@ -164,38 +165,47 @@ export default class CrawlerResource extends Component implements ComponentInter
 	 * @param {string} urlText - URL
 	 * @param {string} responseBody -
 	 */
-	private async _saveFile(urlText: string, responseBody: string): Promise<string> {
+	private _saveFile(urlText: string, responseBody: string): string {
 		const url = new URL(urlText);
 		const date = new Date();
 
-		const dir = `${this.config.save_dir}/${url.hostname}`;
-		const filename = `${url.pathname}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(
+		const fileDir = `${this.config.save_dir}/${url.hostname}`;
+		const fileName = `${url.pathname}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(
 			2,
 			'0'
 		)}_${date.getHours()}${date.getMinutes()}${date.getSeconds()}.txt`;
 
-		const path = `${dir}${filename}`;
-		const fullDir = `${this.configCommon.documentRoot}/${dir}`;
-		const fullPath = `${fullDir}/${filename}`;
+		const filePath = `${fileDir}${fileName}`; // ドキュメントルート基準のパス
+		const fileFullPath = `${this.configCommon.documentRoot}/${filePath}`;
+		const fileFullDir = path.dirname(fileFullPath);
 
-		this.logger.info(`ファイル保存: ${fullPath}`);
+		this.logger.info(`ファイル保存: ${fileFullPath}`);
 
-		fs.open(fullPath, 'wx', (error, fd) => {
+		fs.opendir(fileFullPath, (error) => {
 			if (error !== null) {
-				fs.mkdirSync(fullDir);
+				this.logger.debug(`ディレクトリ作成: ${fileFullDir}`);
+
+				fs.mkdirSync(fileFullDir, { recursive: true });
 			}
 
-			fs.write(fd, responseBody, (error) => {
+			fs.open(fileFullPath, 'wx', (error, fd) => {
 				if (error !== null) {
-					this.logger.error('File output failed.', fullPath, error);
-					return;
+					this.logger.error(`${fileFullPath} のオープンに失敗`);
+					throw error;
 				}
 
-				this.logger.info('File output success.', fullPath);
+				fs.write(fd, responseBody, (error) => {
+					if (error !== null) {
+						this.logger.error('File output failed.', fileFullPath, error);
+						return;
+					}
+
+					this.logger.info('File output success.', fileFullPath);
+				});
 			});
 		});
 
-		return path;
+		return filePath;
 	}
 
 	/**
