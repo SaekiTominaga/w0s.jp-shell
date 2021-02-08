@@ -4,12 +4,14 @@ w0s.jp サーバーで稼働しているシェルスクリプト（Node.js）
 
 ## 機能一覧
 
-- [テスト](src/component/Test.ts)　動作確認用
-- [Amazon 商品情報チェッカー](src/component/AmazondpUpdate.ts)　Amazon 商品情報を PA-API を使用して取得し、 DB に格納済みのデータを照合して更新する。
-- [ウェブ巡回（新着）](src/component/CrawlerNews.ts)　ウェブページを巡回し（HTML ページのみ）、新着情報の差分を調べて通知する。
-- [ウェブ巡回（リソース）](src/component/CrawlerResource.ts)　ウェブページを巡回し（HTML リソースに限らない）、レスポンスボディの差分を調べて通知する。
-- [久米田康治 Twitter ユーザー履歴](src/component/TwitterUserInfoHistoryKumeta.ts)　漫画家、久米田康治の Twitter アカウントについて、アイコン画像、バナー画像の変更を検知して画像ファイルを保存する。また、フォロワー数が一定数を超えるたびに通知を行うほか、フォロー数やいいね数などのユーザー情報もチェックする。
-- [まどか Twitter ユーザー履歴](src/component/TwitterUserInfoHistoryMadoka.ts)　アニメ『魔法少女まどか☆マギカ』関連の Twitter アカウントについて、アイコン画像、バナー画像の変更を検知して画像ファイルを保存する。
+| 機能名 | 概要 |
+|-|-|
+| [テスト](src/component/Test.ts) | 動作確認用。環境整備する際は、まずはこれが動くことを目指す。 |
+| [Amazon 商品情報チェッカー](src/component/AmazondpUpdate.ts) | Amazon 商品情報を PA-API を使用して取得し、 DB に格納済みのデータを照合して更新する。 |
+| [ウェブ巡回（新着）](src/component/CrawlerNews.ts) | ウェブページを巡回し（HTML ページのみ）、新着情報の差分を調べて通知する。 |
+| [ウェブ巡回（リソース）](src/component/CrawlerResource.ts) | ウェブページを巡回し（HTML リソースに限らない）、レスポンスボディの差分を調べて通知する。 |
+| [久米田康治 Twitter ユーザー履歴](src/component/TwitterUserInfoHistoryKumeta.ts) | 漫画家、久米田康治の Twitter アカウントについて、アイコン画像、バナー画像の変更を検知して画像ファイルを保存する。また、フォロワー数が一定数を超えるたびに通知を行うほか、フォロー数やいいね数などのユーザー情報もチェックする。 |
+| [まどか Twitter ユーザー履歴](src/component/TwitterUserInfoHistoryMadoka.ts) | アニメ『魔法少女まどか☆マギカ』関連の Twitter アカウントについて、アイコン画像、バナー画像の変更を検知して画像ファイルを保存する。 |
 
 ## 動作手順
 
