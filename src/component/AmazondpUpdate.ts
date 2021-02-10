@@ -9,15 +9,6 @@ import PaapiUtil from '../util/Paapi.js';
 import sqlite3 from 'sqlite3';
 import { GetItemsResponse, ItemResultsItem } from 'paapi5-typescript-sdk';
 
-interface JsonAmazonPa {
-	a: string; // asin
-	t: string; // title
-	b?: string; // binding
-	d?: string; // date
-	i?: string; // image_url
-	r?: string; // image2x_url
-}
-
 interface Diff {
 	db: string;
 	api: string;
@@ -468,25 +459,30 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 			const rows = await sth.all();
 			await sth.finalize();
 
-			const dpList: JsonAmazonPa[] = [];
+			const dpList: w0s_jp.JsonAmazonDp[] = [];
 			for (const row of rows) {
-				const dp: JsonAmazonPa = {
+				const binding: string | null = row.binding;
+				const date: number | null = row.date !== null ? Number(row.date) : null;
+				const image_url: string | null = row.image_url;
+				const image2x_url: string | null = row.image2x_url;
+
+				const dp: w0s_jp.JsonAmazonDp = {
 					a: row.asin,
 					t: row.title,
 				};
 
-				if (row.binding) {
-					dp.b = row.binding;
+				if (binding !== null) {
+					dp.b = binding;
 				}
-				if (row.date) {
-					const date = new Date(Number(row.date));
-					dp.d = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+				if (date !== null) {
+					const dpDate = new Date(date * 1000);
+					dp.d = `${dpDate.getFullYear()}-${String(dpDate.getMonth() + 1).padStart(2, '0')}-${String(dpDate.getDate()).padStart(2, '0')}`;
 				}
-				if (row.image_url) {
-					dp.i = row.image_url;
+				if (image_url !== null) {
+					dp.i = image_url;
 				}
-				if (row.image2x_url) {
-					dp.r = row.image2x_url;
+				if (image2x_url !== null) {
+					dp.r = image2x_url;
 				}
 
 				dpList.push(dp);
