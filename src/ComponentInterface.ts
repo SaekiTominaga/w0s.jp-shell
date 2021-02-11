@@ -5,9 +5,4 @@ export default interface Component {
 	 * @param {string[]} args - Arguments passed to the script
 	 */
 	execute(args: string[]): Promise<void>;
-
-	/**
-	 * Notify the administrator
-	 */
-	noticeExecute(): Promise<void>;
 }
