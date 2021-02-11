@@ -12,6 +12,8 @@ import { resolve } from 'relative-to-absolute-iri';
  * ウェブページを巡回し、新着情報の差分を調べて通知する
  */
 export default class CrawlerNews extends Component implements ComponentInterface {
+	private readonly config: w0s_jp.ConfigureCrawlerNews;
+
 	readonly #HTML_MIMES: DOMParserSupportedType[] = ['application/xhtml+xml', 'application/xml', 'text/html', 'text/xml'];
 
 	readonly #DATE_FORMAT_LIST = [
@@ -20,6 +22,12 @@ export default class CrawlerNews extends Component implements ComponentInterface
 		/^([0-9]{4})\.(0[1-9]|[1-9][0-9]?)\.(0[1-9]|[1-9][0-9]?)/ /* YYYY.MM.DD */,
 		/^([0-9]{4})年(0[1-9]|[1-9][0-9]?)月(0[1-9]|[1-9][0-9]?)日/ /* YYYY年MM月DD日 */,
 	];
+
+	constructor() {
+		super();
+
+		this.config = this.readConfig();
+	}
 
 	/**
 	 * @param {string[]} args - Arguments passed to the script

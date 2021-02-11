@@ -26,5 +26,5 @@
 		"forceConsistentCasingInFileNames": true,
 		"newLine": "LF"
 	},
-	"include": ["src/**/*.ts", "@types/*.ts"]
+	"include": ["src/**/*.ts", "@types/*.d.ts", "configure/*.d.ts"]
 }

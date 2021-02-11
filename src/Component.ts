@@ -1,40 +1,46 @@
-import fs from 'fs';
 import jsonc from 'jsonc';
 import Log4js from 'log4js';
 import nodemailer from 'nodemailer';
 
 export default class Component {
-	protected title: string | undefined;
+	readonly #name: string; // コンポーネント名（ファイル名などに使用されるプログラムのための名前）
+	protected title: string | undefined; // コンポーネントタイトル（自然言語による人間が見て分かりやすい名前）
 
-	protected readonly logger: Log4js.Logger;
+	protected readonly configCommon: w0s_jp.ConfigureCommon; // 共通の設定内容
+	readonly #CONFIGURE_DIRNAME = './configure'; // 設定ファイルの格納ディレクトリ
+	readonly #CONFIGURE_EXTENSION = '.jsonc'; // 設定ファイルの拡張子
+	readonly #CONFIGURE_COMMON_FILENAME = 'Common'; // 共通の設定ファイルのファイル名
 
-	protected readonly configCommon: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-	protected readonly config: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+	protected readonly logger: Log4js.Logger; // Logger
 
-	protected readonly notice: string[] = [];
-
-	readonly #CONFIGURE_DIRNAME = './configure';
+	protected readonly notice: string[] = []; // 管理者への通知内容
 
 	constructor() {
-		const className = this.constructor.name;
+		this.#name = this.constructor.name;
 
 		/* Logger */
-		this.logger = Log4js.getLogger(className);
+		this.logger = Log4js.getLogger(this.#name);
 
-		/* Configure file */
-		// @ts-expect-error: ts(2339)
-		this.configCommon = jsonc.readSync(`${this.#CONFIGURE_DIRNAME}/common.jsonc`);
-
-		const configureFilePath = `${this.#CONFIGURE_DIRNAME}/${className}.jsonc`;
-		if (fs.existsSync(configureFilePath)) {
-			this.logger.debug('Configure file:', configureFilePath);
-
-			// @ts-expect-error: ts(2339)
-			this.config = jsonc.readSync(configureFilePath);
-		}
+		/* 設定ファイル */
+		this.configCommon = this.readConfig(this.#CONFIGURE_COMMON_FILENAME);
 	}
 
-	async noticeExecute(): Promise<void> {
+	/**
+	 * 設定ファイルを読み込む
+	 *
+	 * @param {string} name - 設定ファイル名（拡張子を除いた名前）
+	 *
+	 * @returns {any} 設定ファイルの中身
+	 */
+	protected readConfig(name = this.#name): any {
+		// @ts-expect-error: ts(2339)
+		return jsonc.readSync(`${this.#CONFIGURE_DIRNAME}/${name}${this.#CONFIGURE_EXTENSION}`);
+	}
+
+	/**
+	 * 管理者への通知を実行
+	 */
+	protected async noticeExecute(): Promise<void> {
 		if (this.notice.length > 0) {
 			const transporter = nodemailer.createTransport({
 				port: this.configCommon.mail.port,
@@ -44,10 +50,11 @@ export default class Component {
 					pass: this.configCommon.mail.password,
 				},
 			});
+
 			await transporter.sendMail({
-				from: this.configCommon.mail.address,
-				to: this.configCommon.mail.address,
-				subject: this.config?.title ?? this.constructor.name,
+				from: this.configCommon.mail.from,
+				to: this.configCommon.mail.to,
+				subject: this.title ?? this.#name,
 				text: this.notice.join('\n\n'),
 			});
 		}

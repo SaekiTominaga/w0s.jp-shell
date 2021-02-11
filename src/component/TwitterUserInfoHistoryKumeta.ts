@@ -11,7 +11,15 @@ import Twitter from 'twitter';
  * 久米田康治 Twitter アカウントのユーザー情報を API を使用して取得し、 DB に格納済みのデータを照合して更新する
  */
 export default class TwitterUserInfoHistoryKumeta extends Component implements ComponentInterface {
+	private readonly config: w0s_jp.ConfigureTwitterUserInfoHistoryKumeta;
+
 	#twitterMessages: Set<{ message: string; url?: string }> = new Set(); // Twitter への通知メッセージ
+
+	constructor() {
+		super();
+
+		this.config = this.readConfig();
+	}
 
 	/**
 	 * @param {string[]} args - Arguments passed to the script

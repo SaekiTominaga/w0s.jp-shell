@@ -12,7 +12,15 @@ import sqlite3 from 'sqlite3';
  * ウェブページを巡回し、レスポンスボディの差分を調べて通知する
  */
 export default class CrawlerResource extends Component implements ComponentInterface {
+	private readonly config: w0s_jp.ConfigureCrawlerResource;
+
 	readonly #HTML_MIMES: DOMParserSupportedType[] = ['application/xhtml+xml', 'application/xml', 'text/html', 'text/xml'];
+
+	constructor() {
+		super();
+
+		this.config = this.readConfig();
+	}
 
 	/**
 	 * @param {string[]} args - Arguments passed to the script

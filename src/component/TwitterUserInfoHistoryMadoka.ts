@@ -10,6 +10,14 @@ import Twitter from 'twitter';
  * まどか公式系 Twitter アカウントのユーザー情報を API を使用して取得し、 DB に格納済みのデータを照合して更新する
  */
 export default class TwitterUserInfoHistoryMadoka extends Component implements ComponentInterface {
+	private readonly config: w0s_jp.ConfigureTwitterUserInfoHistoryMadoka;
+
+	constructor() {
+		super();
+
+		this.config = this.readConfig();
+	}
+
 	async execute(): Promise<void> {
 		const twitter = new Twitter({
 			consumer_key: this.config.twitter.production.consumer_key,

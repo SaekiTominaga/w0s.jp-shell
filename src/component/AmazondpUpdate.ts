@@ -18,6 +18,14 @@ interface Diff {
  * Amazon 商品情報を PA-API を使用して取得し、 DB に格納済みのデータを照合して更新する
  */
 export default class AmazondpUpdate extends Component implements ComponentInterface {
+	private readonly config: w0s_jp.ConfigureAmazondpUpdate;
+
+	constructor() {
+		super();
+
+		this.config = this.readConfig();
+	}
+
 	async execute(): Promise<void> {
 		const [dbhDiary, dbhAmazonPa] = await Promise.all([
 			sqlite.open({

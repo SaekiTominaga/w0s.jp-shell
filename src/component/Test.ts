@@ -5,6 +5,14 @@ import ComponentInterface from '../ComponentInterface.js';
  * シェル機能のテスト用
  */
 export default class Test extends Component implements ComponentInterface {
+	private readonly config: w0s_jp.ConfigureTest;
+
+	constructor() {
+		super();
+
+		this.config = this.readConfig();
+	}
+
 	/**
 	 * @param {string[]} args - Arguments passed to the script
 	 */
