@@ -9,7 +9,7 @@ declare namespace w0s_jp {
 		 */
 		twitter: {
 			production: {
-				/* @saekitominaga:13192181 */
+				/* 実稼働で使用するアプリ情報 */
 				consumer_key: string;
 				consumer_secret: string;
 			};

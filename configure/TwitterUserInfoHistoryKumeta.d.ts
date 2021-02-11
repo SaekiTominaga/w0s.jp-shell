@@ -11,14 +11,14 @@ declare namespace w0s_jp {
 		 */
 		twitter: {
 			dev: {
-				/* @debug_test:8058799 */
+				/* 開発時に使用するアプリ情報 */
 				consumer_key: string;
 				consumer_secret: string;
 				access_token: string;
 				access_token_secret: string;
 			};
 			production: {
-				/* @kumeta_icon */
+				/* 実稼働で使用するアプリ情報 */
 				consumer_key: string;
 				consumer_secret: string;
 				access_token: string;

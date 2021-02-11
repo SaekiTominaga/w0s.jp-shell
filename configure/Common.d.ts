@@ -4,9 +4,16 @@ declare namespace w0s_jp {
 		url: string; // トップページの URL (e.g. https://example.com/)
 
 		/**
-		 * E-mail
+		 * 管理者への通知に使用する E-mail の各種情報
 		 */
-		mail: { smtp: string; user: string; password: string; port: number; from: string; to: string | string[] };
+		mail: {
+			smtp: string;
+			user: string;
+			password: string;
+			port: number;
+			from: string;
+			to: string | string[];
+		};
 
 		/**
 		 * SQLite
