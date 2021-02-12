@@ -19,6 +19,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		super();
 
 		this.config = this.readConfig();
+		this.title = this.config.title;
 	}
 
 	/**

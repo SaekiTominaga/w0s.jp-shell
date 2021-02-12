@@ -16,6 +16,7 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 		super();
 
 		this.config = this.readConfig();
+		this.title = this.config.title;
 	}
 
 	async execute(): Promise<void> {

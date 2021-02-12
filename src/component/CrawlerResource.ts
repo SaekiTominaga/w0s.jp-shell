@@ -20,6 +20,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 		super();
 
 		this.config = this.readConfig();
+		this.title = this.config.title;
 	}
 
 	/**
