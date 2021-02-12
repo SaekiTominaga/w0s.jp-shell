@@ -32,7 +32,7 @@ export default class Component {
 	 *
 	 * @returns {any} 設定ファイルの中身
 	 */
-	protected readConfig(name = this.#name): any {
+	protected readConfig(name = this.#name): any { // eslint-disable-line @typescript-eslint/no-explicit-any
 		// @ts-expect-error: ts(2339)
 		return jsonc.readSync(`${this.#CONFIGURE_DIRNAME}/${name}${this.#CONFIGURE_EXTENSION}`);
 	}
@@ -40,7 +40,7 @@ export default class Component {
 	/**
 	 * 管理者への通知を実行
 	 */
-	protected async noticeExecute(): Promise<void> {
+	protected async destructor(): Promise<void> {
 		if (this.notice.length > 0) {
 			const transporter = nodemailer.createTransport({
 				port: this.configCommon.mail.port,

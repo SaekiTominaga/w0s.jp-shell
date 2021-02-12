@@ -5,4 +5,9 @@ export default interface Component {
 	 * @param {string[]} args - Arguments passed to the script
 	 */
 	execute(args: string[]): Promise<void>;
+
+	/**
+	 * Destructor
+	 */
+	destructor(): Promise<void>;
 }

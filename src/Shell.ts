@@ -45,7 +45,7 @@ class Shell {
 			try {
 				const component = <Component>new (await import(`${this._COMPONENT_DIR}/${componentName}${this._COMPONENT_EXTENSION}`)).default();
 				await component.execute(args.slice(this._ARGS_MINLENGTH));
-				await component.noticeExecute();
+				await component.destructor();
 
 				/* タイムアウト判定 */
 				const processingTimeSecond = (Date.now() - startDate.getTime()) / 1000;
