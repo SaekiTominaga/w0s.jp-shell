@@ -23,6 +23,7 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 		super();
 
 		this.config = this.readConfig();
+		this.title = this.config.title;
 	}
 
 	async execute(): Promise<void> {
@@ -70,7 +71,7 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 					},
 					{
 						ItemIds: asins,
-						Resources: ['Images.Primary.Medium', 'ItemInfo.Classifications', 'ItemInfo.ContentInfo', 'ItemInfo.Title'],
+						Resources: ['Images.Primary.Large', 'ItemInfo.Classifications', 'ItemInfo.ContentInfo', 'ItemInfo.Title'],
 					}
 				);
 
@@ -186,9 +187,9 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 				this.logger.error(e);
 			}
 		}
-		const apiImageUrl = item.Images?.Primary?.Medium?.URL ?? null; // 画像URL
-		const apiImageWidth = item.Images?.Primary?.Medium?.Width ?? null; // 画像幅
-		const apiImageHeight = item.Images?.Primary?.Medium?.Height ?? null; // 画像高さ
+		const apiImageUrl = item.Images?.Primary?.Large?.URL ?? null; // 画像URL
+		const apiImageWidth = item.Images?.Primary?.Large?.Width ?? null; // 画像幅
+		const apiImageHeight = item.Images?.Primary?.Large?.Height ?? null; // 画像高さ
 
 		this.logger.debug(`diary データベースの d_amazon テーブルから ASIN: ${asin} の検索処理を開始`);
 
@@ -316,7 +317,7 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 				this.logger.error(e);
 			}
 		}
-		const apiImageUrl = item.Images?.Primary?.Medium?.URL ?? null; // 画像URL
+		const apiImageUrl = item.Images?.Primary?.Large?.URL ?? null; // 画像URL
 
 		this.logger.debug(`amazonpa データベースの d_dp テーブルから ASIN: ${asin} の検索処理を開始`);
 
