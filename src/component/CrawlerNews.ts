@@ -5,7 +5,7 @@ import fetch from 'node-fetch';
 import jsdom from 'jsdom';
 import MIMEParser from '@saekitominaga/mime-parser';
 import sqlite3 from 'sqlite3';
-import uuid from 'uuid';
+import { v4 as uuidV4 } from 'uuid';
 import { resolve } from 'relative-to-absolute-iri';
 
 /**
@@ -216,7 +216,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 								(:uuid, :url, :date, :content, :refer_url)
 						`);
 					await insertDataSth.run({
-						':uuid': uuid.v4(),
+						':uuid': uuidV4(),
 						':url': targetUrl,
 						':date': date !== null ? Math.round(date.getTime() / 1000) : null,
 						':content': contentText,
