@@ -6,8 +6,7 @@ declare namespace w0s_jp {
 		a: string; // asin
 		t: string; // title
 		b?: string; // binding
-		d?: string; // date
+		d?: number; // date
 		i?: string; // image_url
-		r?: string; // image2x_url
 	}
 }

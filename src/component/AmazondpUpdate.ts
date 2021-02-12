@@ -4,7 +4,6 @@ import amazonPaapi from 'amazon-paapi';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import fs from 'fs';
-import PaapiItemImageUrlParser from '@saekitominaga/paapi-item-image-url-parser';
 import PaapiUtil from '../util/Paapi.js';
 import sqlite3 from 'sqlite3';
 import { GetItemsResponse, ItemResultsItem } from 'paapi5-typescript-sdk';
@@ -188,12 +187,6 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 			}
 		}
 		const apiImageUrl = item.Images?.Primary?.Medium?.URL ?? null; // 画像URL
-		let apiImage2xUrl = null;
-		if (apiImageUrl !== null) {
-			const paapiItemImageUrlParser = new PaapiItemImageUrlParser(new URL(apiImageUrl));
-			paapiItemImageUrlParser.setWidthMultiply(2);
-			apiImage2xUrl = paapiItemImageUrlParser.toString();
-		}
 		const apiImageWidth = item.Images?.Primary?.Medium?.Width ?? null; // 画像幅
 		const apiImageHeight = item.Images?.Primary?.Medium?.Height ?? null; // 画像高さ
 
@@ -272,7 +265,6 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 					product_group = :product_group,
 					date = :date,
 					image_url = :image_url,
-					image2x_url = :image2x_url,
 					image_width = :image_width,
 					image_height = :image_height,
 					last_updated = :last_updated
@@ -286,7 +278,6 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 				':product_group': apiProductGroup,
 				':date': apiPublicationDate,
 				':image_url': apiImageUrl,
-				':image2x_url': apiImage2xUrl,
 				':image_width': apiImageWidth,
 				':image_height': apiImageHeight,
 				':last_updated': Math.round(Date.now() / 1000),
@@ -326,12 +317,6 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 			}
 		}
 		const apiImageUrl = item.Images?.Primary?.Medium?.URL ?? null; // 画像URL
-		let apiImage2xUrl = null;
-		if (apiImageUrl !== null) {
-			const paapiItemImageUrlParser = new PaapiItemImageUrlParser(new URL(apiImageUrl));
-			paapiItemImageUrlParser.setWidthMultiply(2);
-			apiImage2xUrl = paapiItemImageUrlParser.toString();
-		}
 
 		this.logger.debug(`amazonpa データベースの d_dp テーブルから ASIN: ${asin} の検索処理を開始`);
 
@@ -402,8 +387,7 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 					title = :title,
 					binding = :binding,
 					date = :date,
-					image_url = :image_url,
-					image2x_url = :image2x_url
+					image_url = :image_url
 				WHERE
 					asin = :asin
 			`);
@@ -413,7 +397,6 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 				':binding': apiBinding,
 				':date': apiPublicationDate,
 				':image_url': apiImageUrl,
-				':image2x_url': apiImage2xUrl,
 				':asin': asin,
 			});
 			await sth.finalize();
@@ -450,8 +433,7 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 					dp.title AS title,
 					dp.binding AS binding,
 					dp.date AS date,
-					dp.image_url AS image_url,
-					dp.image2x_url AS image2x_url
+					dp.image_url AS image_url
 				FROM
 					d_dp dp,
 					d_category category
@@ -472,7 +454,6 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 				const binding: string | null = row.binding;
 				const date: number | null = row.date !== null ? Number(row.date) : null;
 				const image_url: string | null = row.image_url;
-				const image2x_url: string | null = row.image2x_url;
 
 				const dp: w0s_jp.JsonAmazonDp = {
 					a: row.asin,
@@ -483,14 +464,10 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 					dp.b = binding;
 				}
 				if (date !== null) {
-					const dpDate = new Date(date * 1000);
-					dp.d = `${dpDate.getFullYear()}-${String(dpDate.getMonth() + 1).padStart(2, '0')}-${String(dpDate.getDate()).padStart(2, '0')}`;
+					dp.d = date;
 				}
 				if (image_url !== null) {
 					dp.i = image_url;
-				}
-				if (image2x_url !== null) {
-					dp.r = image2x_url;
 				}
 
 				dpList.push(dp);
