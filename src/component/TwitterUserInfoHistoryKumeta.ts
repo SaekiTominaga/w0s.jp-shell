@@ -69,7 +69,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		}
 
 		/* APIからユーザー情報を取得 */
-		const apiUsers = <TwitterV1User[]>await twitter.get('users/lookup', {
+		const apiUsers = <w0s_jp.TwitterV1User[]>await twitter.get('users/lookup', {
 			user_id: userIds.join(','),
 		}); // https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/follow-search-get-users/api-reference/get-users-lookup
 
