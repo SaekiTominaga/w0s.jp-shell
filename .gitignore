@@ -1,5 +1,5 @@
 node_modules
-/configure/*.jsonc
+/configure/*.json
 /coverage/
 /dist/
 /log4js*.json

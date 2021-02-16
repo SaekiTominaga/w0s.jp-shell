@@ -5,12 +5,13 @@ import fetch from 'node-fetch';
 import fs from 'fs';
 import sqlite3 from 'sqlite3';
 import Twitter from 'twitter';
+import { Twitter as ConfigureTwitterUserInfoHistoryMadoka } from '../../configure/type/TwitterUserInfoHistoryMadoka';
 
 /**
  * まどか公式系 Twitter アカウントのユーザー情報を API を使用して取得し、 DB に格納済みのデータを照合して更新する
  */
 export default class TwitterUserInfoHistoryMadoka extends Component implements ComponentInterface {
-	private readonly config: w0s_jp.ConfigureTwitterUserInfoHistoryMadoka;
+	private readonly config: ConfigureTwitterUserInfoHistoryMadoka;
 
 	constructor() {
 		super();
@@ -26,6 +27,10 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 			access_token_key: '',
 			access_token_secret: '',
 		});
+
+		if (this.configCommon.sqlite.db.madokatwitter === undefined) {
+			throw new Error('共通設定ファイルに madokatwitter テーブルのパスが指定されていない。');
+		}
 
 		const dbh = await sqlite.open({
 			filename: this.configCommon.sqlite.db.madokatwitter,

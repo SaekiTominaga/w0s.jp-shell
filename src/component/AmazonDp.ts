@@ -6,6 +6,7 @@ import ComponentInterface from '../ComponentInterface.js';
 import fs from 'fs';
 import PaapiUtil from '../util/Paapi.js';
 import sqlite3 from 'sqlite3';
+import { Amazon as ConfigureAmazondp } from '../../configure/type/AmazonDp';
 import { GetItemsResponse, ItemResultsItem } from 'paapi5-typescript-sdk';
 
 interface Diff {
@@ -16,8 +17,8 @@ interface Diff {
 /**
  * Amazon 商品情報を PA-API を使用して取得し、 DB に格納済みのデータを照合して更新する
  */
-export default class AmazondpUpdate extends Component implements ComponentInterface {
-	private readonly config: w0s_jp.ConfigureAmazondpUpdate;
+export default class AmazonDp extends Component implements ComponentInterface {
+	private readonly config: ConfigureAmazondp;
 
 	constructor() {
 		super();
@@ -27,6 +28,13 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 	}
 
 	async execute(): Promise<void> {
+		if (this.configCommon.sqlite.db.diary === undefined) {
+			throw new Error('共通設定ファイルに diary テーブルのパスが指定されていない。');
+		}
+		if (this.configCommon.sqlite.db.amazonpa === undefined) {
+			throw new Error('共通設定ファイルに amazonpa テーブルのパスが指定されていない。');
+		}
+
 		const [dbhDiary, dbhAmazonPa] = await Promise.all([
 			sqlite.open({
 				filename: this.configCommon.sqlite.db.diary,
@@ -53,21 +61,21 @@ export default class AmazondpUpdate extends Component implements ComponentInterf
 			while (targetAsins.length > 0) {
 				requestCount++;
 				if (requestCount > 1) {
-					await new Promise((resolve) => setTimeout(resolve, this.configCommon.paapi.access_interval * 1000)); // 接続間隔を空ける
+					await new Promise((resolve) => setTimeout(resolve, this.config.paapi.access_interval * 1000)); // 接続間隔を空ける
 				}
 
-				const asins = targetAsins.splice(0, this.configCommon.paapi.getitems_itemids_chunk);
+				const asins = targetAsins.splice(0, this.config.paapi.getitems_itemids_chunk);
 				this.logger.info('PA-API 接続（GetItems.ItemIds）:', asins);
 
 				const paapiResponse = <GetItemsResponse>await amazonPaapi.GetItems(
 					{
-						PartnerTag: this.configCommon.paapi.request.partner_tag,
+						PartnerTag: this.config.paapi.request.partner_tag,
 						PartnerType: 'Associates',
-						AccessKey: this.configCommon.paapi.request.access_key,
-						SecretKey: this.configCommon.paapi.request.secret_key,
-						Marketplace: this.configCommon.paapi.request.marketplace,
-						Host: this.configCommon.paapi.request.host,
-						Region: this.configCommon.paapi.request.region,
+						AccessKey: this.config.paapi.request.access_key,
+						SecretKey: this.config.paapi.request.secret_key,
+						Marketplace: this.config.paapi.request.marketplace,
+						Host: this.config.paapi.request.host,
+						Region: this.config.paapi.request.region,
 					},
 					{
 						ItemIds: asins,

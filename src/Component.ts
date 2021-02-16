@@ -1,14 +1,15 @@
-import jsonc from 'jsonc';
+import fs from 'fs';
 import Log4js from 'log4js';
 import nodemailer from 'nodemailer';
+import { NoName as ConfigureCommon } from '../configure/type/Common';
 
 export default class Component {
 	readonly #name: string; // コンポーネント名（ファイル名などに使用されるプログラムのための名前）
 	protected title: string | undefined; // コンポーネントタイトル（自然言語による人間が見て分かりやすい名前）
 
-	protected readonly configCommon: w0s_jp.ConfigureCommon; // 共通の設定内容
+	protected readonly configCommon: ConfigureCommon; // 共通の設定内容
 	readonly #CONFIGURE_DIRNAME = './configure'; // 設定ファイルの格納ディレクトリ
-	readonly #CONFIGURE_EXTENSION = '.jsonc'; // 設定ファイルの拡張子
+	readonly #CONFIGURE_EXTENSION = '.json'; // 設定ファイルの拡張子
 	readonly #CONFIGURE_COMMON_FILENAME = 'Common'; // 共通の設定ファイルのファイル名
 
 	protected readonly logger: Log4js.Logger; // Logger
@@ -33,8 +34,11 @@ export default class Component {
 	 * @returns {any} 設定ファイルの中身
 	 */
 	protected readConfig(name = this.#name): any /* eslint-disable-line @typescript-eslint/no-explicit-any */ {
-		// @ts-expect-error: ts(2339)
-		return jsonc.readSync(`${this.#CONFIGURE_DIRNAME}/${name}${this.#CONFIGURE_EXTENSION}`);
+		const targetUrl = `${this.#CONFIGURE_DIRNAME}/${name}${this.#CONFIGURE_EXTENSION}`;
+
+		const response = fs.readFileSync(targetUrl, 'utf8');
+
+		return JSON.parse(response);
 	}
 
 	/**

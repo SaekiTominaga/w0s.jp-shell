@@ -7,12 +7,13 @@ import jsdom from 'jsdom';
 import MIMEParser from '@saekitominaga/mime-parser';
 import path from 'path';
 import sqlite3 from 'sqlite3';
+import { NoName as ConfigureCrawlerResource } from '../../configure/type/CrawlerResource';
 
 /**
  * ウェブページを巡回し、レスポンスボディの差分を調べて通知する
  */
 export default class CrawlerResource extends Component implements ComponentInterface {
-	private readonly config: w0s_jp.ConfigureCrawlerResource;
+	private readonly config: ConfigureCrawlerResource;
 
 	readonly #HTML_MIMES: DOMParserSupportedType[] = ['application/xhtml+xml', 'application/xml', 'text/html', 'text/xml'];
 
@@ -30,6 +31,10 @@ export default class CrawlerResource extends Component implements ComponentInter
 	async execute(args: string[]): Promise<void> {
 		const priority = args.length >= 1 ? Number(args[0]) : 0; // 優先度
 		this.logger.info(`優先度: ${priority}`);
+
+		if (this.configCommon.sqlite.db.crawler === undefined) {
+			throw new Error('共通設定ファイルに crawler テーブルのパスが指定されていない。');
+		}
 
 		const dbh = await sqlite.open({
 			filename: this.configCommon.sqlite.db.crawler,

@@ -6,12 +6,13 @@ import fs from 'fs';
 import sqlite3 from 'sqlite3';
 import Tweet from '../util/Tweet.js';
 import Twitter from 'twitter';
+import { Twitter as ConfigureTwitterUserInfoHistoryKumeta } from '../../configure/type/TwitterUserInfoHistoryKumeta';
 
 /**
  * 久米田康治 Twitter アカウントのユーザー情報を API を使用して取得し、 DB に格納済みのデータを照合して更新する
  */
 export default class TwitterUserInfoHistoryKumeta extends Component implements ComponentInterface {
-	private readonly config: w0s_jp.ConfigureTwitterUserInfoHistoryKumeta;
+	private readonly config: ConfigureTwitterUserInfoHistoryKumeta;
 
 	#twitterMessages: Set<{ message: string; url?: string }> = new Set(); // Twitter への通知メッセージ
 
@@ -51,6 +52,10 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		}
 
 		const twitter = new Twitter(twitterAccessTokenOptions);
+
+		if (this.configCommon.sqlite.db.kumetatwitter === undefined) {
+			throw new Error('共通設定ファイルに kumetatwitter テーブルのパスが指定されていない。');
+		}
 
 		const dbh = await sqlite.open({
 			filename: this.configCommon.sqlite.db.kumetatwitter,

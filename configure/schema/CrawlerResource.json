@@ -1,0 +1,30 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://schema.w0s.jp/CrawlerResource.json",
+	"type": "object",
+	"title": "ウェブ巡回（リソース）",
+	"required": ["title", "access_interval_host", "report_error_count", "save_dir"],
+	"properties": {
+		"title": {
+			"type": "string",
+			"title": "コンポーネントタイトル",
+			"description": "自然言語による、人間が見て分かりやすい名前を設定する。通知メールの件名などで使用される。",
+			"examples": ["ウェブ巡回（リソース）"]
+		},
+		"access_interval_host": {
+			"type": "number",
+			"minimum": 0,
+			"title": "同一ドメインサイトの取得間隔（秒）"
+		},
+		"report_error_count": {
+			"type": "integer",
+			"minimum": 1,
+			"title": "アクセスエラーがこの回数を超えたら報告する"
+		},
+		"save_dir": {
+			"type": "string",
+			"title": "ファイルの保存ディレクトリ（ドキュメントルート基準）"
+		}
+	},
+	"additionalProperties": false
+}

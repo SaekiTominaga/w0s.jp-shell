@@ -1,11 +1,12 @@
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
+import { NoName as ConfigureTest } from '../../configure/type/Test';
 
 /**
  * シェル機能のテスト用
  */
 export default class Test extends Component implements ComponentInterface {
-	private readonly config: w0s_jp.ConfigureTest;
+	private readonly config: ConfigureTest;
 
 	constructor() {
 		super();

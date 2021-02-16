@@ -1,0 +1,21 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://schema.w0s.jp/CrawlerNews.json",
+	"type": "object",
+	"title": "ウェブ巡回（新着）",
+	"required": ["title", "report_error_count"],
+	"properties": {
+		"title": {
+			"type": "string",
+			"title": "コンポーネントタイトル",
+			"description": "自然言語による、人間が見て分かりやすい名前を設定する。通知メールの件名などで使用される。",
+			"examples": ["ウェブ巡回（新着）"]
+		},
+		"report_error_count": {
+			"type": "integer",
+			"minimum": 1,
+			"title": "アクセスエラーがこの回数を超えたら報告する"
+		}
+	},
+	"additionalProperties": false
+}
