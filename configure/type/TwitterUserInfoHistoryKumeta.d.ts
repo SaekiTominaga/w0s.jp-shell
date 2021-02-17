@@ -11,6 +11,10 @@
 export type NoName = string;
 export type NoName1 = number;
 export type NoName2 = string;
+export type NoName3 = string;
+export type NoName4 = string;
+export type NoName5 = number;
+export type NoName6 = number;
 export type APIKey = string;
 export type APIKeySecret = string;
 export type AccessToken = string;
@@ -20,19 +24,25 @@ export interface Twitter {
   title: NoName;
   followers_threshold: NoName1;
   image_dir: NoName2;
+  screenshot: {
+    dir: NoName3;
+    extension: NoName4;
+    width: NoName5;
+    height: NoName6;
+  };
   twitter: TwitterAPI;
 }
 export interface TwitterAPI {
-  dev: NoName3;
-  production: NoName4;
+  dev: NoName7;
+  production: NoName8;
 }
-export interface NoName3 {
+export interface NoName7 {
   consumer_key: APIKey;
   consumer_secret: APIKeySecret;
   access_token: AccessToken;
   access_token_secret: AccessTokenSecret;
 }
-export interface NoName4 {
+export interface NoName8 {
   consumer_key: APIKey;
   consumer_secret: APIKeySecret;
   access_token: AccessToken;

@@ -3,7 +3,7 @@
 	"$id": "https://schema.w0s.jp/Common.json",
 	"type": "object",
 	"title": "共通設定ファイル",
-	"required": ["documentRoot", "url", "mail", "sqlite"],
+	"required": ["documentRoot", "url", "browserPath", "mail", "sqlite"],
 	"properties": {
 		"documentRoot": {
 			"type": "string",
@@ -14,6 +14,11 @@
 			"type": "string",
 			"title": "トップページの URL",
 			"examples": ["https://example.com/"]
+		},
+		"browserPath": {
+			"type": "string",
+			"title": "ブラウザーのプログラムのパス",
+			"examples": ["/usr/bin/chrome"]
 		},
 		"mail": {
 			"type": "object",

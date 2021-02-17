@@ -3,6 +3,7 @@ import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import fetch from 'node-fetch';
 import fs from 'fs';
+import puppeteer from 'puppeteer-core';
 import sqlite3 from 'sqlite3';
 import Tweet from '../util/Tweet.js';
 import Twitter from 'twitter';
@@ -14,7 +15,7 @@ import { Twitter as ConfigureTwitterUserInfoHistoryKumeta } from '../../configur
 export default class TwitterUserInfoHistoryKumeta extends Component implements ComponentInterface {
 	private readonly config: ConfigureTwitterUserInfoHistoryKumeta;
 
-	#twitterMessages: Set<{ message: string; url?: string }> = new Set(); // Twitter への通知メッセージ
+	#twitterMessages: Set<{ message: string; url?: string; hashtag?: string; medias?: Buffer[] }> = new Set(); // Twitter への通知メッセージ
 
 	constructor() {
 		super();
@@ -259,7 +260,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		if (this.#twitterMessages.size > 0) {
 			const tweet = new Tweet(twitter);
 			for (const twitterMessage of this.#twitterMessages) {
-				await tweet.postMessage(twitterMessage.message, twitterMessage.url);
+				await tweet.postMessage(twitterMessage.message, twitterMessage.url, twitterMessage.hashtag, twitterMessage.medias);
 			}
 		}
 	}
@@ -329,9 +330,12 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 			if (row !== false) {
 				this.notice.push(`${apiName}（@${apiUsername}）のアイコン画像更新\nhttps://twitter.com/${apiUsername}\n${apiProfileImageOriginalURL}`);
 
+				const screenshotImage = await this._screenshotTwitterHome(apiUsername);
+
 				this.#twitterMessages.add({
 					message: `${apiName}（@${apiUsername}）のアイコン画像が更新されました。`,
 					url: apiProfileImageOriginalURL,
+					medias: [screenshotImage],
 				});
 			}
 		}
@@ -398,9 +402,12 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 			if (row !== false) {
 				this.notice.push(`${apiName}（@${apiUsername}）のバナー画像更新\nhttps://twitter.com/${apiUsername}\n${apiProfileBannerURL}`);
 
+				const screenshotImage = await this._screenshotTwitterHome(apiUsername);
+
 				this.#twitterMessages.add({
 					message: `${apiName}（@${apiUsername}）のバナー画像が更新されました。`,
 					url: apiProfileBannerURL,
+					medias: [screenshotImage],
 				});
 			}
 		}
@@ -457,5 +464,39 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		});
 
 		return filename;
+	}
+
+	/**
+	 * Twitter 画面のスクリーンショットを撮る
+	 *
+	 * @param {string} username - ユーザー名
+	 *
+	 * @returns {Buffer} スクリーンショットの画像
+	 */
+	private async _screenshotTwitterHome(username: string): Promise<Buffer> {
+		const date = new Date();
+		const fileName = `@${username}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(
+			2,
+			'0'
+		)}_${date.getHours()}${date.getMinutes()}${date.getSeconds()}`;
+		const filePath = `${this.configCommon.documentRoot}/${this.config.screenshot.dir}/${fileName}${this.config.screenshot.extension}`;
+
+		const url = `https://twitter.com/${username}`;
+		this.logger.debug('スクショ開始', url);
+
+		const browser = await puppeteer.launch({ executablePath: this.configCommon.browserPath });
+		const page = await browser.newPage();
+		page.setViewport({
+			width: this.config.screenshot.width,
+			height: this.config.screenshot.height,
+		});
+		await page.goto(url, {
+			waitUntil: 'networkidle0',
+		});
+		const image = <Buffer>await page.screenshot({ path: filePath }); // オプションで `encoding` を指定しない場合、返り値は Buffer になる。 https://github.com/puppeteer/puppeteer/blob/v7.1.0/docs/api.md#pagescreenshotoptions
+
+		await browser.close();
+
+		return image;
 	}
 }
