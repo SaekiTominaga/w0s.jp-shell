@@ -16,7 +16,7 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 	constructor() {
 		super();
 
-		this.config = this.readConfig();
+		this.config = <ConfigureTwitterUserInfoHistoryMadoka>this.readConfig();
 		this.title = this.config.title;
 	}
 

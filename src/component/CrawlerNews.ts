@@ -27,7 +27,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	constructor() {
 		super();
 
-		this.config = this.readConfig();
+		this.config = <ConfigureCrawlerNews>this.readConfig();
 		this.title = this.config.title;
 	}
 

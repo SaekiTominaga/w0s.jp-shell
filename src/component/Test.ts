@@ -11,7 +11,7 @@ export default class Test extends Component implements ComponentInterface {
 	constructor() {
 		super();
 
-		this.config = this.readConfig();
+		this.config = <ConfigureTest>this.readConfig();
 		this.title = this.config.title;
 	}
 

@@ -23,7 +23,7 @@ export default class AmazonDp extends Component implements ComponentInterface {
 	constructor() {
 		super();
 
-		this.config = this.readConfig();
+		this.config = <ConfigureAmazondp>this.readConfig();
 		this.title = this.config.title;
 	}
 

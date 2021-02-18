@@ -23,7 +23,7 @@ export default class Component {
 		this.logger = Log4js.getLogger(this.#name);
 
 		/* 設定ファイル */
-		this.configCommon = this.readConfig(this.#CONFIGURE_COMMON_FILENAME);
+		this.configCommon = <ConfigureCommon>this.readConfig(this.#CONFIGURE_COMMON_FILENAME);
 	}
 
 	/**
@@ -33,7 +33,7 @@ export default class Component {
 	 *
 	 * @returns {any} 設定ファイルの中身
 	 */
-	protected readConfig(name = this.#name): any /* eslint-disable-line @typescript-eslint/no-explicit-any */ {
+	protected readConfig(name = this.#name): unknown {
 		const targetUrl = `${this.#CONFIGURE_DIRNAME}/${name}${this.#CONFIGURE_EXTENSION}`;
 
 		const response = fs.readFileSync(targetUrl, 'utf8');
