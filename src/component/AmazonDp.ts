@@ -7,7 +7,7 @@ import fs from 'fs';
 import PaapiUtil from '../util/Paapi.js';
 import sqlite3 from 'sqlite3';
 import { Amazon as ConfigureAmazondp } from '../../configure/type/AmazonDp';
-import { GetItemsResponse, ItemResultsItem } from 'paapi5-typescript-sdk';
+import { GetItemsResponse, Item } from 'paapi5-typescript-sdk';
 
 interface Diff {
 	db: string;
@@ -91,7 +91,6 @@ export default class AmazonDp extends Component implements ComponentInterface {
 					continue;
 				}
 
-				// @ts-expect-error: ts(2551) https://github.com/Pigotz/paapi5-typescript-sdk/issues/3
 				for (const item of paapiResponse.ItemsResult.Items) {
 					this.logger.debug(item);
 
@@ -176,12 +175,12 @@ export default class AmazonDp extends Component implements ComponentInterface {
 	 * diary テーブルの処理
 	 *
 	 * @param {sqlite.Database} dbh - DB 接続情報
-	 * @param {ItemResultsItem} item - ItemResultsItem クラス
+	 * @param {Item} item - Item クラス
 	 * @param {string} asin - ASIN
 	 *
 	 * @returns {Map<string, Diff>} API から取得した値と DB に格納済みの値の差分情報
 	 */
-	private async _diary(dbh: sqlite.Database, item: ItemResultsItem, asin: string): Promise<Map<string, Diff>> {
+	private async _diary(dbh: sqlite.Database, item: Item, asin: string): Promise<Map<string, Diff>> {
 		const apiDpUrl = item.DetailPageURL; // 詳細ページURL
 		const apiTitle = item.ItemInfo?.Title?.DisplayValue ?? null; // 製品タイトル // TODO API 的には null の可能性があるが、 DB のカラムは NOT NULL
 		const apiBinding = item.ItemInfo?.Classifications?.Binding.DisplayValue ?? null; // 製品カテゴリ
@@ -307,12 +306,12 @@ export default class AmazonDp extends Component implements ComponentInterface {
 	 * amazonpa テーブルの処理
 	 *
 	 * @param {sqlite.Database} dbh - DB 接続情報
-	 * @param {ItemResultsItem} item - ItemResultsItem クラス
+	 * @param {Item} item - Item クラス
 	 * @param {string} asin - ASIN
 	 *
 	 * @returns {Map<string, Diff>} API から取得した値と DB に格納済みの値の差分情報
 	 */
-	private async _amazonPa(dbh: sqlite.Database, item: ItemResultsItem, asin: string): Promise<Map<string, Diff>> {
+	private async _amazonPa(dbh: sqlite.Database, item: Item, asin: string): Promise<Map<string, Diff>> {
 		const apiDpUrl = item.DetailPageURL; // 詳細ページURL
 		const apiTitle = item.ItemInfo?.Title?.DisplayValue ?? null; // 製品タイトル // TODO API 的には null の可能性があるが、 DB のカラムは NOT NULL
 		const apiBinding = item.ItemInfo?.Classifications?.Binding.DisplayValue ?? null; // 製品カテゴリ
