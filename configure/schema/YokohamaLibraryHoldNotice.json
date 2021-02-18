@@ -1,0 +1,45 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://schema.w0s.jp/YokohamaLibraryHoldNotice.json",
+	"type": "object",
+	"title": "横浜市立図書館　予約連絡",
+	"required": ["title", "url", "urlParam", "screenshotPath", "ready"],
+	"properties": {
+		"title": {
+			"type": "string",
+			"title": "コンポーネントタイトル",
+			"description": "自然言語による、人間が見て分かりやすい名前を設定する。通知メールの件名などで使用される。",
+			"examples": ["横浜市立図書館　予約連絡"]
+		},
+		"url": {
+			"type": "string",
+			"title": "アクセスする URL"
+		},
+		"urlParam": {
+			"type": "string",
+			"title": "URL の POST に付与するパラメーター",
+			"examples": ["foo=hoge&bar=piyo"]
+		},
+		"screenshotPath": {
+			"type": "string",
+			"title": "【デバッグ用】スクリーンショット画像の保存パス"
+		},
+		"ready": {
+			"type": "object",
+			"title": "新たに到着した本があった場合にのみ表示される通知ページの情報",
+			"required": ["wrapSelector", "titleSelector"],
+			"properties": {
+				"wrapSelector": {
+					"type": "string",
+					"title": "包括要素のセレクター"
+				},
+				"titleSelector": {
+					"type": "string",
+					"title": "書名のセレクター"
+				}
+			},
+			"additionalProperties": false
+		}
+	},
+	"additionalProperties": false
+}
