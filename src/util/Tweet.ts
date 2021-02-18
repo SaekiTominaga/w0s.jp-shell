@@ -50,7 +50,7 @@ export default class Tweet {
 				throw new RangeError(`There should be no more than ${this.#IMAGE_LIMIT} media attachments.`);
 			}
 
-			const mediaIds: Set<string> = new Set();
+			const mediaIds = new Set<string>();
 			for (const media of medias) {
 				mediaIds.add(await this.uploadMedia(media));
 			}

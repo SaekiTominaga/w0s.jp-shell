@@ -227,7 +227,7 @@ export default class AmazonDp extends Component implements ComponentInterface {
 		const dbPublicationDate: number | null = row.date !== null ? Number(row.date) : null;
 		const dbImageUrl: string | null = row.image_url;
 
-		const diff: Map<string, Diff> = new Map(); // API から取得した値と DB に格納済みの値を比較し、その差分情報を格納する
+		const diff = new Map<string, Diff>(); // API から取得した値と DB に格納済みの値を比較し、その差分情報を格納する
 		if (apiDpUrl !== dbDpUrl) {
 			diff.set('detailPageURL', { db: dbDpUrl, api: apiDpUrl });
 		}
@@ -354,7 +354,7 @@ export default class AmazonDp extends Component implements ComponentInterface {
 		const dbPublicationDate: number | null = row.date !== null ? Number(row.date) : null;
 		const dbImageUrl: string | null = row.image_url;
 
-		const diff: Map<string, Diff> = new Map(); // API から取得した値と DB に格納済みの値を比較し、その差分情報を格納する
+		const diff = new Map<string, Diff>(); // API から取得した値と DB に格納済みの値を比較し、その差分情報を格納する
 		if (apiDpUrl !== dbDpUrl) {
 			diff.set('detailPageURL', { db: dbDpUrl, api: apiDpUrl });
 		}
