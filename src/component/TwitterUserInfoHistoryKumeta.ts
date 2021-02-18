@@ -15,7 +15,7 @@ import { Twitter as ConfigureTwitterUserInfoHistoryKumeta } from '../../configur
 export default class TwitterUserInfoHistoryKumeta extends Component implements ComponentInterface {
 	private readonly config: ConfigureTwitterUserInfoHistoryKumeta;
 
-	#twitterMessages: Set<{ message: string; url?: string; hashtag?: string; medias?: Buffer[] }> = new Set(); // Twitter への通知メッセージ
+	#twitterMessages = new Set<{ message: string; url?: string; hashtag?: string; medias?: Buffer[] }>(); // Twitter への通知メッセージ
 
 	constructor() {
 		super();
