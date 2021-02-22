@@ -10,7 +10,8 @@
  */
 export type DocumentRoot = string;
 export type URL = string;
-export type NoName1 = string;
+export type NoName2 = string;
+export type NoName3 = string;
 export type Amazonpa = string;
 export type Crawler = string;
 export type Diary = string;
@@ -20,9 +21,13 @@ export type Madokatwitter = string;
 export interface NoName {
   documentRoot: DocumentRoot;
   url: URL;
-  browserPath: NoName1;
+  browser: NoName1;
   mail: EMail;
   sqlite: SQLite;
+}
+export interface NoName1 {
+  path: NoName2;
+  ua: NoName3;
 }
 export interface EMail {
   smtp: string;

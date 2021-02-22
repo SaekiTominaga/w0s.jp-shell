@@ -3,7 +3,7 @@
 	"$id": "https://schema.w0s.jp/Common.json",
 	"type": "object",
 	"title": "共通設定ファイル",
-	"required": ["documentRoot", "url", "browserPath", "mail", "sqlite"],
+	"required": ["documentRoot", "url", "browser", "mail", "sqlite"],
 	"properties": {
 		"documentRoot": {
 			"type": "string",
@@ -15,10 +15,23 @@
 			"title": "トップページの URL",
 			"examples": ["https://example.com/"]
 		},
-		"browserPath": {
-			"type": "string",
-			"title": "ブラウザーのプログラムのパス",
-			"examples": ["/usr/bin/chrome"]
+		"browser": {
+			"type": "object",
+			"title": "ヘッドレスブラウザの各種情報",
+			"required": ["path", "ua"],
+			"properties": {
+				"path": {
+					"type": "string",
+					"title": "ブラウザーのプログラムのパス",
+					"examples": ["/usr/bin/chrome"]
+				},
+				"ua": {
+					"type": "string",
+					"title": "ユーザーエージェント文字列",
+					"examples": ["Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:87.0) Gecko/20100101 Firefox/87.0"]
+				}
+			},
+			"additionalProperties": false
 		},
 		"mail": {
 			"type": "object",

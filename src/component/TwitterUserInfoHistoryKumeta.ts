@@ -486,7 +486,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 
 		let image: Buffer;
 
-		const browser = await puppeteer.launch({ executablePath: this.configCommon.browserPath });
+		const browser = await puppeteer.launch({ executablePath: this.configCommon.browser.path });
 		try {
 			const page = await browser.newPage();
 			page.setViewport({
