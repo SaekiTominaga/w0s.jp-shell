@@ -24,13 +24,14 @@ export interface Twitter {
   title: NoName;
   followers_threshold: NoName1;
   image_dir: NoName2;
-  screenshot: {
-    dir: NoName3;
-    extension: NoName4;
-    width: NoName5;
-    height: NoName6;
-  };
+  screenshot: Twitter1;
   twitter: TwitterAPI;
+}
+export interface Twitter1 {
+  dir: NoName3;
+  extension: NoName4;
+  width: NoName5;
+  height: NoName6;
 }
 export interface TwitterAPI {
   dev: NoName7;
