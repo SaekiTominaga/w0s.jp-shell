@@ -4,6 +4,7 @@ import ComponentInterface from '../ComponentInterface.js';
 import fetch from 'node-fetch';
 import jsdom from 'jsdom';
 import MIMEParser from '@saekitominaga/mime-parser';
+import puppeteer from 'puppeteer-core';
 import sqlite3 from 'sqlite3';
 import { NoName as ConfigureCrawlerNews } from '../../configure/type/CrawlerNews';
 import { resolve } from 'relative-to-absolute-iri';
@@ -52,6 +53,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				SELECT
 					n.url AS url,
 					n.title AS title,
+					n.browser AS browser,
 					n.selector_wrap AS selector_wrap,
 					n.selector_date AS selector_date,
 					n.selector_content AS selector_content,
@@ -70,6 +72,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 		for (const selectRow of selectRows) {
 			const targetUrl: string = selectRow.url;
 			const targetTitle: string = selectRow.title;
+			const targetBrowser = Boolean(selectRow.browser);
 			const targetSelectorWrap: string = selectRow.selector_wrap;
 			const targetSelectorDate: string | null = selectRow.selector_date;
 			const targetSelectorContent: string | null = selectRow.selector_content;
@@ -78,34 +81,10 @@ export default class CrawlerNews extends Component implements ComponentInterface
 
 			this.logger.info(`取得処理を実行: ${targetUrl}`);
 
-			const response = await fetch(targetUrl);
-			if (!response.ok) {
-				const errorCount = await this._accessError(dbh, targetUrl);
-
-				this.logger.info(`HTTP Status Code: ${response.status} ${targetUrl} 、エラー回数: ${errorCount}`);
-				if (errorCount % this.config.report_error_count === 0) {
-					this.notice.push(`${targetTitle}\n${targetUrl}\nHTTP Status Code: ${response.status}\nエラー回数: ${errorCount}`);
-				}
-
+			const responseBody = targetBrowser ? await this._requestBrowser(dbh, targetUrl, targetTitle) : await this._requestFetch(dbh, targetUrl, targetTitle);
+			if (responseBody === null) {
 				continue;
 			}
-
-			/* レスポンスヘッダーのチェック */
-			const responseHeaders = response.headers;
-
-			const contentType = responseHeaders.get('Content-Type');
-			if (contentType === null) {
-				this.logger.error(`Content-Type ヘッダーが null: ${targetUrl}`);
-				continue;
-			}
-			const contentTypeEssence = new MIMEParser(contentType).getEssence();
-			if (!this.#HTML_MIMES.includes(<DOMParserSupportedType>contentTypeEssence)) {
-				this.logger.error(`HTML ページではない（${contentType}）: ${targetUrl}`);
-				continue;
-			}
-
-			/* レスポンスボディ */
-			const responseBody = await response.text();
 
 			/* DOM 化 */
 			const document = new jsdom.JSDOM(responseBody).window.document;
@@ -256,6 +235,114 @@ export default class CrawlerNews extends Component implements ComponentInterface
 
 			await this._accessSuccess(dbh, targetUrl);
 		}
+	}
+
+	/**
+	 * fetch() で URL にリクエストを行い、レスポンスボディを取得する
+	 *
+	 * @param {sqlite.Database} dbh - DB 接続情報
+	 * @param {string} url - アクセスする URL
+	 * @param {string} title - アクセスするページのタイトル
+	 *
+	 * @returns {string | null} レスポンスボディ
+	 */
+	private async _requestFetch(dbh: sqlite.Database, url: string, title: string): Promise<string | null> {
+		const response = await fetch(url);
+		if (!response.ok) {
+			const errorCount = await this._accessError(dbh, url);
+
+			this.logger.info(`HTTP Status Code: ${response.status} ${url} 、エラー回数: ${errorCount}`);
+			if (errorCount % this.config.report_error_count === 0) {
+				this.notice.push(`${title}\n${url}\nHTTP Status Code: ${response.status}\nエラー回数: ${errorCount}`);
+			}
+
+			return null;
+		}
+
+		/* レスポンスヘッダーのチェック */
+		const responseHeaders = response.headers;
+
+		const contentType = responseHeaders.get('Content-Type');
+		if (contentType === null) {
+			this.logger.error(`Content-Type ヘッダーが存在しない: ${url}`);
+			return null;
+		}
+		const contentTypeEssence = new MIMEParser(contentType).getEssence();
+		if (!this.#HTML_MIMES.includes(<DOMParserSupportedType>contentTypeEssence)) {
+			this.logger.error(`HTML ページではない（${contentType}）: ${url}`);
+			return null;
+		}
+
+		/* レスポンスボディ */
+		return await response.text();
+	}
+
+	/**
+	 * ブラウザで URL にリクエストを行い、レスポンスボディを取得する
+	 *
+	 * @param {sqlite.Database} dbh - DB 接続情報
+	 * @param {string} url - アクセスする URL
+	 * @param {string} title - アクセスするページのタイトル
+	 *
+	 * @returns {string | null} レスポンスボディ
+	 */
+	private async _requestBrowser(dbh: sqlite.Database, url: string, title: string): Promise<string | null> {
+		let responseBody: string;
+
+		const browser = await puppeteer.launch({ executablePath: this.configCommon.browserPath });
+		try {
+			const page = await browser.newPage();
+			await page.setRequestInterception(true);
+			page.on('request', (request: puppeteer.HTTPRequest) => {
+				switch (request.resourceType()) {
+					case 'document':
+					case 'script':
+					case 'xhr':
+					case 'fetch': {
+						request.continue();
+						break;
+					}
+					default: {
+						request.abort();
+					}
+				}
+			});
+			const response = await page.goto(url, {
+				waitUntil: 'networkidle0',
+			});
+			if (!response.ok) {
+				const errorCount = await this._accessError(dbh, url);
+
+				this.logger.info(`HTTP Status Code: ${response.status} ${url} 、エラー回数: ${errorCount}`);
+				if (errorCount % this.config.report_error_count === 0) {
+					this.notice.push(`${title}\n${url}\nHTTP Status Code: ${response.status}\nエラー回数: ${errorCount}`);
+				}
+
+				return null;
+			}
+
+			/* レスポンスヘッダーのチェック */
+			const responseHeaders = response.headers();
+
+			const contentType = <string | undefined>responseHeaders['content-type'];
+			if (contentType === undefined) {
+				this.logger.error(`Content-Type ヘッダーが存在しない: ${url}`);
+				return null;
+			}
+			const contentTypeEssence = new MIMEParser(contentType).getEssence();
+			if (!this.#HTML_MIMES.includes(<DOMParserSupportedType>contentTypeEssence)) {
+				this.logger.error(`HTML ページではない（${contentType}）: ${url}`);
+				return null;
+			}
+
+			responseBody = await page.evaluate(() => {
+				return document.documentElement.outerHTML;
+			});
+		} finally {
+			await browser.close();
+		}
+
+		return responseBody;
 	}
 
 	/**
