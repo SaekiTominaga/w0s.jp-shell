@@ -97,7 +97,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				continue;
 			}
 			if (wrapElements.length === 0) {
-				this.logger.error(`包括要素（${targetSelectorWrap}）が存在しない: ${targetUrl}`);
+				this.logger.error(`包括要素（${targetSelectorWrap}）が存在しない: ${targetUrl}\n\n${responseBody}`);
 				continue;
 			}
 
@@ -113,13 +113,13 @@ export default class CrawlerNews extends Component implements ComponentInterface
 					}
 
 					if (dateElement === null) {
-						this.logger.error(`日付要素（${targetSelectorDate}）が存在しない: ${targetUrl}`);
+						this.logger.error(`日付要素（${targetSelectorDate}）が存在しない: ${targetUrl}\n\n${responseBody}`);
 						continue;
 					}
 
 					const dateText = dateElement.textContent?.trim();
 					if (dateText === undefined) {
-						this.logger.error(`日付要素（${targetSelectorDate}）の文字列が取得できない: ${targetUrl}`);
+						this.logger.error(`日付要素（${targetSelectorDate}）の文字列が取得できない: ${targetUrl}\n\n${responseBody}`);
 						continue;
 					}
 
@@ -143,16 +143,31 @@ export default class CrawlerNews extends Component implements ComponentInterface
 					}
 
 					if (contentElement1 === null) {
-						this.logger.error(`内容要素（${targetSelectorContent}）が存在しない: ${targetUrl}`);
+						this.logger.error(`内容要素（${targetSelectorContent}）が存在しない: ${targetUrl}\n\n${responseBody}`);
 						continue;
 					}
 
 					contentElement = contentElement1;
 				}
 
-				const contentText = contentElement.textContent?.trim();
+				let contentText: string | undefined;
+				switch (contentElement.tagName) {
+					case 'IMG': {
+						const altText = (<HTMLImageElement>contentElement).alt.trim();
+						if (altText === '') {
+							contentText = (<HTMLImageElement>contentElement).src.trim();
+						} else {
+							contentText = altText;
+						}
+						break;
+					}
+					default: {
+						contentText = contentElement.textContent?.trim();
+					}
+				}
+
 				if (contentText === undefined) {
-					this.logger.error(`内容要素（${targetSelectorContent ?? targetSelectorWrap}）の文字列が取得できない: ${targetUrl}`);
+					this.logger.error(`内容要素（${targetSelectorContent ?? targetSelectorWrap}）の文字列が取得できない: ${targetUrl}\n\n${responseBody}`);
 					continue;
 				}
 
@@ -289,13 +304,15 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	private async _requestBrowser(dbh: sqlite.Database, url: string, title: string): Promise<string | null> {
 		let responseBody: string;
 
-		const browser = await puppeteer.launch({ executablePath: this.configCommon.browserPath });
+		const browser = await puppeteer.launch({ executablePath: this.configCommon.browser.path });
 		try {
 			const page = await browser.newPage();
+			await page.setUserAgent(this.configCommon.browser.ua);
 			await page.setRequestInterception(true);
 			page.on('request', (request: puppeteer.HTTPRequest) => {
 				switch (request.resourceType()) {
 					case 'document':
+					case 'stylesheet':
 					case 'script':
 					case 'xhr':
 					case 'fetch': {
