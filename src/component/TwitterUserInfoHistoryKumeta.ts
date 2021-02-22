@@ -484,18 +484,23 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		const url = `https://twitter.com/${username}`;
 		this.logger.debug('スクショ開始', url);
 
-		const browser = await puppeteer.launch({ executablePath: this.configCommon.browserPath });
-		const page = await browser.newPage();
-		page.setViewport({
-			width: this.config.screenshot.width,
-			height: this.config.screenshot.height,
-		});
-		await page.goto(url, {
-			waitUntil: 'networkidle0',
-		});
-		const image = <Buffer>await page.screenshot({ path: filePath }); // オプションで `encoding` を指定しない場合、返り値は Buffer になる。 https://github.com/puppeteer/puppeteer/blob/v7.1.0/docs/api.md#pagescreenshotoptions
+		let image: Buffer;
 
-		await browser.close();
+		const browser = await puppeteer.launch({ executablePath: this.configCommon.browserPath });
+		try {
+			const page = await browser.newPage();
+			page.setViewport({
+				width: this.config.screenshot.width,
+				height: this.config.screenshot.height,
+			});
+			await page.goto(url, {
+				waitUntil: 'networkidle0',
+			});
+
+			image = <Buffer>await page.screenshot({ path: filePath }); // オプションで `encoding` を指定しない場合、返り値は Buffer になる。 https://github.com/puppeteer/puppeteer/blob/v7.1.0/docs/api.md#pagescreenshotoptions
+		} finally {
+			await browser.close();
+		}
 
 		return image;
 	}
