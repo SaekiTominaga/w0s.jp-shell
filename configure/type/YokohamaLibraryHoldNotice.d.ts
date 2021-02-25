@@ -11,18 +11,27 @@
 export type NoName1 = string;
 export type URL = string;
 export type URLPOST = string;
-export type NoName2 = string;
+export type NoName3 = string;
 export type NoName4 = string;
 export type NoName5 = string;
+export type NoName7 = string;
+export type NoName8 = string;
+export type NoName9 = string;
 
 export interface NoName {
   title: NoName1;
   url: URL;
   urlParam: URLPOST;
-  screenshotPath: NoName2;
-  ready: NoName3;
+  ready: NoName2;
+  notice: NoName6;
 }
-export interface NoName3 {
-  wrapSelector: NoName4;
-  titleSelector: NoName5;
+export interface NoName2 {
+  wrapSelector: NoName3;
+  titleSelector: NoName4;
+  confirmButtonSelector: NoName5;
+}
+export interface NoName6 {
+  messagePrefix: NoName7;
+  messageSuffix: NoName8;
+  separator: NoName9;
 }
