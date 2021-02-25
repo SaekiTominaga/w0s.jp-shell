@@ -16,13 +16,15 @@
 		"config:validate:CrawlerResource": "ajv --spec=draft7 -s configure/schema/CrawlerResource.json -d configure/CrawlerResource.json",
 		"config:validate:TwitterUserInfoHistoryKumeta": "ajv --spec=draft7 -s configure/schema/TwitterUserInfoHistoryKumeta.json -d configure/TwitterUserInfoHistoryKumeta.json",
 		"config:validate:TwitterUserInfoHistoryMadoka": "ajv --spec=draft7 -s configure/schema/TwitterUserInfoHistoryMadoka.json -d configure/TwitterUserInfoHistoryMadoka.json",
+		"config:validate:YokohamaLibraryHoldNotice": "ajv --spec=draft7 -s configure/schema/YokohamaLibraryHoldNotice.json -d configure/YokohamaLibraryHoldNotice.json",
 		"config:tsconvert": "json2ts -i configure/schema -o configure/type",
 		"shell:Test": "node dist/Shell.js Test 0",
 		"shell:AmazonDp": "node dist/Shell.js AmazonDp 10",
 		"shell:CrawlerNews": "node dist/Shell.js CrawlerNews 10",
 		"shell:CrawlerResource": "node dist/Shell.js CrawlerResource 10",
 		"shell:TwitterUserInfoHistoryKumeta": "node dist/Shell.js TwitterUserInfoHistoryKumeta 0 true",
-		"shell:TwitterUserInfoHistoryMadoka": "node dist/Shell.js TwitterUserInfoHistoryMadoka 0"
+		"shell:TwitterUserInfoHistoryMadoka": "node dist/Shell.js TwitterUserInfoHistoryMadoka 0",
+		"shell:YokohamaLibraryHoldNotice": "node dist/Shell.js YokohamaLibraryHoldNotice 10"
 	},
 	"dependencies": {
 		"@saekitominaga/mime-parser": "^1.1.0",
