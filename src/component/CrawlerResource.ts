@@ -186,10 +186,9 @@ export default class CrawlerResource extends Component implements ComponentInter
 		const date = new Date();
 
 		const fileDir = `${this.config.save_dir}/${url.hostname}`;
-		const fileName = `${url.pathname}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(
-			2,
-			'0'
-		)}_${date.getHours()}${date.getMinutes()}${date.getSeconds()}.txt`;
+		const fileName = `${url.pathname}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}_${String(
+			date.getHours()
+		).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}.txt`;
 
 		const filePath = `${fileDir}${fileName}`; // ドキュメントルート基準のパス
 		const fileFullPath = `${this.configCommon.documentRoot}/${filePath}`;

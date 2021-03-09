@@ -475,10 +475,9 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 	 */
 	private async _screenshotTwitterHome(username: string): Promise<Buffer> {
 		const date = new Date();
-		const fileName = `@${username}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(
-			2,
-			'0'
-		)}_${date.getHours()}${date.getMinutes()}${date.getSeconds()}`;
+		const fileName = `@${username}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}_${String(
+			date.getHours()
+		).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}`;
 		const filePath = `${this.configCommon.documentRoot}/${this.config.screenshot.dir}/${fileName}${this.config.screenshot.extension}`;
 
 		const url = `https://twitter.com/${username}`;
