@@ -3,13 +3,18 @@
 	"$id": "https://schema.w0s.jp/CrawlerNews.json",
 	"type": "object",
 	"title": "ウェブ巡回（新着）",
-	"required": ["title", "report_error_count"],
+	"required": ["title", "fetch_timeout", "report_error_count"],
 	"properties": {
 		"title": {
 			"type": "string",
 			"title": "コンポーネントタイトル",
 			"description": "自然言語による、人間が見て分かりやすい名前を設定する。通知メールの件名などで使用される。",
 			"examples": ["ウェブ巡回（新着）"]
+		},
+		"fetch_timeout": {
+			"type": "integer",
+			"minimum": 1,
+			"title": "URL 毎のタイムアウト（ミリ秒）"
 		},
 		"report_error_count": {
 			"type": "integer",

@@ -8,6 +8,7 @@ import MIMEParser from '@saekitominaga/mime-parser';
 import path from 'path';
 import sqlite3 from 'sqlite3';
 import { NoName as ConfigureCrawlerResource } from '../../configure/type/CrawlerResource';
+import AbortController from 'abort-controller';
 
 /**
  * ウェブページを巡回し、レスポンスボディの差分を調べて通知する
@@ -76,40 +77,67 @@ export default class CrawlerResource extends Component implements ComponentInter
 
 			this.logger.info(`取得処理を実行: ${targetUrl}`);
 
-			const response = await fetch(targetUrl);
-			if (!response.ok) {
-				const errorCount = await this._accessError(dbh, targetUrl);
+			const controller = new AbortController();
+			const signal = controller.signal;
+			const timeoutId = setTimeout(() => {
+				controller.abort();
+			}, this.config.fetch_timeout);
 
-				this.logger.info(`HTTP Status Code: ${response.status} ${targetUrl} 、エラー回数: ${errorCount}`);
-				if (errorCount % this.config.report_error_count === 0) {
-					this.notice.push(`${targetTitle}\n${targetUrl}\nHTTP Status Code: ${response.status}\nエラー回数: ${errorCount}`);
-				}
-
-				continue;
-			}
-
-			/* レスポンスヘッダーのチェック */
-			const responseHeaders = response.headers;
-
-			const contentType = responseHeaders.get('Content-Type');
-			if (contentType === null) {
-				this.logger.error(`Content-Type ヘッダーが null: ${targetUrl}`);
-				continue;
-			}
-
-			const lastModifiedText = responseHeaders.get('Last-Modified');
+			let responseBody: string;
+			let contentType: string;
 			let lastModified: number | null = null;
-			if (lastModifiedText !== null) {
-				lastModified = Math.round(new Date(lastModifiedText).getTime() / 1000);
-				if (lastModified === targetLastModified) {
-					this.logger.info('Last-Modified ヘッダが前回と同じ');
-					this._accessSuccess(dbh, targetUrl);
+			try {
+				const response = await fetch(targetUrl, {
+					signal,
+				});
+				if (!response.ok) {
+					const errorCount = await this._accessError(dbh, targetUrl);
+
+					this.logger.info(`HTTP Status Code: ${response.status} ${targetUrl} 、エラー回数: ${errorCount}`);
+					if (errorCount % this.config.report_error_count === 0) {
+						this.notice.push(`${targetTitle}\n${targetUrl}\nHTTP Status Code: ${response.status}\nエラー回数: ${errorCount}`);
+					}
+
 					continue;
 				}
-			}
 
-			/* レスポンスボディ */
-			const responseBody = await response.text();
+				/* レスポンスヘッダーのチェック */
+				const responseHeaders = response.headers;
+
+				const contentTypeText = responseHeaders.get('Content-Type');
+				if (contentTypeText === null) {
+					this.logger.error(`Content-Type ヘッダーが null: ${targetUrl}`);
+					continue;
+				}
+				contentType = contentTypeText;
+
+				const lastModifiedText = responseHeaders.get('Last-Modified');
+				if (lastModifiedText !== null) {
+					lastModified = Math.round(new Date(lastModifiedText).getTime() / 1000);
+					if (lastModified === targetLastModified) {
+						this.logger.info('Last-Modified ヘッダが前回と同じ');
+						this._accessSuccess(dbh, targetUrl);
+						continue;
+					}
+				}
+
+				/* レスポンスボディ */
+				responseBody = await response.text();
+			} catch (e) {
+				switch (e.name) {
+					case 'AbortError': {
+						this.logger.error(`タイムアウト: ${targetUrl}`);
+						break;
+					}
+					default: {
+						throw e;
+					}
+				}
+
+				continue;
+			} finally {
+				clearTimeout(timeoutId);
+			}
 
 			let contentLength = responseBody.length;
 			if (this.#HTML_MIMES.includes(<DOMParserSupportedType>new MIMEParser(contentType).getEssence())) {

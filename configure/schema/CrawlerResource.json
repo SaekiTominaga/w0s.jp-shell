@@ -3,13 +3,18 @@
 	"$id": "https://schema.w0s.jp/CrawlerResource.json",
 	"type": "object",
 	"title": "ウェブ巡回（リソース）",
-	"required": ["title", "access_interval_host", "report_error_count", "save_dir"],
+	"required": ["title", "fetch_timeout", "access_interval_host", "report_error_count", "save_dir"],
 	"properties": {
 		"title": {
 			"type": "string",
 			"title": "コンポーネントタイトル",
 			"description": "自然言語による、人間が見て分かりやすい名前を設定する。通知メールの件名などで使用される。",
 			"examples": ["ウェブ巡回（リソース）"]
+		},
+		"fetch_timeout": {
+			"type": "integer",
+			"minimum": 1,
+			"title": "URL 毎のタイムアウト（ミリ秒）"
 		},
 		"access_interval_host": {
 			"type": "number",

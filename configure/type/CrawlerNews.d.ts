@@ -9,9 +9,11 @@
  * 自然言語による、人間が見て分かりやすい名前を設定する。通知メールの件名などで使用される。
  */
 export type NoName1 = string;
+export type URL = number;
 export type NoName2 = number;
 
 export interface NoName {
   title: NoName1;
+  fetch_timeout: URL;
   report_error_count: NoName2;
 }

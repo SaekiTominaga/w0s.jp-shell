@@ -1,4 +1,5 @@
 import * as sqlite from 'sqlite';
+import AbortController from 'abort-controller';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import fetch from 'node-fetch';
@@ -262,34 +263,58 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	 * @returns {string | null} レスポンスボディ
 	 */
 	private async _requestFetch(dbh: sqlite.Database, url: string, title: string): Promise<string | null> {
-		const response = await fetch(url);
-		if (!response.ok) {
-			const errorCount = await this._accessError(dbh, url);
+		const controller = new AbortController();
+		const signal = controller.signal;
+		const timeoutId = setTimeout(() => {
+			controller.abort();
+		}, this.config.fetch_timeout);
 
-			this.logger.info(`HTTP Status Code: ${response.status} ${url} 、エラー回数: ${errorCount}`);
-			if (errorCount % this.config.report_error_count === 0) {
-				this.notice.push(`${title}\n${url}\nHTTP Status Code: ${response.status}\nエラー回数: ${errorCount}`);
+		try {
+			const response = await fetch(url, {
+				signal,
+			});
+			if (!response.ok) {
+				const errorCount = await this._accessError(dbh, url);
+
+				this.logger.info(`HTTP Status Code: ${response.status} ${url} 、エラー回数: ${errorCount}`);
+				if (errorCount % this.config.report_error_count === 0) {
+					this.notice.push(`${title}\n${url}\nHTTP Status Code: ${response.status}\nエラー回数: ${errorCount}`);
+				}
+
+				return null;
+			}
+
+			/* レスポンスヘッダーのチェック */
+			const responseHeaders = response.headers;
+
+			const contentType = responseHeaders.get('Content-Type');
+			if (contentType === null) {
+				this.logger.error(`Content-Type ヘッダーが存在しない: ${url}`);
+				return null;
+			}
+			const contentTypeEssence = new MIMEParser(contentType).getEssence();
+			if (!this.#HTML_MIMES.includes(<DOMParserSupportedType>contentTypeEssence)) {
+				this.logger.error(`HTML ページではない（${contentType}）: ${url}`);
+				return null;
+			}
+
+			/* レスポンスボディ */
+			return await response.text();
+		} catch (e) {
+			switch (e.name) {
+				case 'AbortError': {
+					this.logger.error(`タイムアウト: ${url}`);
+					break;
+				}
+				default: {
+					throw e;
+				}
 			}
 
 			return null;
+		} finally {
+			clearTimeout(timeoutId);
 		}
-
-		/* レスポンスヘッダーのチェック */
-		const responseHeaders = response.headers;
-
-		const contentType = responseHeaders.get('Content-Type');
-		if (contentType === null) {
-			this.logger.error(`Content-Type ヘッダーが存在しない: ${url}`);
-			return null;
-		}
-		const contentTypeEssence = new MIMEParser(contentType).getEssence();
-		if (!this.#HTML_MIMES.includes(<DOMParserSupportedType>contentTypeEssence)) {
-			this.logger.error(`HTML ページではない（${contentType}）: ${url}`);
-			return null;
-		}
-
-		/* レスポンスボディ */
-		return await response.text();
 	}
 
 	/**
