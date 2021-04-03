@@ -189,12 +189,12 @@ export default class CrawlerResource extends Component implements ComponentInter
 				}
 
 				/* ファイル保存 */
-				const filePath = this._saveFile(targetUrl, responseBody);
+				const fileName = this._saveFile(targetUrl, responseBody);
 
 				/* 通知 */
 				this.notice.push(
 					`${targetTitle} ${targetUrl}\n変更履歴: ${path.dirname(
-						this.configCommon.url + filePath
+						`${this.config.save.url}/${fileName}`
 					)}/ 🔒\nファイルサイズ ${targetContentLength} → ${contentLength}`
 				);
 			}
@@ -207,48 +207,48 @@ export default class CrawlerResource extends Component implements ComponentInter
 	 * ファイル保存
 	 *
 	 * @param {string} urlText - URL
-	 * @param {string} responseBody -
+	 * @param {string} responseBody - レスポンスボディ
+	 *
+	 * @returns {string} ファイル名
 	 */
 	private _saveFile(urlText: string, responseBody: string): string {
 		const url = new URL(urlText);
 		const date = new Date();
 
-		const fileDir = `${this.config.save_dir}/${url.hostname}`;
+		const fileDir = `${this.config.save.dir}/${url.hostname}`;
 		const fileName = `${url.pathname}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}_${String(
 			date.getHours()
 		).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}.txt`;
 
 		const filePath = `${fileDir}${fileName}`; // ドキュメントルート基準のパス
-		const fileFullPath = `${this.configCommon.documentRoot}/${filePath}`;
-		const fileFullDir = path.dirname(fileFullPath);
 
-		this.logger.info(`ファイル保存: ${fileFullPath}`);
+		this.logger.info(`ファイル保存: ${filePath}`);
 
-		fs.opendir(fileFullPath, (error) => {
+		fs.opendir(filePath, (error) => {
 			if (error !== null) {
-				this.logger.debug(`ディレクトリ作成: ${fileFullDir}`);
+				this.logger.debug(`ディレクトリ作成: ${fileDir}`);
 
-				fs.mkdirSync(fileFullDir, { recursive: true });
+				fs.mkdirSync(fileDir, { recursive: true });
 			}
 
-			fs.open(fileFullPath, 'wx', (error, fd) => {
+			fs.open(filePath, 'wx', (error, fd) => {
 				if (error !== null) {
-					this.logger.error(`${fileFullPath} のオープンに失敗`);
+					this.logger.error(`${filePath} のオープンに失敗`);
 					throw error;
 				}
 
 				fs.write(fd, responseBody, (error) => {
 					if (error !== null) {
-						this.logger.error('File output failed.', fileFullPath, error);
+						this.logger.error('File output failed.', filePath, error);
 						return;
 					}
 
-					this.logger.info('File output success.', fileFullPath);
+					this.logger.info('File output success.', filePath);
 				});
 			});
 		});
 
-		return filePath;
+		return fileName;
 	}
 
 	/**

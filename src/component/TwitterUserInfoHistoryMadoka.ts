@@ -363,7 +363,7 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 		const imageBuffer = await response.arrayBuffer();
 
 		const filename = `${new URL(targetUrl).pathname.substring(1).replaceAll('/', '_')}${extension}`;
-		const path = `${this.configCommon.documentRoot}/${this.config.image_dir}/${filename}`;
+		const path = `${this.config.image_dir}/${filename}`;
 
 		fs.writeFile(path, new Int8Array(imageBuffer), (error) => {
 			if (error !== null) {

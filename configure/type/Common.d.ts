@@ -5,11 +5,6 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-/**
- * 例えば Apache の `DocumentRoot` ディレクティブ<https://httpd.apache.org/docs/2.4/en/mod/core.html#documentroot>に相当するディレクトリの絶対パス、または `node` ディレクトリを基準にした相対パス
- */
-export type DocumentRoot = string;
-export type URL = string;
 export type NoName2 = string;
 export type NoName3 = string;
 export type Amazonpa = string;
@@ -19,8 +14,6 @@ export type Kumetatwitter = string;
 export type Madokatwitter = string;
 
 export interface NoName {
-  documentRoot: DocumentRoot;
-  url: URL;
   browser: NoName1;
   mail: EMail;
   sqlite: SQLite;

@@ -9,6 +9,7 @@
  * 自然言語による、人間が見て分かりやすい名前を設定する。通知メールの件名などで使用される。
  */
 export type NoName = string;
+export type JSON = string;
 export type DiaryASIN = number;
 export type NoName1 = string;
 /**
@@ -39,6 +40,7 @@ export type GetItemsASIN = number;
 
 export interface Amazon {
   title: NoName;
+  json_dir: JSON;
   diary_select_limit: DiaryASIN;
   paapi: AmazonProductAdvertisingAPI;
 }

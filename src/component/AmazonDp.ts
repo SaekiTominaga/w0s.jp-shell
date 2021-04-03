@@ -483,7 +483,7 @@ export default class AmazonDp extends Component implements ComponentInterface {
 
 			this.logger.debug(categoryId, dpList);
 
-			const path = `${this.configCommon.documentRoot}/${jsonPath}`;
+			const path = `${this.config.json_dir}/${jsonPath}`;
 			fs.writeFile(path, JSON.stringify(dpList), (error) => {
 				if (error !== null) {
 					this.logger.error('JSON file output failed.', path, error);

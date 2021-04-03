@@ -3,18 +3,8 @@
 	"$id": "https://schema.w0s.jp/Common.json",
 	"type": "object",
 	"title": "共通設定ファイル",
-	"required": ["documentRoot", "url", "browser", "mail", "sqlite"],
+	"required": ["browser", "mail", "sqlite"],
 	"properties": {
-		"documentRoot": {
-			"type": "string",
-			"title": "ウェブページの DocumentRoot",
-			"description": "例えば Apache の `DocumentRoot` ディレクティブ<https://httpd.apache.org/docs/2.4/en/mod/core.html#documentroot>に相当するディレクトリの絶対パス、または `node` ディレクトリを基準にした相対パス"
-		},
-		"url": {
-			"type": "string",
-			"title": "トップページの URL",
-			"examples": ["https://example.com/"]
-		},
 		"browser": {
 			"type": "object",
 			"title": "ヘッドレスブラウザの各種情報",

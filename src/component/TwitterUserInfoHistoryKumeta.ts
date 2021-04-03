@@ -452,7 +452,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		const imageBuffer = await response.arrayBuffer();
 
 		const filename = `${new URL(targetUrl).pathname.substring(1).replaceAll('/', '_')}${extension}`;
-		const path = `${this.configCommon.documentRoot}/${this.config.image_dir}/${filename}`;
+		const path = `${this.config.image_dir}/${filename}`;
 
 		fs.writeFile(path, new Int8Array(imageBuffer), (error) => {
 			if (error !== null) {
@@ -478,7 +478,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		const fileName = `@${username}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}_${String(
 			date.getHours()
 		).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}`;
-		const filePath = `${this.configCommon.documentRoot}/${this.config.screenshot.dir}/${fileName}${this.config.screenshot.extension}`;
+		const filePath = `${this.config.screenshot.dir}/${fileName}${this.config.screenshot.extension}`;
 
 		const url = `https://twitter.com/${username}`;
 		this.logger.debug('スクショ開始', url);

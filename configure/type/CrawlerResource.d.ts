@@ -12,12 +12,17 @@ export type NoName1 = string;
 export type URL = number;
 export type NoName2 = number;
 export type NoName3 = number;
-export type NoName4 = string;
+export type NoName5 = string;
+export type URL1 = string;
 
 export interface NoName {
   title: NoName1;
   fetch_timeout: URL;
   access_interval_host: NoName2;
   report_error_count: NoName3;
-  save_dir: NoName4;
+  save: NoName4;
+}
+export interface NoName4 {
+  dir: NoName5;
+  url: URL1;
 }
