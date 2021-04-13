@@ -182,10 +182,10 @@ export default class AmazonDp extends Component implements ComponentInterface {
 	 */
 	private async _diary(dbh: sqlite.Database, item: Item, asin: string): Promise<Map<string, Diff>> {
 		const apiDpUrl = item.DetailPageURL; // 詳細ページURL
-		const apiTitle = item.ItemInfo?.Title?.DisplayValue ?? null; // 製品タイトル // TODO API 的には null の可能性があるが、 DB のカラムは NOT NULL
-		const apiBinding = item.ItemInfo?.Classifications?.Binding.DisplayValue ?? null; // 製品カテゴリ
-		const apiProductGroup = item.ItemInfo?.Classifications?.ProductGroup.DisplayValue ?? null; // アイテムが属する製品カテゴリ
-		const apiPublicationDateStr = item.ItemInfo?.ContentInfo?.PublicationDate.DisplayValue ?? null; // 製品公開日
+		const apiTitle = item.ItemInfo?.Title?.DisplayValue ?? null; // 製品タイトル // TODO: API 的には null の可能性があるが、 DB のカラムは NOT NULL
+		const apiBinding = item.ItemInfo?.Classifications?.Binding?.DisplayValue ?? null; // 製品カテゴリ
+		const apiProductGroup = item.ItemInfo?.Classifications?.ProductGroup?.DisplayValue ?? null; // アイテムが属する製品カテゴリ
+		const apiPublicationDateStr = item.ItemInfo?.ContentInfo?.PublicationDate?.DisplayValue ?? null; // 製品公開日
 		let apiPublicationDate: number | null = null;
 		if (apiPublicationDateStr !== null) {
 			try {
