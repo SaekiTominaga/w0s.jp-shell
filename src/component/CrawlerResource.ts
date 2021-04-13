@@ -189,12 +189,12 @@ export default class CrawlerResource extends Component implements ComponentInter
 				}
 
 				/* ファイル保存 */
-				const fileName = this._saveFile(targetUrl, responseBody);
+				const filePath = this._saveFile(targetUrl, responseBody);
 
 				/* 通知 */
 				this.notice.push(
 					`${targetTitle} ${targetUrl}\n変更履歴: ${path.dirname(
-						`${this.config.save.url}/${fileName}`
+						`${this.config.save.url}/${filePath}`
 					)}/ 🔒\nファイルサイズ ${targetContentLength} → ${contentLength}`
 				);
 			}
@@ -209,29 +209,31 @@ export default class CrawlerResource extends Component implements ComponentInter
 	 * @param {string} urlText - URL
 	 * @param {string} responseBody - レスポンスボディ
 	 *
-	 * @returns {string} ファイル名
+	 * @returns {string} ファイルパス
 	 */
 	private _saveFile(urlText: string, responseBody: string): string {
 		const url = new URL(urlText);
 		const date = new Date();
 
-		const fileDir = `${this.config.save.dir}/${url.hostname}`;
+		const fileDir = url.hostname;
+		const fileFullDir = `${this.config.save.dir}/${fileDir}`;
 		const fileName = `${url.pathname}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}_${String(
 			date.getHours()
 		).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}.txt`;
 
-		const filePath = `${fileDir}${fileName}`; // ドキュメントルート基準のパス
+		const filePath = `${fileDir}/${fileName}`; // ドキュメントルート基準のパス
+		const fileFullPath = `${fileFullDir}/${fileName}`; // ドキュメントルート基準のパス
 
 		this.logger.info(`ファイル保存: ${filePath}`);
 
-		fs.opendir(filePath, (error) => {
+		fs.opendir(fileFullPath, (error) => {
 			if (error !== null) {
 				this.logger.debug(`ディレクトリ作成: ${fileDir}`);
 
-				fs.mkdirSync(fileDir, { recursive: true });
+				fs.mkdirSync(fileFullDir, { recursive: true });
 			}
 
-			fs.open(filePath, 'wx', (error, fd) => {
+			fs.open(fileFullPath, 'wx', (error, fd) => {
 				if (error !== null) {
 					this.logger.error(`${filePath} のオープンに失敗`);
 					throw error;
@@ -248,7 +250,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 			});
 		});
 
-		return fileName;
+		return filePath;
 	}
 
 	/**
