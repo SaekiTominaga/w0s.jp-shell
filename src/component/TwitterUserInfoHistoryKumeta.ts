@@ -7,7 +7,7 @@ import puppeteer from 'puppeteer-core';
 import sqlite3 from 'sqlite3';
 import Tweet from '../util/Tweet.js';
 import Twitter from 'twitter';
-import { Twitter as ConfigureTwitterUserInfoHistoryKumeta } from '../../configure/type/TwitterUserInfoHistoryKumeta';
+import { Twitter as ConfigureTwitterUserInfoHistoryKumeta } from '../../configure/type/twitter-user-info-history-kumeta';
 
 /**
  * 久米田康治 Twitter アカウントのユーザー情報を API を使用して取得し、 DB に格納済みのデータを照合して更新する

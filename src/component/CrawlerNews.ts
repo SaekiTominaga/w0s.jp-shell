@@ -7,7 +7,7 @@ import jsdom from 'jsdom';
 import MIMEParser from '@saekitominaga/mime-parser';
 import puppeteer from 'puppeteer-core';
 import sqlite3 from 'sqlite3';
-import { NoName as ConfigureCrawlerNews } from '../../configure/type/CrawlerNews';
+import { NoName as ConfigureCrawlerNews } from '../../configure/type/crawler-news';
 import { resolve } from 'relative-to-absolute-iri';
 import { v4 as uuidV4 } from 'uuid';
 

@@ -3,7 +3,7 @@
 	"$id": "https://schema.w0s.jp/Amazondp.json",
 	"type": "object",
 	"title": "Amazon 商品情報チェッカー",
-	"required": ["title", "json_dir", "diary_select_limit", "paapi"],
+	"required": ["title", "json_dir", "blog_select_limit", "paapi"],
 	"properties": {
 		"title": {
 			"type": "string",
@@ -15,10 +15,10 @@
 			"type": "string",
 			"title": "JSON ファイルの保存ディレクトリ"
 		},
-		"diary_select_limit": {
+		"blog_select_limit": {
 			"type": "integer",
 			"minimum": 0,
-			"title": "diary テーブルから処理対象の ASIN を取得する際の最大取得数"
+			"title": "blog テーブルから処理対象の ASIN を取得する際の最大取得数"
 		},
 		"paapi": {
 			"type": "object",

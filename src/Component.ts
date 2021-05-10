@@ -2,6 +2,7 @@ import fs from 'fs';
 import Log4js from 'log4js';
 import nodemailer from 'nodemailer';
 import { NoName as ConfigureCommon } from '../configure/type/Common';
+import { headerCase } from 'header-case';
 
 export default class Component {
 	readonly #name: string; // コンポーネント名（ファイル名などに使用されるプログラムのための名前）
@@ -10,7 +11,7 @@ export default class Component {
 	protected readonly configCommon: ConfigureCommon; // 共通の設定内容
 	readonly #CONFIGURE_DIRNAME = './configure'; // 設定ファイルの格納ディレクトリ
 	readonly #CONFIGURE_EXTENSION = '.json'; // 設定ファイルの拡張子
-	readonly #CONFIGURE_COMMON_FILENAME = 'Common'; // 共通の設定ファイルのファイル名
+	readonly #CONFIGURE_COMMON_FILENAME = 'common'; // 共通の設定ファイルのファイル名
 
 	protected readonly logger: Log4js.Logger; // Logger
 
@@ -33,7 +34,7 @@ export default class Component {
 	 *
 	 * @returns {any} 設定ファイルの中身
 	 */
-	protected readConfig(name = this.#name): unknown {
+	protected readConfig(name = headerCase(this.#name).toLowerCase()): unknown {
 		const targetUrl = `${this.#CONFIGURE_DIRNAME}/${name}${this.#CONFIGURE_EXTENSION}`;
 
 		const response = fs.readFileSync(targetUrl, 'utf8');

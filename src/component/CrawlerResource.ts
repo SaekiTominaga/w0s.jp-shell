@@ -7,7 +7,7 @@ import jsdom from 'jsdom';
 import MIMEParser from '@saekitominaga/mime-parser';
 import path from 'path';
 import sqlite3 from 'sqlite3';
-import { NoName as ConfigureCrawlerResource } from '../../configure/type/CrawlerResource';
+import { NoName as ConfigureCrawlerResource } from '../../configure/type/crawler-resource';
 import AbortController from 'abort-controller';
 
 /**

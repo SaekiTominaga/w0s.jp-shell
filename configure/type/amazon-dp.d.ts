@@ -10,7 +10,7 @@
  */
 export type NoName = string;
 export type JSON = string;
-export type DiaryASIN = number;
+export type BlogASIN = number;
 export type NoName1 = string;
 /**
  * https://affiliate.amazon.co.jp/assoc_credentials/home
@@ -41,7 +41,7 @@ export type GetItemsASIN = number;
 export interface Amazon {
   title: NoName;
   json_dir: JSON;
-  diary_select_limit: DiaryASIN;
+  blog_select_limit: BlogASIN;
   paapi: AmazonProductAdvertisingAPI;
 }
 export interface AmazonProductAdvertisingAPI {

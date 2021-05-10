@@ -5,7 +5,7 @@ import fetch from 'node-fetch';
 import fs from 'fs';
 import sqlite3 from 'sqlite3';
 import Twitter from 'twitter';
-import { Twitter as ConfigureTwitterUserInfoHistoryMadoka } from '../../configure/type/TwitterUserInfoHistoryMadoka';
+import { Twitter as ConfigureTwitterUserInfoHistoryMadoka } from '../../configure/type/twitter-user-info-history-madoka';
 
 /**
  * まどか公式系 Twitter アカウントのユーザー情報を API を使用して取得し、 DB に格納済みのデータを照合して更新する
