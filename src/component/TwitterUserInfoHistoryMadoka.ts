@@ -24,8 +24,8 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 		const twitter = new Twitter({
 			consumer_key: this.config.twitter.production.consumer_key,
 			consumer_secret: this.config.twitter.production.consumer_secret,
-			access_token_key: '',
-			access_token_secret: '',
+			access_token_key: this.config.twitter.production.access_token ?? '',
+			access_token_secret: this.config.twitter.production.access_token_secret ?? '',
 		});
 
 		if (this.configCommon.sqlite.db.madokatwitter === undefined) {
