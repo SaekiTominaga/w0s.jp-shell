@@ -6,7 +6,7 @@ import ComponentInterface from '../ComponentInterface.js';
 import fs from 'fs';
 import PaapiUtil from '../util/Paapi.js';
 import sqlite3 from 'sqlite3';
-import { Amazon as ConfigureAmazondp } from '../../configure/type/amazon-dp';
+import { Amazon as ConfigureAmazonAds } from '../../configure/type/amazon-ads';
 import { GetItemsResponse, Item } from 'paapi5-typescript-sdk';
 
 interface Diff {
@@ -17,13 +17,13 @@ interface Diff {
 /**
  * Amazon 商品情報を PA-API を使用して取得し、 DB に格納済みのデータを照合して更新する
  */
-export default class AmazonDp extends Component implements ComponentInterface {
-	private readonly config: ConfigureAmazondp;
+export default class AmazonAds extends Component implements ComponentInterface {
+	private readonly config: ConfigureAmazonAds;
 
 	constructor() {
 		super();
 
-		this.config = <ConfigureAmazondp>this.readConfig();
+		this.config = <ConfigureAmazonAds>this.readConfig();
 		this.title = this.config.title;
 	}
 
@@ -31,31 +31,31 @@ export default class AmazonDp extends Component implements ComponentInterface {
 		if (this.configCommon.sqlite.db.blog === undefined) {
 			throw new Error('共通設定ファイルに blog テーブルのパスが指定されていない。');
 		}
-		if (this.configCommon.sqlite.db.amazonpa === undefined) {
-			throw new Error('共通設定ファイルに amazonpa テーブルのパスが指定されていない。');
+		if (this.configCommon.sqlite.db.amazonads === undefined) {
+			throw new Error('共通設定ファイルに amazonads テーブルのパスが指定されていない。');
 		}
 
-		const [dbhBlog, dbhAmazonPa] = await Promise.all([
+		const [dbhBlog, dbhAmazonAds] = await Promise.all([
 			sqlite.open({
 				filename: this.configCommon.sqlite.db.blog,
 				driver: sqlite3.Database,
 			}),
 			sqlite.open({
-				filename: this.configCommon.sqlite.db.amazonpa,
+				filename: this.configCommon.sqlite.db.amazonads,
 				driver: sqlite3.Database,
 			}),
 		]);
 
 		try {
 			/* 処理対象の ASIN を取得する */
-			const [targetAsinsBlog, targetAsinsAmazonPa] = await Promise.all([this._selectAsinsBlog(dbhBlog), this._selectAsinsAmazonPa(dbhAmazonPa)]);
+			const [targetAsinsBlog, targetAsinsAmazonAds] = await Promise.all([this._selectAsinsBlog(dbhBlog), this._selectAsinsAmazonAds(dbhAmazonAds)]);
 
-			const targetAsins = [...new Set(targetAsinsBlog.concat(targetAsinsAmazonPa))]; // マージした上で重複した値を削除する
+			const targetAsins = [...new Set(targetAsinsBlog.concat(targetAsinsAmazonAds))]; // マージした上で重複した値を削除する
 
 			this.logger.debug('処理対象の ASIN:', targetAsins);
 
 			/* PA-API を使用してデータを取得する */
-			const diffsAmazonPa = [];
+			const diffsAmazonAds = [];
 
 			let requestCount = 0;
 			while (targetAsins.length > 0) {
@@ -98,20 +98,20 @@ export default class AmazonDp extends Component implements ComponentInterface {
 					if (targetAsinsBlog.includes(asin)) {
 						await this._blog(dbhBlog, item, asin);
 					}
-					if (targetAsinsAmazonPa.includes(asin)) {
-						diffsAmazonPa.push(await this._amazonPa(dbhAmazonPa, item, asin));
+					if (targetAsinsAmazonAds.includes(asin)) {
+						diffsAmazonAds.push(await this._amazonAds(dbhAmazonAds, item, asin));
 					}
 				}
 			}
 
-			this.logger.debug(diffsAmazonPa);
+			this.logger.debug(diffsAmazonAds);
 
-			if (diffsAmazonPa.some((diff) => diff.size >= 1)) {
+			if (diffsAmazonAds.some((diff) => diff.size >= 1)) {
 				/* Web ページで使用する JSON ファイルを出力 */
-				await this._createJsonAmazonPa(dbhAmazonPa);
+				await this._createJsonAmazonAds(dbhAmazonAds);
 			}
 		} finally {
-			await Promise.all([dbhBlog.close(), dbhAmazonPa.close()]);
+			await Promise.all([dbhBlog.close(), dbhAmazonAds.close()]);
 		}
 	}
 
@@ -149,13 +149,13 @@ export default class AmazonDp extends Component implements ComponentInterface {
 	}
 
 	/**
-	 * amazonpa テーブルから処理対象の ASIN を取得する
+	 * amazonads テーブルから処理対象の ASIN を取得する
 	 *
 	 * @param {sqlite.Database} dbh - DB 接続情報
 	 *
 	 * @returns {string[]} 処理対象の ASIN
 	 */
-	private async _selectAsinsAmazonPa(dbh: sqlite.Database): Promise<string[]> {
+	private async _selectAsinsAmazonAds(dbh: sqlite.Database): Promise<string[]> {
 		const asins: string[] = [];
 
 		const rows = await dbh.all(`
@@ -303,7 +303,7 @@ export default class AmazonDp extends Component implements ComponentInterface {
 	}
 
 	/**
-	 * amazonpa テーブルの処理
+	 * amazonads テーブルの処理
 	 *
 	 * @param {sqlite.Database} dbh - DB 接続情報
 	 * @param {Item} item - Item クラス
@@ -311,7 +311,7 @@ export default class AmazonDp extends Component implements ComponentInterface {
 	 *
 	 * @returns {Map<string, Diff>} API から取得した値と DB に格納済みの値の差分情報
 	 */
-	private async _amazonPa(dbh: sqlite.Database, item: Item, asin: string): Promise<Map<string, Diff>> {
+	private async _amazonAds(dbh: sqlite.Database, item: Item, asin: string): Promise<Map<string, Diff>> {
 		const apiDpUrl = item.DetailPageURL; // 詳細ページURL
 		const apiTitle = item.ItemInfo?.Title?.DisplayValue ?? null; // 製品タイトル // TODO API 的には null の可能性があるが、 DB のカラムは NOT NULL
 		const apiBinding = item.ItemInfo?.Classifications?.Binding.DisplayValue ?? null; // 製品カテゴリ
@@ -326,7 +326,7 @@ export default class AmazonDp extends Component implements ComponentInterface {
 		}
 		const apiImageUrl = item.Images?.Primary?.Large?.URL ?? null; // 画像URL
 
-		this.logger.debug(`amazonpa データベースの d_dp テーブルから ASIN: ${asin} の検索処理を開始`);
+		this.logger.debug(`amazonads データベースの d_dp テーブルから ASIN: ${asin} の検索処理を開始`);
 
 		const sth = await dbh.prepare(`
 			SELECT
@@ -423,7 +423,7 @@ export default class AmazonDp extends Component implements ComponentInterface {
 	 *
 	 * @param {sqlite.Database} dbh - DB 接続情報
 	 */
-	private async _createJsonAmazonPa(dbh: sqlite.Database): Promise<void> {
+	private async _createJsonAmazonAds(dbh: sqlite.Database): Promise<void> {
 		const categoryRows = await dbh.all(`
 			SELECT
 				id,

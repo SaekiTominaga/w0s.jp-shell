@@ -34,7 +34,7 @@ export interface SQLite {
   db: DBNode;
 }
 export interface DBNode {
-  amazonpa?: Amazonpa;
+  amazonads?: Amazonpa;
   crawler?: Crawler;
   blog?: Blog;
   kumetatwitter?: Kumetatwitter;

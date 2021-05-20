@@ -1,6 +1,6 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id": "https://schema.w0s.jp/Amazondp.json",
+	"$id": "https://schema.w0s.jp/amazon-ads.json",
 	"type": "object",
 	"title": "Amazon 商品情報チェッカー",
 	"required": ["title", "json_dir", "blog_select_limit", "paapi"],

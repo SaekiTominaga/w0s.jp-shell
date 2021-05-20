@@ -1,6 +1,6 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id": "https://schema.w0s.jp/Common.json",
+	"$id": "https://schema.w0s.jp/common.json",
 	"type": "object",
 	"title": "共通設定ファイル",
 	"required": ["browser", "mail", "sqlite"],
@@ -59,7 +59,7 @@
 					"type": "object",
 					"title": "DB ファイルのパス（絶対パス、または `node` ディレクトリを基準にした相対パス）",
 					"properties": {
-						"amazonpa": {
+						"amazonads": {
 							"type": "string",
 							"title": "amazonpa テーブル"
 						},
