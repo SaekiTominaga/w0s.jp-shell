@@ -19,7 +19,7 @@
 		"config:validate:twitter-user-info-history-madoka": "ajv --spec=draft7 -s configure/schema/twitter-user-info-history-madoka.json -d configure/twitter-user-info-history-madoka.json",
 		"config:validate:yokohama-library-hold-notice": "ajv --spec=draft7 -s configure/schema/yokohama-library-hold-notice.json -d configure/yokohama-library-hold-notice.json",
 		"shell:Test": "node dist/Shell.js Test 0",
-		"shell:AmazonDp": "node dist/Shell.js AmazonDp 10",
+		"shell:AmazonAds": "node dist/Shell.js AmazonAds 10",
 		"shell:CrawlerNews": "node dist/Shell.js CrawlerNews 10",
 		"shell:CrawlerResource": "node dist/Shell.js CrawlerResource 10",
 		"shell:TwitterUserInfoHistoryKumeta": "node dist/Shell.js TwitterUserInfoHistoryKumeta 0 true",
