@@ -3,10 +3,11 @@ import * as sqlite from 'sqlite';
 import amazonPaapi from 'amazon-paapi';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
-import fs from 'fs';
+import fetch from 'node-fetch';
 import PaapiUtil from '../util/Paapi.js';
 import sqlite3 from 'sqlite3';
 import { Amazon as ConfigureAmazonAds } from '../../configure/type/amazon-ads';
+import { Buffer } from 'buffer';
 import { GetItemsResponse, Item } from 'paapi5-typescript-sdk';
 
 interface Diff {
@@ -426,72 +427,25 @@ export default class AmazonAds extends Component implements ComponentInterface {
 	private async _createJsonAmazonAds(dbh: sqlite.Database): Promise<void> {
 		const categoryRows = await dbh.all(`
 			SELECT
-				id,
 				json_path
 			FROM
 				m_category
 		`);
 		for (const categoryRow of categoryRows) {
-			const categoryId: string = categoryRow.id;
 			const jsonPath: string = categoryRow.json_path;
 
-			const sth = await dbh.prepare(`
-				SELECT
-					dp.asin AS asin,
-					dp.title AS title,
-					dp.binding AS binding,
-					dp.date AS date,
-					dp.image_url AS image_url
-				FROM
-					d_dp dp,
-					d_category category
-				WHERE
-					dp.asin = category.asin AND
-					category.category_id = :category_id
-				ORDER BY
-					dp.date DESC
-			`);
-			await sth.bind({
-				':category_id': categoryId,
+			const url = `${this.config.ads_put.url_base}/${jsonPath}`;
+			this.logger.info('Fetch', url);
+
+			const response = await fetch(url, {
+				method: 'put',
+				headers: {
+					Authorization: `Basic ${Buffer.from(`${this.config.ads_put.auth.username}:${this.config.ads_put.auth.password}`).toString('base64')}`,
+				},
 			});
-			const rows = await sth.all();
-			await sth.finalize();
-
-			const dpList: w0s_jp.JsonAmazonDp[] = [];
-			for (const row of rows) {
-				const binding: string | null = row.binding;
-				const date: number | null = row.date !== null ? Number(row.date) : null;
-				const image_url: string | null = row.image_url;
-
-				const dp: w0s_jp.JsonAmazonDp = {
-					a: row.asin,
-					t: row.title,
-				};
-
-				if (binding !== null) {
-					dp.b = binding;
-				}
-				if (date !== null) {
-					dp.d = date;
-				}
-				if (image_url !== null) {
-					dp.i = image_url;
-				}
-
-				dpList.push(dp);
+			if (!response.ok) {
+				this.logger.error('Fetch error', url);
 			}
-
-			this.logger.debug(categoryId, dpList);
-
-			const path = `${this.config.json_dir}/${jsonPath}`;
-			fs.writeFile(path, JSON.stringify(dpList), (error) => {
-				if (error !== null) {
-					this.logger.error('JSON file output failed.', path, error);
-					return;
-				}
-
-				this.logger.info('JSON file output success.', path);
-			});
 		}
 	}
 }
