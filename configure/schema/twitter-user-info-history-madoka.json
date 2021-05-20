@@ -1,6 +1,6 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id": "https://schema.w0s.jp/TwitterUserInfoHistoryMadoka.json",
+	"$id": "https://schema.w0s.jp/twitter-user-info-history-madoka.json",
 	"type": "object",
 	"title": "まどか Twitter ユーザー履歴",
 	"required": ["title", "image_dir", "twitter"],

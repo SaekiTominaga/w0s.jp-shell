@@ -1,6 +1,6 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id": "https://schema.w0s.jp/CrawlerNews.json",
+	"$id": "https://schema.w0s.jp/crawler-news.json",
 	"type": "object",
 	"title": "ウェブ巡回（新着）",
 	"required": ["title", "fetch_timeout", "report_error_count"],

@@ -1,6 +1,6 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id": "https://schema.w0s.jp/YokohamaLibraryHoldNotice.json",
+	"$id": "https://schema.w0s.jp/yokohama-library-hold-notice.json",
 	"type": "object",
 	"title": "横浜市立図書館　予約連絡",
 	"required": ["title", "url", "urlParam", "ready", "notice"],

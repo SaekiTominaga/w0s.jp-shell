@@ -1,6 +1,6 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id": "https://schema.w0s.jp/Test.json",
+	"$id": "https://schema.w0s.jp/test.json",
 	"type": "object",
 	"title": "シェル テスト",
 	"required": ["title"],

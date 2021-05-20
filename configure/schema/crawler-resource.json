@@ -1,6 +1,6 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id": "https://schema.w0s.jp/CrawlerResource.json",
+	"$id": "https://schema.w0s.jp/crawler-resource.json",
 	"type": "object",
 	"title": "ウェブ巡回（リソース）",
 	"required": ["title", "fetch_timeout", "access_interval_host", "report_error_count", "save"],
