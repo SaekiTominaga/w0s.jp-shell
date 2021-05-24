@@ -303,7 +303,13 @@ export default class CrawlerNews extends Component implements ComponentInterface
 		} catch (e) {
 			switch (e.name) {
 				case 'AbortError': {
-					this.logger.error(`タイムアウト: ${url}`);
+					const errorCount = await this._accessError(dbh, url);
+
+					this.logger.info(`タイムアウト: ${url} 、エラー回数: ${errorCount}`);
+					if (errorCount % this.config.report_error_count === 0) {
+						this.notice.push(`${title}\n${url}\nタイムアウト\nエラー回数: ${errorCount}`);
+					}
+
 					break;
 				}
 				default: {

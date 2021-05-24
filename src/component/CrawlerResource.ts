@@ -126,7 +126,13 @@ export default class CrawlerResource extends Component implements ComponentInter
 			} catch (e) {
 				switch (e.name) {
 					case 'AbortError': {
-						this.logger.error(`タイムアウト: ${targetUrl}`);
+						const errorCount = await this._accessError(dbh, targetUrl);
+
+						this.logger.info(`タイムアウト: ${targetUrl} 、エラー回数: ${errorCount}`);
+						if (errorCount % this.config.report_error_count === 0) {
+							this.notice.push(`${targetTitle}\n${targetUrl}\nタイムアウト\nエラー回数: ${errorCount}`);
+						}
+
 						break;
 					}
 					default: {
