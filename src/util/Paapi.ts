@@ -2,7 +2,9 @@ export default class PaapiUtil {
 	/**
 	 * API で取得した日付文字列を Date 型に変換する
 	 *
-	 * @param {string} date - ASIN
+	 * @param {string} date - 日付文字列
+	 *
+	 * @returns {Date} 日付データ
 	 */
 	static date(date: string): Date {
 		if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(date) /* e.g. 2000-01-01T00:00:00.000Z */) {
