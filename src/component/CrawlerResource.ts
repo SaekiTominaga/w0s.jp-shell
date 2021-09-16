@@ -227,8 +227,8 @@ export default class CrawlerResource extends Component implements ComponentInter
 			date.getHours()
 		).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}.txt`;
 
-		const filePath = `${fileDir}/${fileName}`; // ドキュメントルート基準のパス
-		const fileFullPath = `${fileFullDir}/${fileName}`; // ドキュメントルート基準のパス
+		const filePath = `${fileDir}${fileName}`; // ドキュメントルート基準のパス
+		const fileFullPath = `${fileFullDir}${fileName}`; // ドキュメントルート基準のパス
 
 		this.logger.info(`ファイル保存: ${filePath}`);
 
