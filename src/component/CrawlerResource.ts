@@ -124,20 +124,24 @@ export default class CrawlerResource extends Component implements ComponentInter
 				/* レスポンスボディ */
 				responseBody = await response.text();
 			} catch (e) {
-				switch (e.name) {
-					case 'AbortError': {
-						const errorCount = await this._accessError(dbh, targetUrl);
+				if (e instanceof Error) {
+					switch (e.name) {
+						case 'AbortError': {
+							const errorCount = await this._accessError(dbh, targetUrl);
 
-						this.logger.info(`タイムアウト: ${targetUrl} 、エラー回数: ${errorCount}`);
-						if (errorCount % this.config.report_error_count === 0) {
-							this.notice.push(`${targetTitle}\n${targetUrl}\nタイムアウト\nエラー回数: ${errorCount}`);
+							this.logger.info(`タイムアウト: ${targetUrl} 、エラー回数: ${errorCount}`);
+							if (errorCount % this.config.report_error_count === 0) {
+								this.notice.push(`${targetTitle}\n${targetUrl}\nタイムアウト\nエラー回数: ${errorCount}`);
+							}
+
+							break;
 						}
-
-						break;
+						default: {
+							throw e;
+						}
 					}
-					default: {
-						throw e;
-					}
+				} else {
+					throw e;
 				}
 
 				continue;

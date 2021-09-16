@@ -94,7 +94,11 @@ export default class CrawlerNews extends Component implements ComponentInterface
 			try {
 				wrapElements = document.querySelectorAll(targetSelectorWrap);
 			} catch (e) {
-				this.logger.error(e.message);
+				if (e instanceof SyntaxError) {
+					this.logger.error(e.message);
+				} else {
+					this.logger.error(e);
+				}
 				continue;
 			}
 			if (wrapElements.length === 0) {
@@ -109,7 +113,11 @@ export default class CrawlerNews extends Component implements ComponentInterface
 					try {
 						dateElement = wrapElement.querySelector(targetSelectorDate);
 					} catch (e) {
-						this.logger.error(e.message);
+						if (e instanceof SyntaxError) {
+							this.logger.error(e.message);
+						} else {
+							this.logger.error(e);
+						}
 						break;
 					}
 
@@ -139,7 +147,11 @@ export default class CrawlerNews extends Component implements ComponentInterface
 					try {
 						contentElement1 = wrapElement.querySelector(targetSelectorContent);
 					} catch (e) {
-						this.logger.error(e.message);
+						if (e instanceof SyntaxError) {
+							this.logger.error(e.message);
+						} else {
+							this.logger.error(e);
+						}
 						break;
 					}
 
@@ -301,20 +313,24 @@ export default class CrawlerNews extends Component implements ComponentInterface
 			/* レスポンスボディ */
 			return await response.text();
 		} catch (e) {
-			switch (e.name) {
-				case 'AbortError': {
-					const errorCount = await this._accessError(dbh, url);
+			if (e instanceof Error) {
+				switch (e.name) {
+					case 'AbortError': {
+						const errorCount = await this._accessError(dbh, url);
 
-					this.logger.info(`タイムアウト: ${url} 、エラー回数: ${errorCount}`);
-					if (errorCount % this.config.report_error_count === 0) {
-						this.notice.push(`${title}\n${url}\nタイムアウト\nエラー回数: ${errorCount}`);
+						this.logger.info(`タイムアウト: ${url} 、エラー回数: ${errorCount}`);
+						if (errorCount % this.config.report_error_count === 0) {
+							this.notice.push(`${title}\n${url}\nタイムアウト\nエラー回数: ${errorCount}`);
+						}
+
+						break;
 					}
-
-					break;
+					default: {
+						throw e;
+					}
 				}
-				default: {
-					throw e;
-				}
+			} else {
+				throw e;
 			}
 
 			return null;
