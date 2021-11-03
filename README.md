@@ -23,8 +23,8 @@ w0s.jp サーバーで稼働しているシェルスクリプト
 1. `npm install`
 1. `build` 実行（`package.json` の `scripts` 内に定義された `build` を実行することで JavaScript ファイルが出力される）。
 1. `log4js.json` を作成（下記にサンプルを掲載）
-1. `configure` ディレクトリに共通設定ファイル `Common.json` を作成。ファイル定義は `configure/schema/Common.json` に [JSON Schema](https://json-schema.org/) で書かれている。
-1. 同様に、 `configure` ディレクトリ内に動作させたい機能名の設定ファイルを作成（e.g. 「テスト」機能を動作させるなら、 `configure/schema/Test.json` を参考に `configure/Test.json` を作成）
+1. `configure` ディレクトリに共通設定ファイル `common.json` を作成。ファイル定義は `configure/schema/common.json` に [JSON Schema](https://json-schema.org/) で書かれている。
+1. 同様に、 `configure` ディレクトリ内に動作させたい機能名の設定ファイルを作成（e.g. 「テスト」機能を動作させるなら、 `configure/schema/test.json` を参考に `configure/test.json` を作成）
 1. データベース（SQLite）を使用する機能は DB ファイルを用意（現状、テーブル定義は非公開）。
 1. プログラム実行（`package.json` の `scripts` 内に定義された `shell:{機能名}` を実行することで、プログラムが実行される）。
 
