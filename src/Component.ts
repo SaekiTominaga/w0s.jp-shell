@@ -34,7 +34,7 @@ export default class Component {
 	 *
 	 * @returns {object} 設定ファイルの中身
 	 */
-	protected readConfig(name = headerCase(this.#name).toLowerCase()): unknown {
+	protected readConfig(name: string = headerCase(this.#name).toLowerCase()): unknown {
 		const targetUrl = `${this.#CONFIGURE_DIRNAME}/${name}${this.#CONFIGURE_EXTENSION}`;
 
 		const response = fs.readFileSync(targetUrl, 'utf8');
