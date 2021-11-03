@@ -1,5 +1,9 @@
-/configure/*.json
 /coverage/
-/dist/
+
+/log/
+
+/node/configure/*.json
+/node/dist/
+/node/log4js*.json
+
 /node_modules/
-/log4js*.json

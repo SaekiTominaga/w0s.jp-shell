@@ -9,7 +9,7 @@ export default class Component {
 	protected title: string | undefined; // コンポーネントタイトル（自然言語による人間が見て分かりやすい名前）
 
 	protected readonly configCommon: ConfigureCommon; // 共通の設定内容
-	readonly #CONFIGURE_DIRNAME = './configure'; // 設定ファイルの格納ディレクトリ
+	readonly #CONFIGURE_DIRNAME = 'node/configure'; // 設定ファイルの格納ディレクトリ
 	readonly #CONFIGURE_EXTENSION = '.json'; // 設定ファイルの拡張子
 	readonly #CONFIGURE_COMMON_FILENAME = 'common'; // 共通の設定ファイルのファイル名
 

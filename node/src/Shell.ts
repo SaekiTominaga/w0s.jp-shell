@@ -9,7 +9,7 @@ class Shell {
 	private static readonly _ARGS_MINLENGTH = 2;
 
 	/* Logger */
-	private static readonly _LOGGER_FILE_PATH = './log4js.json'; // 設定ファイルのパス
+	private static readonly _LOGGER_FILE_PATH = 'node/log4js.json'; // 設定ファイルのパス
 
 	/* コンポーネントクラス */
 	private static readonly _COMPONENT_DIR = './component'; // 格納ディレクトリ

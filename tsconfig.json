@@ -3,7 +3,6 @@
 		/* Project Options */
 		"incremental": true,
 		"module": "ESNext",
-		"outDir": "dist/",
 		"target": "ESNext",
 
 		/* Strict Checks */
@@ -24,6 +23,5 @@
 		"allowUnreachableCode": false,
 		"forceConsistentCasingInFileNames": true,
 		"newLine": "LF"
-	},
-	"include": ["src/**/*.ts", "@types/*.d.ts", "configure/*.d.ts"]
+	}
 }
