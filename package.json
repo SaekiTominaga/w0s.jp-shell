@@ -1,7 +1,7 @@
 {
-	"name": "shell",
+	"name": "w0s.jp-shell",
 	"version": "1.0.0",
-	"description": "w0s.jp - shell - node",
+	"description": "shell",
 	"license": "MIT",
 	"author": "Saeki Tominaga",
 	"type": "module",
