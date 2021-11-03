@@ -11,7 +11,7 @@ w0s.jp サーバーで稼働しているシェルスクリプト
 | 名称 | 機能名 | 使用データベース | 概要 |
 |-|-|-|-|
 | [テスト](src/component/Test.ts) | Test | ― | 動作確認用。環境整備する際は、まずはこれが動くことを目指す。 |
-| [Amazon 商品情報チェッカー](src/component/AmazonDp.ts) | AmazonDp | amazonpa, diary | Amazon 商品情報を PA-API を使用して取得し、 DB に格納済みのデータを照合して更新する。 |
+| [Amazon 商品情報チェッカー](src/component/AmazonAds.ts) | AmazonAds | blog, amazonads | Amazon 商品情報を PA-API を使用して取得し、 DB に格納済みのデータを照合して更新する。 |
 | [ウェブ巡回（新着）](src/component/CrawlerNews.ts) | CrawlerNews | crawler | ウェブページを巡回し（HTML ページのみ）、新着情報の差分を調べて通知する。 |
 | [ウェブ巡回（リソース）](src/component/CrawlerResource.ts) | CrawlerResource | crawler | ウェブページを巡回し（HTML リソースに限らない）、レスポンスボディの差分を調べて通知する。 |
 | [久米田康治 Twitter ユーザー履歴](src/component/TwitterUserInfoHistoryKumeta.ts) | TwitterUserInfoHistoryKumeta | kumetatwitter | 漫画家、久米田康治の Twitter アカウントについて、アイコン画像やフォロワー数などの変更を検知して [Twitter: @kumeta_icon](https://twitter.com/kumeta_icon) に投稿する。 |
