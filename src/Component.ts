@@ -32,7 +32,7 @@ export default class Component {
 	 *
 	 * @param {string} name - 設定ファイル名（拡張子を除いた名前）
 	 *
-	 * @returns {any} 設定ファイルの中身
+	 * @returns {object} 設定ファイルの中身
 	 */
 	protected readConfig(name = headerCase(this.#name).toLowerCase()): unknown {
 		const targetUrl = `${this.#CONFIGURE_DIRNAME}/${name}${this.#CONFIGURE_EXTENSION}`;
