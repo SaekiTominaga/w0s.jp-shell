@@ -1,7 +1,7 @@
 import fs from 'fs';
 import Log4js from 'log4js';
 import nodemailer from 'nodemailer';
-import { NoName as ConfigureCommon } from '../configure/type/Common';
+import { NoName as ConfigureCommon } from '../configure/type/common';
 import { headerCase } from 'header-case';
 
 export default class Component {
