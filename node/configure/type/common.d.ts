@@ -7,11 +7,7 @@
 
 export type NoName2 = string;
 export type NoName3 = string;
-export type Amazonpa = string;
-export type Crawler = string;
-export type Blog = string;
-export type Kumetatwitter = string;
-export type Madokatwitter = string;
+export type DBNode = string;
 
 export interface NoName {
   browser: NoName1;
@@ -31,12 +27,8 @@ export interface EMail {
   to: string;
 }
 export interface SQLite {
-  db: DBNode;
+  db: DB;
 }
-export interface DBNode {
-  amazonads?: Amazonpa;
-  crawler?: Crawler;
-  blog?: Blog;
-  kumetatwitter?: Kumetatwitter;
-  madokatwitter?: Madokatwitter;
+export interface DB {
+  [k: string]: DBNode;
 }

@@ -57,30 +57,11 @@
 			"properties": {
 				"db": {
 					"type": "object",
-					"title": "DB ファイルのパス（絶対パス、または `node` ディレクトリを基準にした相対パス）",
-					"properties": {
-						"amazonads": {
-							"type": "string",
-							"title": "amazonpa テーブル"
-						},
-						"crawler": {
-							"type": "string",
-							"title": "crawler テーブル"
-						},
-						"blog": {
-							"type": "string",
-							"title": "blog テーブル"
-						},
-						"kumetatwitter": {
-							"type": "string",
-							"title": "kumetatwitter テーブル"
-						},
-						"madokatwitter": {
-							"type": "string",
-							"title": "madokatwitter テーブル"
-						}
-					},
-					"additionalProperties": false
+					"title": "DB ファイル情報",
+					"additionalProperties": {
+						"type": "string",
+						"title": "DB ファイルパス（絶対パス、または `node` ディレクトリを基準にした相対パス）"
+					}
 				}
 			},
 			"additionalProperties": false
