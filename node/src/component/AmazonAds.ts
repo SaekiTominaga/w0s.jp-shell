@@ -1,11 +1,10 @@
-import * as sqlite from 'sqlite';
+import AmazonAdsDao from '../dao/AmazonAdsDao.js';
 // @ts-expect-error: ts(7016)
 import amazonPaapi from 'amazon-paapi';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import fetch from 'node-fetch';
 import PaapiUtil from '../util/Paapi.js';
-import sqlite3 from 'sqlite3';
 import { Amazon as ConfigureAmazonAds } from '../../configure/type/amazon-ads';
 import { Buffer } from 'buffer';
 import { GetItemsResponse, Item } from 'paapi5-typescript-sdk';
@@ -36,217 +35,127 @@ export default class AmazonAds extends Component implements ComponentInterface {
 			throw new Error('共通設定ファイルに amazonads テーブルのパスが指定されていない。');
 		}
 
-		const [dbhBlog, dbhAmazonAds] = await Promise.all([
-			sqlite.open({
-				filename: this.configCommon.sqlite.db.blog,
-				driver: sqlite3.Database,
-			}),
-			sqlite.open({
-				filename: this.configCommon.sqlite.db.amazonads,
-				driver: sqlite3.Database,
-			}),
-		]);
+		const dao = new AmazonAdsDao(this.configCommon);
 
-		try {
-			/* 処理対象の ASIN を取得する */
-			const [targetAsinsBlog, targetAsinsAmazonAds] = await Promise.all([this._selectAsinsBlog(dbhBlog), this._selectAsinsAmazonAds(dbhAmazonAds)]);
+		/* 処理対象の ASIN を取得する */
+		const [targetAsinsBlog, targetAsinsAmazonAds] = await Promise.all([dao.getAsinsBlog(this.config.blog_select_limit), dao.getAsinsAmazonAds()]);
+		const targetAsins = [...new Set(targetAsinsBlog.concat(targetAsinsAmazonAds))]; // マージした上で重複した値を削除する
+		this.logger.debug('処理対象の ASIN', targetAsins);
 
-			const targetAsins = [...new Set(targetAsinsBlog.concat(targetAsinsAmazonAds))]; // マージした上で重複した値を削除する
+		/* PA-API を使用してデータを取得する */
+		const diffsAmazonAds: Map<string, Diff>[] = [];
 
-			this.logger.debug('処理対象の ASIN:', targetAsins);
-
-			/* PA-API を使用してデータを取得する */
-			const diffsAmazonAds = [];
-
-			let requestCount = 0;
-			while (targetAsins.length > 0) {
-				requestCount++;
-				if (requestCount > 1) {
-					await new Promise((resolve) => setTimeout(resolve, this.config.paapi.access_interval * 1000)); // 接続間隔を空ける
-				}
-
-				const asins = targetAsins.splice(0, this.config.paapi.getitems_itemids_chunk);
-				this.logger.info('PA-API 接続（GetItems.ItemIds）:', asins);
-
-				const paapiResponse = <GetItemsResponse>await amazonPaapi.GetItems(
-					{
-						PartnerTag: this.config.paapi.request.partner_tag,
-						PartnerType: 'Associates',
-						AccessKey: this.config.paapi.request.access_key,
-						SecretKey: this.config.paapi.request.secret_key,
-						Marketplace: this.config.paapi.request.marketplace,
-						Host: this.config.paapi.request.host,
-						Region: this.config.paapi.request.region,
-					},
-					{
-						ItemIds: asins,
-						Resources: ['Images.Primary.Large', 'ItemInfo.Classifications', 'ItemInfo.ContentInfo', 'ItemInfo.Title'],
-					}
-				);
-
-				const paapiResponseErrors = paapiResponse.Errors;
-				if (paapiResponseErrors !== undefined) {
-					for (const error of paapiResponseErrors) {
-						this.logger.error(`${error.Code} : ${error.Message}`);
-					}
-					continue;
-				}
-
-				for (const item of paapiResponse.ItemsResult.Items) {
-					this.logger.debug(item);
-
-					const asin = item.ASIN;
-					if (targetAsinsBlog.includes(asin)) {
-						await this._blog(dbhBlog, item, asin);
-					}
-					if (targetAsinsAmazonAds.includes(asin)) {
-						diffsAmazonAds.push(await this._amazonAds(dbhAmazonAds, item, asin));
-					}
-				}
+		let requestCount = 0;
+		while (targetAsins.length > 0) {
+			requestCount++;
+			if (requestCount > 1) {
+				await new Promise((resolve) => setTimeout(resolve, this.config.paapi.access_interval * 1000)); // 接続間隔を空ける
 			}
 
-			this.logger.debug(diffsAmazonAds);
+			const asins = targetAsins.splice(0, this.config.paapi.getitems_itemids_chunk);
+			this.logger.info('PA-API 接続（GetItems.ItemIds）:', asins);
 
-			if (diffsAmazonAds.some((diff) => diff.size >= 1)) {
-				/* Web ページで使用する JSON ファイルを出力 */
-				await this._createJsonAmazonAds(dbhAmazonAds);
+			const paapiResponse = <GetItemsResponse>await amazonPaapi.GetItems(
+				{
+					PartnerTag: this.config.paapi.request.partner_tag,
+					PartnerType: 'Associates',
+					AccessKey: this.config.paapi.request.access_key,
+					SecretKey: this.config.paapi.request.secret_key,
+					Marketplace: this.config.paapi.request.marketplace,
+					Host: this.config.paapi.request.host,
+					Region: this.config.paapi.request.region,
+				},
+				{
+					ItemIds: asins,
+					Resources: ['Images.Primary.Large', 'ItemInfo.Classifications', 'ItemInfo.ContentInfo', 'ItemInfo.Title'],
+				}
+			);
+
+			const paapiResponseErrors = paapiResponse.Errors;
+			if (paapiResponseErrors !== undefined) {
+				for (const error of paapiResponseErrors) {
+					this.logger.error(`${error.Code} : ${error.Message}`);
+				}
+				continue;
 			}
-		} finally {
-			await Promise.all([dbhBlog.close(), dbhAmazonAds.close()]);
-		}
-	}
 
-	/**
-	 * blog テーブルから処理対象の ASIN を取得する
-	 *
-	 * @param {sqlite.Database} dbh - DB 接続情報
-	 *
-	 * @returns {string[]} 処理対象の ASIN
-	 */
-	private async _selectAsinsBlog(dbh: sqlite.Database): Promise<string[]> {
-		const sth = await dbh.prepare(`
-			SELECT
-				asin
-			FROM
-				d_amazon
-			ORDER BY
-				last_updated,
-				date DESC
-			LIMIT
-				:limit
-		`);
-		await sth.bind({
-			':limit': this.config.blog_select_limit,
-		});
-		const rows = await sth.all();
-		await sth.finalize();
+			for (const item of paapiResponse.ItemsResult.Items) {
+				this.logger.debug(item);
 
-		const asins: string[] = [];
-		for (const row of rows) {
-			asins.push(row.asin);
+				const asin = item.ASIN;
+				if (targetAsinsBlog.includes(asin)) {
+					await this.blog(dao, item, asin);
+				}
+				if (targetAsinsAmazonAds.includes(asin)) {
+					diffsAmazonAds.push(await this.amazonAds(dao, item, asin));
+				}
+			}
 		}
 
-		return asins;
-	}
+		this.logger.debug(diffsAmazonAds);
 
-	/**
-	 * amazonads テーブルから処理対象の ASIN を取得する
-	 *
-	 * @param {sqlite.Database} dbh - DB 接続情報
-	 *
-	 * @returns {string[]} 処理対象の ASIN
-	 */
-	private async _selectAsinsAmazonAds(dbh: sqlite.Database): Promise<string[]> {
-		const asins: string[] = [];
-
-		const rows = await dbh.all(`
-			SELECT
-				asin
-			FROM
-				d_dp
-		`);
-		for (const row of rows) {
-			asins.push(row.asin);
+		if (diffsAmazonAds.some((diff) => diff.size >= 1)) {
+			/* Web ページで使用する JSON ファイルを出力 */
+			await this.putJson(dao);
 		}
-
-		return asins;
 	}
 
 	/**
 	 * blog テーブルの処理
 	 *
-	 * @param {sqlite.Database} dbh - DB 接続情報
+	 * @param {AmazonAdsDao} dao - dao クラス
 	 * @param {Item} item - Item クラス
 	 * @param {string} asin - ASIN
 	 *
 	 * @returns {Map<string, Diff>} API から取得した値と DB に格納済みの値の差分情報
 	 */
-	private async _blog(dbh: sqlite.Database, item: Item, asin: string): Promise<Map<string, Diff>> {
+	private async blog(dao: AmazonAdsDao, item: Item, asin: string): Promise<Map<string, Diff>> {
 		const apiDpUrl = item.DetailPageURL; // 詳細ページURL
-		const apiTitle = item.ItemInfo?.Title?.DisplayValue ?? null; // 製品タイトル // TODO: API 的には null の可能性があるが、 DB のカラムは NOT NULL
+		const apiTitle = item.ItemInfo?.Title?.DisplayValue ?? null; // 製品タイトル
+		if (apiTitle === null) {
+			// TODO: API 的には null の可能性があるが、 DB のカラムは NOT NULL なための暫定処理
+			throw new Error(`PA-API に商品タイトルが登録されていない: ${asin}`);
+		}
 		const apiBinding = item.ItemInfo?.Classifications?.Binding?.DisplayValue ?? null; // 製品カテゴリ
 		const apiProductGroup = item.ItemInfo?.Classifications?.ProductGroup?.DisplayValue ?? null; // アイテムが属する製品カテゴリ
 		const apiPublicationDateStr = item.ItemInfo?.ContentInfo?.PublicationDate?.DisplayValue ?? null; // 製品公開日
-		let apiPublicationDate: number | null = null;
+		let apiPublicationDate: Date | null = null;
 		if (apiPublicationDateStr !== null) {
 			try {
-				apiPublicationDate = Math.round(PaapiUtil.date(apiPublicationDateStr).getTime() / 1000);
+				apiPublicationDate = PaapiUtil.date(apiPublicationDateStr);
 			} catch (e) {
 				this.logger.error(e);
 			}
 		}
-		const apiImageUrl = item.Images?.Primary?.Large?.URL ?? null; // 画像URL
-		const apiImageWidth = item.Images?.Primary?.Large?.Width ?? null; // 画像幅
-		const apiImageHeight = item.Images?.Primary?.Large?.Height ?? null; // 画像高さ
+		const apiImage = item.Images?.Primary?.Large;
+		const apiImageUrl = apiImage?.URL ?? null; // 画像URL
+		const apiImageWidth = apiImage?.Width !== undefined ? Number(apiImage?.Width) : null; // 画像幅
+		const apiImageHeight = apiImage?.Height !== undefined ? Number(apiImage?.Height) : null; // 画像高さ
 
 		this.logger.debug(`blog データベースの d_amazon テーブルから ASIN: ${asin} の検索処理を開始`);
 
-		const sth = await dbh.prepare(`
-			SELECT
-				url,
-				title,
-				binding,
-				product_group,
-				date,
-				image_url
-			FROM
-				d_amazon
-			WHERE
-				asin = :asin
-		`);
-		await sth.bind({
-			':asin': asin,
-		});
-		const row = await sth.get();
-		await sth.finalize();
-
-		const dbDpUrl: string = row.url;
-		const dbTitle: string = row.title;
-		const dbBinding: string | null = row.binding;
-		const dbProductGroup: string | null = row.product_group;
-		const dbPublicationDate: number | null = row.date !== null ? Number(row.date) : null;
-		const dbImageUrl: string | null = row.image_url;
+		const db = await dao.selectBlog(asin);
 
 		const diff = new Map<string, Diff>(); // API から取得した値と DB に格納済みの値を比較し、その差分情報を格納する
-		if (apiDpUrl !== dbDpUrl) {
-			diff.set('detailPageURL', { db: dbDpUrl, api: apiDpUrl });
+		if (apiDpUrl !== db.dp_url) {
+			diff.set('detailPageURL', { db: db.dp_url, api: apiDpUrl });
 		}
-		if (apiTitle !== dbTitle) {
-			diff.set('title', { db: dbTitle, api: String(apiTitle) });
+		if (apiTitle !== db.title) {
+			diff.set('title', { db: db.title, api: String(apiTitle) });
 		}
-		if (apiBinding !== dbBinding) {
-			diff.set('binding', { db: String(dbBinding), api: String(apiBinding) });
+		if (apiBinding !== db.binding) {
+			diff.set('binding', { db: String(db.binding), api: String(apiBinding) });
 		}
-		if (apiProductGroup !== dbProductGroup) {
-			diff.set('productGroup', { db: String(dbProductGroup), api: String(apiProductGroup) });
+		if (apiProductGroup !== db.product_group) {
+			diff.set('productGroup', { db: String(db.product_group), api: String(apiProductGroup) });
 		}
-		if (apiPublicationDate !== dbPublicationDate) {
-			diff.set('publicationDate', { db: String(dbPublicationDate), api: String(apiPublicationDate) });
+		if (apiPublicationDate?.getTime() !== db.publication_date?.getTime()) {
+			diff.set('publicationDate', { db: String(db.publication_date), api: String(apiPublicationDate) });
 		}
-		if (apiImageUrl !== dbImageUrl) {
-			diff.set('imageUrl', { db: String(dbImageUrl), api: String(apiImageUrl) });
+		if (apiImageUrl !== db.image_url) {
+			diff.set('imageUrl', { db: String(db.image_url), api: String(apiImageUrl) });
 
-			if (dbImageUrl === null) {
+			if (db.image_url === null) {
 				/* 今回の巡回で画像が追加された場合 */
 				this.notice.push(`画像アップ: 「${apiTitle}」 ${apiDpUrl}`);
 			} else {
@@ -262,43 +171,18 @@ export default class AmazonAds extends Component implements ComponentInterface {
 		/* 更新処理を行う */
 		this.logger.info(`${asin} の情報が更新`, diff);
 
-		await dbh.exec('BEGIN');
-		try {
-			const sth = await dbh.prepare(`
-				UPDATE
-					d_amazon
-				SET
-					url = :url,
-					title = :title,
-					binding = :binding,
-					product_group = :product_group,
-					date = :date,
-					image_url = :image_url,
-					image_width = :image_width,
-					image_height = :image_height,
-					last_updated = :last_updated
-				WHERE
-					asin = :asin
-			`);
-			await sth.run({
-				':url': apiDpUrl,
-				':title': apiTitle,
-				':binding': apiBinding,
-				':product_group': apiProductGroup,
-				':date': apiPublicationDate,
-				':image_url': apiImageUrl,
-				':image_width': apiImageWidth,
-				':image_height': apiImageHeight,
-				':last_updated': Math.round(Date.now() / 1000),
-				':asin': asin,
-			});
-			await sth.finalize();
-
-			dbh.exec('COMMIT');
-		} catch (e) {
-			dbh.exec('ROLLBACK');
-			throw e;
-		}
+		await dao.updateBlog({
+			asin: asin,
+			dp_url: apiDpUrl,
+			title: apiTitle,
+			binding: apiBinding,
+			product_group: apiProductGroup,
+			publication_date: apiPublicationDate,
+			image_url: apiImageUrl,
+			image_width: apiImageWidth,
+			image_height: apiImageHeight,
+			modified_at: new Date(),
+		});
 
 		return diff;
 	}
@@ -306,71 +190,57 @@ export default class AmazonAds extends Component implements ComponentInterface {
 	/**
 	 * amazonads テーブルの処理
 	 *
-	 * @param {sqlite.Database} dbh - DB 接続情報
+	 * @param {AmazonAdsDao} dao - dao クラス
 	 * @param {Item} item - Item クラス
 	 * @param {string} asin - ASIN
 	 *
 	 * @returns {Map<string, Diff>} API から取得した値と DB に格納済みの値の差分情報
 	 */
-	private async _amazonAds(dbh: sqlite.Database, item: Item, asin: string): Promise<Map<string, Diff>> {
+	private async amazonAds(dao: AmazonAdsDao, item: Item, asin: string): Promise<Map<string, Diff>> {
 		const apiDpUrl = item.DetailPageURL; // 詳細ページURL
-		const apiTitle = item.ItemInfo?.Title?.DisplayValue ?? null; // 製品タイトル // TODO API 的には null の可能性があるが、 DB のカラムは NOT NULL
+		const apiTitle = item.ItemInfo?.Title?.DisplayValue ?? null; // 製品タイトル
+		if (apiTitle === null) {
+			// TODO: API 的には null の可能性があるが、 DB のカラムは NOT NULL なための暫定処理
+			throw new Error(`PA-API に商品タイトルが登録されていない: ${asin}`);
+		}
 		const apiBinding = item.ItemInfo?.Classifications?.Binding.DisplayValue ?? null; // 製品カテゴリ
 		const apiPublicationDateStr = item.ItemInfo?.ContentInfo?.PublicationDate?.DisplayValue ?? null; // 製品公開日
-		let apiPublicationDate: number | null = null;
+		let apiPublicationDate: Date | null = null;
 		if (apiPublicationDateStr !== null) {
 			try {
-				apiPublicationDate = Math.round(PaapiUtil.date(apiPublicationDateStr).getTime() / 1000);
+				apiPublicationDate = PaapiUtil.date(apiPublicationDateStr);
 			} catch (e) {
 				this.logger.error(e);
 			}
 		}
-		const apiImageUrl = item.Images?.Primary?.Large?.URL ?? null; // 画像URL
+		const apiImage = item.Images?.Primary?.Large;
+		const apiImageUrl = apiImage?.URL ?? null; // 画像URL
+		const apiImageWidth = apiImage?.Width !== undefined ? Number(apiImage?.Width) : null; // 画像幅
+		const apiImageHeight = apiImage?.Height !== undefined ? Number(apiImage?.Height) : null; // 画像高さ
 
 		this.logger.debug(`amazonads データベースの d_dp テーブルから ASIN: ${asin} の検索処理を開始`);
 
-		const sth = await dbh.prepare(`
-			SELECT
-				asin,
-				url,
-				title,
-				binding,
-				date,
-				image_url
-			FROM
-				d_dp
-			WHERE
-				asin = :asin
-		`);
-		await sth.bind({
-			':asin': asin,
-		});
-		const row = await sth.get();
-		await sth.finalize();
+		const db = await dao.selectAmazonAds(asin);
 
-		const dbDpUrl: string = row.url;
-		const dbTitle: string = row.title;
-		const dbBinding: string | null = row.binding;
-		const dbPublicationDate: number | null = row.date !== null ? Number(row.date) : null;
-		const dbImageUrl: string | null = row.image_url;
+		this.logger.debug('selectAmazonAds() 終了');
 
 		const diff = new Map<string, Diff>(); // API から取得した値と DB に格納済みの値を比較し、その差分情報を格納する
-		if (apiDpUrl !== dbDpUrl) {
-			diff.set('detailPageURL', { db: dbDpUrl, api: apiDpUrl });
+		if (apiDpUrl !== db.dp_url) {
+			diff.set('detailPageURL', { db: db.dp_url, api: apiDpUrl });
 		}
-		if (apiTitle !== dbTitle) {
-			diff.set('title', { db: dbTitle, api: String(apiTitle) });
+		if (apiTitle !== db.title) {
+			diff.set('title', { db: db.title, api: String(apiTitle) });
 		}
-		if (apiBinding !== dbBinding) {
-			diff.set('binding', { db: String(dbBinding), api: String(apiBinding) });
+		if (apiBinding !== db.binding) {
+			diff.set('binding', { db: String(db.binding), api: String(apiBinding) });
 		}
-		if (apiPublicationDate !== dbPublicationDate) {
-			diff.set('publicationDate', { db: String(dbPublicationDate), api: String(apiPublicationDate) });
+		if (apiPublicationDate?.getTime() !== db.publication_date?.getTime()) {
+			diff.set('publicationDate', { db: String(db.publication_date), api: String(apiPublicationDate) });
 		}
-		if (apiImageUrl !== dbImageUrl) {
-			diff.set('imageUrl', { db: String(dbImageUrl), api: String(apiImageUrl) });
+		if (apiImageUrl !== db.image_url) {
+			diff.set('imageUrl', { db: String(db.image_url), api: String(apiImageUrl) });
 
-			if (dbImageUrl === null) {
+			if (db.image_url === null) {
 				/* 今回の巡回で画像が追加された場合 */
 				this.notice.push(`画像アップ: 「${apiTitle}」 ${apiDpUrl}`);
 			} else {
@@ -386,35 +256,16 @@ export default class AmazonAds extends Component implements ComponentInterface {
 		/* 更新処理を行う */
 		this.logger.info(`${asin} の情報が更新`, diff);
 
-		await dbh.exec('BEGIN');
-		try {
-			const sth = await dbh.prepare(`
-				UPDATE
-					d_dp
-				SET
-					url = :url,
-					title = :title,
-					binding = :binding,
-					date = :date,
-					image_url = :image_url
-				WHERE
-					asin = :asin
-			`);
-			await sth.run({
-				':url': apiDpUrl,
-				':title': apiTitle,
-				':binding': apiBinding,
-				':date': apiPublicationDate,
-				':image_url': apiImageUrl,
-				':asin': asin,
-			});
-			await sth.finalize();
-
-			dbh.exec('COMMIT');
-		} catch (e) {
-			dbh.exec('ROLLBACK');
-			throw e;
-		}
+		await dao.updateAmazonAds({
+			asin: asin,
+			dp_url: apiDpUrl,
+			title: apiTitle,
+			binding: apiBinding,
+			publication_date: apiPublicationDate,
+			image_url: apiImageUrl,
+			image_width: apiImageWidth,
+			image_height: apiImageHeight,
+		});
 
 		return diff;
 	}
@@ -422,29 +273,21 @@ export default class AmazonAds extends Component implements ComponentInterface {
 	/**
 	 * Web ページで使用する JSON ファイルを出力
 	 *
-	 * @param {sqlite.Database} dbh - DB 接続情報
+	 * @param {AmazonAdsDao} dao - dao クラス
 	 */
-	private async _createJsonAmazonAds(dbh: sqlite.Database): Promise<void> {
-		const categoryRows = await dbh.all(`
-			SELECT
-				json_path
-			FROM
-				m_category
-		`);
-		for (const categoryRow of categoryRows) {
-			const jsonPath: string = categoryRow.json_path;
+	private async putJson(dao: AmazonAdsDao): Promise<void> {
+		for (const jsonPath of await dao.getAmazonAdsJsonPaths()) {
+			const endPoint = `${this.config.ads_put.url_base}/${jsonPath}`;
+			this.logger.info('Fetch', endPoint);
 
-			const url = `${this.config.ads_put.url_base}/${jsonPath}`;
-			this.logger.info('Fetch', url);
-
-			const response = await fetch(url, {
+			const response = await fetch(endPoint, {
 				method: 'put',
 				headers: {
 					Authorization: `Basic ${Buffer.from(`${this.config.ads_put.auth.username}:${this.config.ads_put.auth.password}`).toString('base64')}`,
 				},
 			});
 			if (!response.ok) {
-				this.logger.error('Fetch error', url);
+				this.logger.error('Fetch error', endPoint);
 			}
 		}
 	}
