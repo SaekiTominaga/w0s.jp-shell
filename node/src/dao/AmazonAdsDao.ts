@@ -4,7 +4,7 @@ import { NoName as Configure } from '../../configure/type/common';
 import DbUtil from '../util/DbUtil.js';
 
 /**
- * Amazon 商品情報を PA-API を使用して取得し、 DB に格納済みのデータを照合して更新する
+ * Amazon 商品情報チェッカー
  */
 export default class AmazonAdsDao {
 	#dbhBlog: sqlite.Database<sqlite3.Database, sqlite3.Statement> | null = null;
