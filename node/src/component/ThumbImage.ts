@@ -28,20 +28,20 @@ export default class ThumbImage extends Component implements ComponentInterface 
 		}
 
 		const dao = new ThumbImageDao(this.configCommon);
-		const queueData = await dao.getQueueData();
-		if (queueData === null) {
+		const queue = await dao.selectQueue();
+		if (queue === null) {
 			return;
 		}
 
 		const endpoint = dev ? this.#config.endpoint.dev : this.#config.endpoint.production;
 
 		const urlSearchParams = new URLSearchParams();
-		urlSearchParams.append('file_path', queueData.file_path);
-		urlSearchParams.append('type', queueData.type);
-		urlSearchParams.append('width', String(queueData.width));
-		urlSearchParams.append('height', String(queueData.height));
-		if (queueData.quality !== null) {
-			urlSearchParams.append('quality', String(queueData.quality));
+		urlSearchParams.append('file_path', queue.file_path);
+		urlSearchParams.append('type', queue.type);
+		urlSearchParams.append('width', String(queue.width));
+		urlSearchParams.append('height', String(queue.height));
+		if (queue.quality !== null) {
+			urlSearchParams.append('quality', String(queue.quality));
 		}
 
 		this.logger.info('Fetch', endpoint, urlSearchParams);
@@ -56,8 +56,8 @@ export default class ThumbImage extends Component implements ComponentInterface 
 		if (!response.ok) {
 			this.logger.error('Fetch error', endpoint);
 		} else {
-			await dao.deleteQueueData(queueData);
-			this.logger.info('キューからデータを削除', queueData);
+			await dao.deleteQueue(queue);
+			this.logger.info('キューからデータを削除', queue);
 		}
 	}
 }

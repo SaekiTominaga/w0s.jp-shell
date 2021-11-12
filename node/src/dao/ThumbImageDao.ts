@@ -1,21 +1,14 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
 import { NoName as Configure } from '../../configure/type/common';
-
-interface QueueData {
-	file_path: string;
-	type: string;
-	width: number;
-	height: number;
-	quality: number | null;
-}
+import DbUtil from '../util/DbUtil';
 
 /**
  * サムネイル画像生成
  */
 export default class ThumbImageDao {
 	#dbh: sqlite.Database<sqlite3.Database, sqlite3.Statement> | null = null;
-	#config: Configure;
+	readonly #config: Configure;
 
 	/**
 	 * @param {Configure} config - 共通設定
@@ -52,9 +45,9 @@ export default class ThumbImageDao {
 	/**
 	 * キューに登録された画像情報を 1 件取り出す
 	 *
-	 * @returns {QueueData} キューに登録された画像情報
+	 * @returns {object} キューに登録された画像情報
 	 */
-	async getQueueData(): Promise<QueueData | null> {
+	async selectQueue(): Promise<ThumbImageDb.Queue | null> {
 		const dbh = await this.getDbh();
 
 		const sth = await dbh.prepare(`
@@ -63,7 +56,8 @@ export default class ThumbImageDao {
 				file_type,
 				width,
 				height,
-				quality
+				quality,
+				registered_at
 			FROM
 				d_queue
 			ORDER BY
@@ -80,18 +74,19 @@ export default class ThumbImageDao {
 		return {
 			file_path: row.file_path,
 			type: row.file_type,
-			width: Number(row.width),
-			height: Number(row.height),
-			quality: row.quality !== null ? Number(row.quality) : null,
+			width: row.width,
+			height: row.height,
+			quality: row.quality,
+			registered_at: <Date>DbUtil.unixToDate(row.registered_at),
 		};
 	}
 
 	/**
 	 * キューに登録された画像情報を削除する
 	 *
-	 * @param {QueueData} queueData - キューに登録された画像情報
+	 * @param {object} queue - キューに登録された画像情報
 	 */
-	async deleteQueueData(queueData: QueueData): Promise<void> {
+	async deleteQueue(queue: ThumbImageDb.Queue): Promise<void> {
 		const dbh = await this.getDbh();
 
 		await dbh.exec('BEGIN');
@@ -107,11 +102,11 @@ export default class ThumbImageDao {
 					quality = :quality
 			`);
 			await sth.run({
-				':file_path': queueData.file_path,
-				':type': queueData.type,
-				':width': queueData.width,
-				':height': queueData.height,
-				':quality': queueData.quality,
+				':file_path': queue.file_path,
+				':type': queue.type,
+				':width': queue.width,
+				':height': queue.height,
+				':quality': queue.quality,
 			});
 			await sth.finalize();
 

@@ -116,3 +116,14 @@ declare namespace MadokaTwitterDb {
 		registed_at: Date;
 	}
 }
+
+declare namespace ThumbImageDb {
+	export interface Queue {
+		file_path: string;
+		type: string;
+		width: number;
+		height: number;
+		quality: number | null;
+		registered_at: Date;
+	}
+}
