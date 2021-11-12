@@ -46,4 +46,16 @@ declare namespace CrawlerDb {
 		content: string;
 		refer_url: string | null;
 	}
+
+	export interface ResourceData {
+		url: string;
+		title: string;
+		class: number;
+		priority: number;
+		browser: boolean;
+		selector: string | null;
+		content_length: number;
+		modified_at: Date | null;
+		error: number;
+	}
 }
