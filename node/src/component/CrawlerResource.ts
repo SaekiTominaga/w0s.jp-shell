@@ -219,7 +219,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 	 * @param {CrawlerResourceDao} dao - dao クラス
 	 * @param {object} targetData - 登録データ
 	 */
-	private async accessSuccess(dao: CrawlerResourceDao, targetData: CrawlerDb.ResourceData): Promise<void> {
+	private async accessSuccess(dao: CrawlerResourceDao, targetData: CrawlerDb.Resource): Promise<void> {
 		if (targetData.error > 0) {
 			/* 前回アクセス時がエラーだった場合 */
 			await dao.resetError(targetData.url);
@@ -234,7 +234,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 	 *
 	 * @returns {number} 連続アクセスエラー回数
 	 */
-	private async accessError(dao: CrawlerResourceDao, targetData: CrawlerDb.ResourceData): Promise<number> {
+	private async accessError(dao: CrawlerResourceDao, targetData: CrawlerDb.Resource): Promise<number> {
 		const error = targetData.error + 1; // 連続アクセスエラー回数
 
 		await dao.updateError(targetData.url, error);

@@ -49,7 +49,7 @@ export default class CrawlerNewsDao {
 	 *
 	 * @returns {object[]} 登録データ
 	 */
-	async select(priority: number): Promise<CrawlerDb.NewsData[]> {
+	async select(priority: number): Promise<CrawlerDb.News[]> {
 		const dbh = await this.getDbh();
 
 		const sth = await dbh.prepare(`
@@ -74,7 +74,7 @@ export default class CrawlerNewsDao {
 		const rows = await sth.all();
 		await sth.finalize();
 
-		const datas: CrawlerDb.NewsData[] = [];
+		const datas: CrawlerDb.News[] = [];
 		for (const row of rows) {
 			datas.push({
 				url: row.url,
@@ -154,7 +154,7 @@ export default class CrawlerNewsDao {
 	 *
 	 * @param {object} data - 登録データ
 	 */
-	async insertData(data: CrawlerDb.NewsDataData): Promise<void> {
+	async insertData(data: CrawlerDb.NewsData): Promise<void> {
 		const dbh = await this.getDbh();
 
 		await dbh.exec('BEGIN');

@@ -1,5 +1,5 @@
 declare namespace AmazonAdsDb {
-	export interface DpData {
+	export interface Dp {
 		asin: string;
 		dp_url: string;
 		title: string;
@@ -12,7 +12,7 @@ declare namespace AmazonAdsDb {
 }
 
 declare namespace BlogDb {
-	export interface AmazonDpData {
+	export interface AmazonDp {
 		asin: string;
 		dp_url: string;
 		title: string;
@@ -27,7 +27,7 @@ declare namespace BlogDb {
 }
 
 declare namespace CrawlerDb {
-	export interface NewsData {
+	export interface News {
 		url: string;
 		title: string;
 		class: number;
@@ -39,7 +39,7 @@ declare namespace CrawlerDb {
 		error: number;
 	}
 
-	export interface NewsDataData {
+	export interface NewsData {
 		uuid: string;
 		url: string;
 		date: Date | null;
@@ -47,7 +47,7 @@ declare namespace CrawlerDb {
 		refer_url: string | null;
 	}
 
-	export interface ResourceData {
+	export interface Resource {
 		url: string;
 		title: string;
 		class: number;

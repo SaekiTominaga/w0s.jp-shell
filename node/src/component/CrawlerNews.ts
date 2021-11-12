@@ -210,7 +210,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	 *
 	 * @returns {string | null} レスポンスボディ
 	 */
-	private async requestFetch(dao: CrawlerNewsDao, targetData: CrawlerDb.NewsData): Promise<string | null> {
+	private async requestFetch(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<string | null> {
 		const controller = new AbortController();
 		const signal = controller.signal;
 		const timeoutId = setTimeout(() => {
@@ -283,7 +283,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	 *
 	 * @returns {string | null} レスポンスボディ
 	 */
-	private async requestBrowser(dao: CrawlerNewsDao, targetData: CrawlerDb.NewsData): Promise<string | null> {
+	private async requestBrowser(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<string | null> {
 		let responseBody: string;
 
 		const browser = await puppeteer.launch({ executablePath: this.configCommon.browser.path });
@@ -350,7 +350,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	 * @param {CrawlerNewsDao} dao - dao クラス
 	 * @param {object} targetData - 登録データ
 	 */
-	private async accessSuccess(dao: CrawlerNewsDao, targetData: CrawlerDb.NewsData): Promise<void> {
+	private async accessSuccess(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<void> {
 		if (targetData.error > 0) {
 			/* 前回アクセス時がエラーだった場合 */
 			await dao.resetError(targetData.url);
@@ -365,7 +365,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	 *
 	 * @returns {number} 連続アクセスエラー回数
 	 */
-	private async accessError(dao: CrawlerNewsDao, targetData: CrawlerDb.NewsData): Promise<number> {
+	private async accessError(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<number> {
 		const error = targetData.error + 1; // 連続アクセスエラー回数
 
 		await dao.updateError(targetData.url, error);

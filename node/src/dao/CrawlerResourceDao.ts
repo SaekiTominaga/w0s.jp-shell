@@ -49,7 +49,7 @@ export default class CrawlerResourceDao {
 	 *
 	 * @returns {object[]} 登録データ
 	 */
-	async select(priority: number): Promise<CrawlerDb.ResourceData[]> {
+	async select(priority: number): Promise<CrawlerDb.Resource[]> {
 		const dbh = await this.getDbh();
 
 		const sth = await dbh.prepare(`
@@ -74,7 +74,7 @@ export default class CrawlerResourceDao {
 		const rows = await sth.all();
 		await sth.finalize();
 
-		const datas: CrawlerDb.ResourceData[] = [];
+		const datas: CrawlerDb.Resource[] = [];
 		for (const row of rows) {
 			datas.push({
 				url: row.url,
@@ -99,7 +99,7 @@ export default class CrawlerResourceDao {
 	 * @param {number} contentLength - サイズ
 	 * @param {Date | null} lastModified - 更新日時
 	 */
-	async update(data: CrawlerDb.ResourceData, contentLength: number, lastModified: Date | null): Promise<void> {
+	async update(data: CrawlerDb.Resource, contentLength: number, lastModified: Date | null): Promise<void> {
 		const dbh = await this.getDbh();
 
 		await dbh.exec('BEGIN');

@@ -130,7 +130,7 @@ export default class AmazonAdsDao {
 	 *
 	 * @returns {object} Amazon 商品データ
 	 */
-	async selectBlog(asin: string): Promise<BlogDb.AmazonDpData> {
+	async selectBlog(asin: string): Promise<BlogDb.AmazonDp> {
 		const dbh = await this.getDbhBlog();
 
 		const sth = await dbh.prepare(`
@@ -176,7 +176,7 @@ export default class AmazonAdsDao {
 	 *
 	 * @returns {object} Amazon 商品データ
 	 */
-	async selectAmazonAds(asin: string): Promise<AmazonAdsDb.DpData> {
+	async selectAmazonAds(asin: string): Promise<AmazonAdsDb.Dp> {
 		const dbh = await this.getDbhAmazonAds();
 
 		const sth = await dbh.prepare(`
@@ -216,7 +216,7 @@ export default class AmazonAdsDao {
 	 *
 	 * @param {object} data - Amazon 商品データ
 	 */
-	async updateBlog(data: BlogDb.AmazonDpData): Promise<void> {
+	async updateBlog(data: BlogDb.AmazonDp): Promise<void> {
 		const dbh = await this.getDbhBlog();
 
 		await dbh.exec('BEGIN');
@@ -263,7 +263,7 @@ export default class AmazonAdsDao {
 	 *
 	 * @param {object} data - Amazon 商品データ
 	 */
-	async updateAmazonAds(data: AmazonAdsDb.DpData): Promise<void> {
+	async updateAmazonAds(data: AmazonAdsDb.Dp): Promise<void> {
 		const dbh = await this.getDbhAmazonAds();
 
 		await dbh.exec('BEGIN');
