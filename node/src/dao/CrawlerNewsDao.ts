@@ -8,7 +8,7 @@ import { NoName as Configure } from '../../configure/type/common';
  */
 export default class CrawlerNewsDao {
 	#dbh: sqlite.Database<sqlite3.Database, sqlite3.Statement> | null = null;
-	#config: Configure;
+	readonly #config: Configure;
 
 	/**
 	 * @param {Configure} config - 共通設定
