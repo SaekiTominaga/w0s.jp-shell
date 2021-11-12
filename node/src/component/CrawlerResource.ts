@@ -225,22 +225,21 @@ export default class CrawlerResource extends Component implements ComponentInter
 		const url = new URL(urlText);
 		const date = new Date();
 
-		const fileDir = url.hostname;
-		const fileFullDir = `${this.config.save.dir}/${fileDir}`;
 		const fileName = `${url.pathname}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}_${String(
 			date.getHours()
 		).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}.txt`;
 
-		const filePath = `${fileDir}${fileName}`; // ドキュメントルート基準のパス
-		const fileFullPath = `${fileFullDir}${fileName}`; // ドキュメントルート基準のパス
+		const filePath = `${url.hostname}${fileName}`; // ドキュメントルート基準のパス
+		const fileFullPath = `${this.config.save.dir}/${filePath}`; // ドキュメントルート基準のパス
 
 		this.logger.info(`ファイル保存: ${filePath}`);
 
 		fs.opendir(fileFullPath, (error) => {
 			if (error !== null) {
-				this.logger.debug(`ディレクトリ作成: ${fileDir}`);
+				const dir = path.dirname(fileFullPath);
 
-				fs.mkdirSync(fileFullDir, { recursive: true });
+				this.logger.debug(`ディレクトリ作成: ${dir}`);
+				fs.mkdirSync(dir, { recursive: true });
 			}
 
 			fs.open(fileFullPath, 'wx', (error, fd) => {
