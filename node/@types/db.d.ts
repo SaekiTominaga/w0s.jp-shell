@@ -25,3 +25,25 @@ declare namespace BlogDb {
 		modified_at: Date | null;
 	}
 }
+
+declare namespace CrawlerDb {
+	export interface NewsData {
+		url: string;
+		title: string;
+		class: number;
+		priority: number;
+		browser: boolean;
+		selector_wrap: string;
+		selector_date: string | null;
+		selector_content: string | null;
+		error: number;
+	}
+
+	export interface NewsDataData {
+		uuid: string;
+		url: string;
+		date: Date | null;
+		content: string;
+		refer_url: string | null;
+	}
+}
