@@ -1,10 +1,9 @@
-import * as sqlite from 'sqlite';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import fetch from 'node-fetch';
 import fs from 'fs';
-import sqlite3 from 'sqlite3';
 import Twitter from 'twitter';
+import TwitterUserInfoHistoryMadokaDao from '../dao/TwitterUserInfoHistoryMadokaDao.js';
 import { Twitter as ConfigureTwitterUserInfoHistoryMadoka } from '../../configure/type/twitter-user-info-history-madoka';
 
 /**
@@ -32,24 +31,13 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 			throw new Error('共通設定ファイルに madokatwitter テーブルのパスが指定されていない。');
 		}
 
-		const dbh = await sqlite.open({
-			filename: this.configCommon.sqlite.db.madokatwitter,
-			driver: sqlite3.Database,
-		});
+		const dao = new TwitterUserInfoHistoryMadokaDao(this.configCommon);
 
-		const userIds: string[] = [];
+		const users = await dao.selectUsers(); // DB に格納されている全ユーザー情報
+		const usersEntries = Object.entries(users);
+		const userIds = usersEntries.map(([, data]) => data.id); // DB に格納されている全ユーザー ID
 
-		const userIdsSelectAll = await dbh.all(`
-			SELECT
-				id
-			FROM
-				d_user
-		`);
-		for (const userIdsSelectRow of userIdsSelectAll) {
-			userIds.push(userIdsSelectRow.id);
-		}
-
-		/* APIからユーザー情報を取得 */
+		/* Twitter API からユーザー情報を取得 */
 		const apiUsers = <w0s_jp.TwitterV1User[]>await twitter.get('users/lookup', {
 			user_id: userIds.join(','),
 		}); // https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/follow-search-get-users/api-reference/get-users-lookup
@@ -83,97 +71,54 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 				}
 			}
 			const apiCreatedAt = new Date(apiUser.created_at);
-			const apiProfileImageURL = apiUser.profile_image_url_https ?? null;
-			const apiProfileBannerURL = apiUser.profile_banner_url ?? null;
+			const apiProfileImageUrl = apiUser.profile_image_url_https ?? null;
+			const apiProfileBannerUrl = apiUser.profile_banner_url ?? null;
 
-			const userSelectSth = await dbh.prepare(`
-				SELECT
-					name,
-					account AS username,
-					location,
-					description,
-					url,
-					created AS created_at
-				FROM
-					d_user
-				WHERE
-					id = :id
-			`);
-			await userSelectSth.bind({
-				':id': apiId,
-			});
-			const userRow = await userSelectSth.get();
-			await userSelectSth.finalize();
-
-			this.logger.debug('DB に格納されている値', userRow);
-
-			const dbName: string = userRow.name;
-			const dbUsername: string = userRow.username;
-			const dbLocation: string | null = userRow.location;
-			const dbDescription: string | null = userRow.description;
-			const dbUrl: string | null = userRow.url;
-			const dbCreatedAt = new Date(Number(userRow.created_at) * 1000);
+			const userEntries = usersEntries.find(([, data]) => data.id === apiId); // DB に格納されていた全ユーザー情報
+			if (userEntries === undefined) {
+				continue;
+			}
+			const [, user] = userEntries;
 
 			if (
-				apiName === dbName &&
-				apiUsername === dbUsername &&
-				apiLocation === dbLocation &&
-				apiDescription === dbDescription &&
-				apiUrl === dbUrl &&
-				apiCreatedAt.getTime() === dbCreatedAt.getTime()
+				apiName === user.name &&
+				apiUsername === user.username &&
+				apiLocation === user.location &&
+				apiDescription === user.description &&
+				apiUrl === user.url &&
+				apiCreatedAt.getTime() === user.created_at.getTime()
 			) {
 				this.logger.info(`@${apiUsername} の情報に更新なし`);
 			} else {
 				/* ユーザー情報に更新があれば DB を UPDATE する */
 				this.logger.info(`@${apiUsername} の情報に更新があるので DB を update`);
 
-				await dbh.exec('BEGIN');
-				try {
-					const userUpdateSth = await dbh.prepare(`
-						UPDATE
-							d_user
-						SET
-							name = :name,
-							account = :username,
-							location = :location,
-							description = :description,
-							url = :url,
-							created = :created_at
-						WHERE
-							id = :id
-					`);
-					await userUpdateSth.run({
-						':name': apiName,
-						':username': apiUsername,
-						':location': apiLocation,
-						':description': apiDescription,
-						':url': apiUrl,
-						':created_at': Math.round(apiCreatedAt.getTime() / 1000),
-						':id': apiId,
-					});
-					await userUpdateSth.finalize();
-					dbh.exec('COMMIT');
-				} catch (e) {
-					dbh.exec('ROLLBACK');
-					throw e;
-				}
+				dao.updateUsers({
+					id: apiId,
+					username: apiUsername,
+					name: apiName,
+					location: apiLocation,
+					description: apiDescription,
+					url: apiUrl,
+					created_at: apiCreatedAt,
+				});
 
 				/* 管理者向け通知 */
 				const noticeMessage: string[] = [];
-				if (apiName !== dbName) {
-					noticeMessage.push(`表示名: ${dbName} → ${apiName}`);
+				if (apiName !== user.name) {
+					noticeMessage.push(`表示名: ${user.name} → ${apiName}`);
 				}
-				if (apiUsername !== dbUsername) {
-					noticeMessage.push(`アカウント名: @${dbUsername} → @${apiUsername}`);
+				if (apiUsername !== user.username) {
+					noticeMessage.push(`アカウント名: @${user.username} → @${apiUsername}`);
 				}
-				if (apiLocation !== dbLocation) {
-					noticeMessage.push(`場所: ${dbLocation} → ${apiLocation}`);
+				if (apiLocation !== user.location) {
+					noticeMessage.push(`場所: ${user.location} → ${apiLocation}`);
 				}
-				if (apiDescription !== dbDescription) {
-					noticeMessage.push(`自己紹介: ${dbDescription}\n↓\n${apiDescription}`);
+				if (apiDescription !== user.description) {
+					noticeMessage.push(`自己紹介: ${user.description}\n↓\n${apiDescription}`);
 				}
-				if (apiUrl !== dbUrl) {
-					noticeMessage.push(`ウェブサイト: ${dbUrl} → ${apiUrl}`);
+				if (apiUrl !== user.url) {
+					noticeMessage.push(`ウェブサイト: ${user.url} → ${apiUrl}`);
 				}
 				if (noticeMessage.length > 0) {
 					this.notice.push(`@${apiUsername} のユーザー情報更新 https://twitter.com/${apiUsername}\n\n${noticeMessage.join('\n')}`);
@@ -181,13 +126,13 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 			}
 
 			/* アイコン画像 */
-			if (apiProfileImageURL !== null) {
-				await this._profileImage(dbh, apiId, apiName, apiUsername, apiProfileImageURL);
+			if (apiProfileImageUrl !== null) {
+				await this.profileImage(dao, apiId, apiName, apiUsername, apiProfileImageUrl);
 			}
 
 			/* バナー画像 */
-			if (apiProfileBannerURL !== null) {
-				await this._profileBanner(dbh, apiId, apiName, apiUsername, apiProfileBannerURL);
+			if (apiProfileBannerUrl !== null) {
+				await this.profileBanner(dao, apiId, apiName, apiUsername, apiProfileBannerUrl);
 			}
 		}
 	}
@@ -195,132 +140,80 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 	/**
 	 * DB に登録されたアイコン画像と比較
 	 *
-	 * @param {sqlite.Database} dbh - DB 接続情報
+	 * @param {TwitterUserInfoHistoryMadokaDao} dao - dao クラス
 	 * @param {string} id - ユーザー ID
 	 * @param {string} apiName - API から取得した表示名
 	 * @param {string} apiUsername - API から取得したハンドル名（@アカウント）
-	 * @param {string} apiProfileImageURL - API から取得したアイコン画像 URL
+	 * @param {string} apiProfileImageUrl - API から取得したアイコン画像 URL
 	 */
-	private async _profileImage(dbh: sqlite.Database, id: string, apiName: string, apiUsername: string, apiProfileImageURL: string): Promise<void> {
+	private async profileImage(
+		dao: TwitterUserInfoHistoryMadokaDao,
+		id: string,
+		apiName: string,
+		apiUsername: string,
+		apiProfileImageUrl: string
+	): Promise<void> {
 		this.logger.debug(`@${apiUsername} のアイコン画像チェック`);
 
-		const selectSth = await dbh.prepare(`
-			SELECT
-				url_api
-			FROM
-				d_profileimage
-			WHERE
-				id = :id
-			ORDER BY
-				regist_date DESC
-			LIMIT 1
-		`);
-		await selectSth.bind({
-			':id': id,
-		});
-		const row = await selectSth.get();
-		await selectSth.finalize();
+		const data = await dao.selectLatestProfileImage(id);
 
-		if (row === undefined || apiProfileImageURL !== row.url_api) {
-			this.logger.debug(apiProfileImageURL);
+		if (apiProfileImageUrl !== data?.url_api) {
+			this.logger.debug(apiProfileImageUrl);
 
 			/* オリジナルサイズの画像を取得 */
-			const apiProfileImageOriginalURL = apiProfileImageURL.replace(/_normal\.([a-z]+)$/, '.$1'); // https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/user-profile-images-and-banners
+			const apiProfileImageOriginalUrl = apiProfileImageUrl.replace(/_normal\.([a-z]+)$/, '.$1'); // https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/user-profile-images-and-banners
 
 			/* ファイル保存 */
-			const filename = await this._saveImage(apiProfileImageOriginalURL);
+			const filename = await this.saveImage(apiProfileImageOriginalUrl);
 
 			/* DB 書き込み */
-			await dbh.exec('BEGIN');
-			try {
-				const updateSth = await dbh.prepare(`
-					INSERT INTO
-						d_profileimage
-						(id, url, url_api, file_name, regist_date)
-					VALUES
-						(:id, :url, :url_api, :file_name, :regist_date)
-				`);
-				await updateSth.run({
-					':id': id,
-					':url': apiProfileImageOriginalURL,
-					':url_api': apiProfileImageURL,
-					':file_name': filename,
-					':regist_date': Math.round(Date.now() / 1000),
-				});
-				await updateSth.finalize();
-				dbh.exec('COMMIT');
-			} catch (e) {
-				dbh.exec('ROLLBACK');
-				throw e;
-			}
+			await dao.insertProfileImage({
+				id: id,
+				url: apiProfileImageOriginalUrl,
+				url_api: apiProfileImageUrl,
+				file_name: filename,
+				registed_at: new Date(),
+			});
 
-			if (row !== false) {
-				this.notice.push(`${apiName}（@${apiUsername}）のアイコン画像更新\nhttps://twitter.com/${apiUsername}\n${apiProfileImageOriginalURL}`);
-			}
+			this.notice.push(`${apiName}（@${apiUsername}）のアイコン画像更新\nhttps://twitter.com/${apiUsername}\n${apiProfileImageOriginalUrl}`);
 		}
 	}
 
 	/**
 	 * DB に登録されたバナー画像と比較
 	 *
-	 * @param {sqlite.Database} dbh - DB 接続情報
+	 * @param {TwitterUserInfoHistoryMadokaDao} dao - dao クラス
 	 * @param {string} id - ユーザー ID
 	 * @param {string} apiName - API から取得した表示名
 	 * @param {string} apiUsername - API から取得したハンドル名（@アカウント）
-	 * @param {string} apiProfileBannerURL - API から取得したバナー画像 URL
+	 * @param {string} apiProfileBannerUrl - API から取得したバナー画像 URL
 	 */
-	private async _profileBanner(dbh: sqlite.Database, id: string, apiName: string, apiUsername: string, apiProfileBannerURL: string): Promise<void> {
+	private async profileBanner(
+		dao: TwitterUserInfoHistoryMadokaDao,
+		id: string,
+		apiName: string,
+		apiUsername: string,
+		apiProfileBannerUrl: string
+	): Promise<void> {
 		this.logger.debug(`@${apiUsername} のバナー画像チェック`);
 
-		const selectSth = await dbh.prepare(`
-			SELECT
-				url
-			FROM
-				d_banner
-			WHERE
-				id = :id
-			ORDER BY
-				regist_date DESC
-			LIMIT 1
-		`);
-		await selectSth.bind({
-			':id': id,
-		});
-		const row = await selectSth.get();
-		await selectSth.finalize();
+		const data = await dao.selectLatestBanner(id);
 
-		if (row === undefined || apiProfileBannerURL !== row.url) {
-			this.logger.debug(apiProfileBannerURL);
+		if (apiProfileBannerUrl !== data?.url) {
+			this.logger.debug(apiProfileBannerUrl);
 
 			/* ファイル保存 */
-			const filename = await this._saveImage(apiProfileBannerURL);
+			const filename = await this.saveImage(apiProfileBannerUrl);
 
 			/* DB 書き込み */
-			await dbh.exec('BEGIN');
-			try {
-				const updateSth = await dbh.prepare(`
-					INSERT INTO
-						d_banner
-						(id, url, file_name, regist_date)
-					VALUES
-						(:id, :url, :file_name, :regist_date)
-				`);
-				await updateSth.run({
-					':id': id,
-					':url': apiProfileBannerURL,
-					':file_name': filename,
-					':regist_date': Math.round(Date.now() / 1000),
-				});
-				await updateSth.finalize();
-				dbh.exec('COMMIT');
-			} catch (e) {
-				dbh.exec('ROLLBACK');
-				throw e;
-			}
+			await dao.insertBanner({
+				id: id,
+				url: apiProfileBannerUrl,
+				file_name: filename,
+				registed_at: new Date(),
+			});
 
-			if (row !== false) {
-				this.notice.push(`${apiName}（@${apiUsername}）のバナー画像更新\nhttps://twitter.com/${apiUsername}\n${apiProfileBannerURL}`);
-			}
+			this.notice.push(`${apiName}（@${apiUsername}）のバナー画像更新\nhttps://twitter.com/${apiUsername}\n${apiProfileBannerUrl}`);
 		}
 	}
 
@@ -331,7 +224,7 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 	 *
 	 * @returns {string} ファイル名
 	 */
-	private async _saveImage(targetUrl: string): Promise<string> {
+	private async saveImage(targetUrl: string): Promise<string> {
 		const response = await fetch(targetUrl);
 		if (!response.ok) {
 			throw new Error(`"${response.url}" is ${response.status} ${response.statusText}`);
