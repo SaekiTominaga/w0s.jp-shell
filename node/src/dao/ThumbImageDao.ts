@@ -1,7 +1,7 @@
 import * as sqlite from 'sqlite';
+import DbUtil from '../util/DbUtil.js';
 import sqlite3 from 'sqlite3';
 import { NoName as Configure } from '../../configure/type/common';
-import DbUtil from '../util/DbUtil';
 
 /**
  * サムネイル画像生成
