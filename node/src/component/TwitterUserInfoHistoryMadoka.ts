@@ -93,7 +93,7 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 				/* ユーザー情報に更新があれば DB を UPDATE する */
 				this.logger.info(`@${apiUsername} の情報に更新があるので DB を update`);
 
-				dao.updateUsers({
+				await dao.updateUsers({
 					id: apiId,
 					username: apiUsername,
 					name: apiName,
