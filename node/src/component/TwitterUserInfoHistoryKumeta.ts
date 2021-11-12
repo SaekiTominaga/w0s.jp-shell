@@ -454,14 +454,8 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		const filename = `${new URL(targetUrl).pathname.substring(1).replaceAll('/', '_')}${extension}`;
 		const path = `${this.config.image_dir}/${filename}`;
 
-		fs.writeFile(path, new Int8Array(imageBuffer), (error) => {
-			if (error !== null) {
-				this.logger.error('Image file output failed.', path, error);
-				return;
-			}
-
-			this.logger.info('Image file output success.', path);
-		});
+		await fs.promises.writeFile(path, new Int8Array(imageBuffer));
+		this.logger.info('Image file saved', path);
 
 		return filename;
 	}

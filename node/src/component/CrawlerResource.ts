@@ -9,6 +9,7 @@ import path from 'path';
 import sqlite3 from 'sqlite3';
 import { NoName as ConfigureCrawlerResource } from '../../configure/type/crawler-resource';
 import AbortController from 'abort-controller';
+import { createCipheriv } from 'crypto';
 
 /**
  * ウェブページを巡回し、レスポンスボディの差分を調べて通知する
@@ -199,7 +200,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 				}
 
 				/* ファイル保存 */
-				const filePath = this._saveFile(targetUrl, responseBody);
+				const filePath = await this._saveFile(targetUrl, responseBody);
 
 				/* 通知 */
 				this.notice.push(
@@ -221,7 +222,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 	 *
 	 * @returns {string} ファイルパス
 	 */
-	private _saveFile(urlText: string, responseBody: string): string {
+	private async _saveFile(urlText: string, responseBody: string): Promise<string> {
 		const url = new URL(urlText);
 		const date = new Date();
 
@@ -232,32 +233,17 @@ export default class CrawlerResource extends Component implements ComponentInter
 		const filePath = `${url.hostname}${fileName}`; // ドキュメントルート基準のパス
 		const fileFullPath = `${this.config.save.dir}/${filePath}`; // ドキュメントルート基準のパス
 
-		this.logger.info(`ファイル保存: ${filePath}`);
+		try {
+			await fs.promises.opendir(fileFullPath);
+		} catch (e) {
+			const dir = path.dirname(fileFullPath);
+			await fs.promises.mkdir(dir, { recursive: true });
+			this.logger.info('Directory created', dir);
+		}
 
-		fs.opendir(fileFullPath, (error) => {
-			if (error !== null) {
-				const dir = path.dirname(fileFullPath);
-
-				this.logger.debug(`ディレクトリ作成: ${dir}`);
-				fs.mkdirSync(dir, { recursive: true });
-			}
-
-			fs.open(fileFullPath, 'wx', (error, fd) => {
-				if (error !== null) {
-					this.logger.error(`${filePath} のオープンに失敗`);
-					throw error;
-				}
-
-				fs.write(fd, responseBody, (error) => {
-					if (error !== null) {
-						this.logger.error('File output failed.', filePath, error);
-						return;
-					}
-
-					this.logger.info('File output success.', filePath);
-				});
-			});
-		});
+		const fileHandle = await fs.promises.open(fileFullPath, 'wx');
+		await fs.promises.writeFile(fileHandle, responseBody);
+		this.logger.info('File saved', fileFullPath);
 
 		return filePath;
 	}
