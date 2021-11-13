@@ -2,7 +2,7 @@ import Twitter from 'twitter';
 import TwitterText from 'twitter-text';
 
 export default class Tweet {
-	#twitter: Twitter;
+	readonly #twitter: Twitter;
 
 	/* 画像の添付最大数 */
 	readonly #IMAGE_LIMIT = 4;
