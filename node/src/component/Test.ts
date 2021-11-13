@@ -6,13 +6,13 @@ import { NoName as ConfigureTest } from '../../configure/type/test';
  * シェル機能のテスト用
  */
 export default class Test extends Component implements ComponentInterface {
-	private readonly config: ConfigureTest;
+	readonly #config: ConfigureTest;
 
 	constructor() {
 		super();
 
-		this.config = <ConfigureTest>this.readConfig();
-		this.title = this.config.title;
+		this.#config = <ConfigureTest>this.readConfig();
+		this.title = this.#config.title;
 	}
 
 	/**
@@ -20,6 +20,6 @@ export default class Test extends Component implements ComponentInterface {
 	 */
 	async execute(args: string[]): Promise<void> {
 		this.logger.info('args', args);
-		this.logger.info('config', this.config);
+		this.logger.info('config', this.#config);
 	}
 }

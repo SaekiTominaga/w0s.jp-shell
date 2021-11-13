@@ -12,15 +12,15 @@ import { Twitter as ConfigureTwitterUserInfoHistoryKumeta } from '../../configur
  * 久米田康治 Twitter アカウントのユーザー情報を API を使用して取得し、 DB に格納済みのデータを照合して更新する
  */
 export default class TwitterUserInfoHistoryKumeta extends Component implements ComponentInterface {
-	private readonly config: ConfigureTwitterUserInfoHistoryKumeta;
+	readonly #config: ConfigureTwitterUserInfoHistoryKumeta;
 
 	#twitterMessages = new Set<{ message: string; url?: string; hashtag?: string; medias?: Buffer[] }>(); // Twitter への通知メッセージ
 
 	constructor() {
 		super();
 
-		this.config = <ConfigureTwitterUserInfoHistoryKumeta>this.readConfig();
-		this.title = this.config.title;
+		this.#config = <ConfigureTwitterUserInfoHistoryKumeta>this.readConfig();
+		this.title = this.#config.title;
 	}
 
 	/**
@@ -37,17 +37,17 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		let twitterAccessTokenOptions: Twitter.AccessTokenOptions;
 		if (dev) {
 			twitterAccessTokenOptions = {
-				consumer_key: this.config.twitter.dev.consumer_key,
-				consumer_secret: this.config.twitter.dev.consumer_secret,
-				access_token_key: this.config.twitter.dev.access_token,
-				access_token_secret: this.config.twitter.dev.access_token_secret,
+				consumer_key: this.#config.twitter.dev.consumer_key,
+				consumer_secret: this.#config.twitter.dev.consumer_secret,
+				access_token_key: this.#config.twitter.dev.access_token,
+				access_token_secret: this.#config.twitter.dev.access_token_secret,
 			};
 		} else {
 			twitterAccessTokenOptions = {
-				consumer_key: this.config.twitter.production.consumer_key,
-				consumer_secret: this.config.twitter.production.consumer_secret,
-				access_token_key: this.config.twitter.production.access_token,
-				access_token_secret: this.config.twitter.production.access_token_secret,
+				consumer_key: this.#config.twitter.production.consumer_key,
+				consumer_secret: this.#config.twitter.production.consumer_secret,
+				access_token_key: this.#config.twitter.production.access_token,
+				access_token_secret: this.#config.twitter.production.access_token_secret,
 			};
 		}
 
@@ -168,13 +168,13 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 				/* フォロワー数がキリのいい数字を超えた場合 */
 				if (
 					apiFollowers !== null &&
-					Math.floor(Number(user.followers) / this.config.followers_threshold) < Math.floor(apiFollowers / this.config.followers_threshold)
+					Math.floor(Number(user.followers) / this.#config.followers_threshold) < Math.floor(apiFollowers / this.#config.followers_threshold)
 				) {
 					this.notice.push(`@${apiUsername} のフォロワー数が ${apiFollowers} になりました。`);
 
 					this.#twitterMessages.add({
 						message: `${apiName}（@${apiUsername}) のフォロワー数が ${
-							Math.floor(apiFollowers / this.config.followers_threshold) * this.config.followers_threshold
+							Math.floor(apiFollowers / this.#config.followers_threshold) * this.#config.followers_threshold
 						} を超えました。`,
 						url: '',
 					});
@@ -336,7 +336,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		const imageBuffer = await response.arrayBuffer();
 
 		const filename = `${new URL(targetUrl).pathname.substring(1).replaceAll('/', '_')}${extension}`;
-		const path = `${this.config.image_dir}/${filename}`;
+		const path = `${this.#config.image_dir}/${filename}`;
 
 		await fs.promises.writeFile(path, new Int8Array(imageBuffer));
 		this.logger.info('Image file saved', path);
@@ -356,7 +356,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		const fileName = `@${username}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}_${String(
 			date.getHours()
 		).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}`;
-		const filePath = `${this.config.screenshot.dir}/${fileName}${this.config.screenshot.extension}`;
+		const filePath = `${this.#config.screenshot.dir}/${fileName}${this.#config.screenshot.extension}`;
 
 		const url = `https://twitter.com/${username}`;
 		this.logger.debug('スクショ開始', url);
@@ -367,8 +367,8 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		try {
 			const page = await browser.newPage();
 			page.setViewport({
-				width: this.config.screenshot.width,
-				height: this.config.screenshot.height,
+				width: this.#config.screenshot.width,
+				height: this.#config.screenshot.height,
 			});
 			await page.goto(url, {
 				waitUntil: 'networkidle0',

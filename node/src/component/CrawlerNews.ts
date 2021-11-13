@@ -14,7 +14,7 @@ import { v4 as uuidV4 } from 'uuid';
  * ウェブページを巡回し、新着情報の差分を調べて通知する
  */
 export default class CrawlerNews extends Component implements ComponentInterface {
-	private readonly config: ConfigureCrawlerNews;
+	readonly #config: ConfigureCrawlerNews;
 
 	readonly #HTML_MIMES: DOMParserSupportedType[] = ['application/xhtml+xml', 'application/xml', 'text/html', 'text/xml'];
 
@@ -28,8 +28,8 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	constructor() {
 		super();
 
-		this.config = <ConfigureCrawlerNews>this.readConfig();
-		this.title = this.config.title;
+		this.#config = <ConfigureCrawlerNews>this.readConfig();
+		this.title = this.#config.title;
 	}
 
 	/**
@@ -155,7 +155,8 @@ export default class CrawlerNews extends Component implements ComponentInterface
 					continue;
 				}
 
-				if (await dao.existData(targetData.url, contentText)) { // TODO: url, content で絞り込むなら UUID 要らないのでは
+				if (await dao.existData(targetData.url, contentText)) {
+					// TODO: url, content で絞り込むなら UUID 要らないのでは
 					this.logger.debug(`データ登録済み: ${contentText.substring(0, 30)}...`);
 					continue;
 				}
@@ -215,7 +216,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 		const signal = controller.signal;
 		const timeoutId = setTimeout(() => {
 			controller.abort();
-		}, this.config.fetch_timeout);
+		}, this.#config.fetch_timeout);
 
 		try {
 			const response = await fetch(targetData.url, {
@@ -225,7 +226,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				const errorCount = await this.accessError(dao, targetData);
 
 				this.logger.info(`HTTP Status Code: ${response.status} ${targetData.url} 、エラー回数: ${errorCount}`);
-				if (errorCount % this.config.report_error_count === 0) {
+				if (errorCount % this.#config.report_error_count === 0) {
 					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${response.status}\nエラー回数: ${errorCount}`);
 				}
 
@@ -255,7 +256,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 						const errorCount = await this.accessError(dao, targetData);
 
 						this.logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${errorCount}`);
-						if (errorCount % this.config.report_error_count === 0) {
+						if (errorCount % this.#config.report_error_count === 0) {
 							this.notice.push(`${targetData.title}\n${targetData.url}\nタイムアウト\nエラー回数: ${errorCount}`);
 						}
 
@@ -313,7 +314,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				const errorCount = await this.accessError(dao, targetData);
 
 				this.logger.info(`HTTP Status Code: ${response.status} ${targetData.url} 、エラー回数: ${errorCount}`);
-				if (errorCount % this.config.report_error_count === 0) {
+				if (errorCount % this.#config.report_error_count === 0) {
 					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${response.status}\nエラー回数: ${errorCount}`);
 				}
 

@@ -18,13 +18,13 @@ interface Diff {
  * Amazon 商品情報を PA-API を使用して取得し、 DB に格納済みのデータを照合して更新する
  */
 export default class AmazonAds extends Component implements ComponentInterface {
-	private readonly config: ConfigureAmazonAds;
+	readonly #config: ConfigureAmazonAds;
 
 	constructor() {
 		super();
 
-		this.config = <ConfigureAmazonAds>this.readConfig();
-		this.title = this.config.title;
+		this.#config = <ConfigureAmazonAds>this.readConfig();
+		this.title = this.#config.title;
 	}
 
 	async execute(): Promise<void> {
@@ -38,7 +38,7 @@ export default class AmazonAds extends Component implements ComponentInterface {
 		const dao = new AmazonAdsDao(this.configCommon);
 
 		/* 処理対象の ASIN を取得する */
-		const [targetAsinsBlog, targetAsinsAmazonAds] = await Promise.all([dao.getAsinsBlog(this.config.blog_select_limit), dao.getAsinsAmazonAds()]);
+		const [targetAsinsBlog, targetAsinsAmazonAds] = await Promise.all([dao.getAsinsBlog(this.#config.blog_select_limit), dao.getAsinsAmazonAds()]);
 		const targetAsins = [...new Set(targetAsinsBlog.concat(targetAsinsAmazonAds))]; // マージした上で重複した値を削除する
 		this.logger.debug('処理対象の ASIN', targetAsins);
 
@@ -49,21 +49,21 @@ export default class AmazonAds extends Component implements ComponentInterface {
 		while (targetAsins.length > 0) {
 			requestCount++;
 			if (requestCount > 1) {
-				await new Promise((resolve) => setTimeout(resolve, this.config.paapi.access_interval * 1000)); // 接続間隔を空ける
+				await new Promise((resolve) => setTimeout(resolve, this.#config.paapi.access_interval * 1000)); // 接続間隔を空ける
 			}
 
-			const asins = targetAsins.splice(0, this.config.paapi.getitems_itemids_chunk);
+			const asins = targetAsins.splice(0, this.#config.paapi.getitems_itemids_chunk);
 			this.logger.info('PA-API 接続（GetItems.ItemIds）:', asins);
 
 			const paapiResponse = <GetItemsResponse>await amazonPaapi.GetItems(
 				{
-					PartnerTag: this.config.paapi.request.partner_tag,
+					PartnerTag: this.#config.paapi.request.partner_tag,
 					PartnerType: 'Associates',
-					AccessKey: this.config.paapi.request.access_key,
-					SecretKey: this.config.paapi.request.secret_key,
-					Marketplace: this.config.paapi.request.marketplace,
-					Host: this.config.paapi.request.host,
-					Region: this.config.paapi.request.region,
+					AccessKey: this.#config.paapi.request.access_key,
+					SecretKey: this.#config.paapi.request.secret_key,
+					Marketplace: this.#config.paapi.request.marketplace,
+					Host: this.#config.paapi.request.host,
+					Region: this.#config.paapi.request.region,
 				},
 				{
 					ItemIds: asins,
@@ -277,13 +277,13 @@ export default class AmazonAds extends Component implements ComponentInterface {
 	 */
 	private async putJson(dao: AmazonAdsDao): Promise<void> {
 		for (const jsonPath of await dao.getAmazonAdsJsonPaths()) {
-			const endPoint = `${this.config.ads_put.url_base}/${jsonPath}`;
+			const endPoint = `${this.#config.ads_put.url_base}/${jsonPath}`;
 			this.logger.info('Fetch', endPoint);
 
 			const response = await fetch(endPoint, {
 				method: 'put',
 				headers: {
-					Authorization: `Basic ${Buffer.from(`${this.config.ads_put.auth.username}:${this.config.ads_put.auth.password}`).toString('base64')}`,
+					Authorization: `Basic ${Buffer.from(`${this.#config.ads_put.auth.username}:${this.#config.ads_put.auth.password}`).toString('base64')}`,
 				},
 			});
 			if (!response.ok) {

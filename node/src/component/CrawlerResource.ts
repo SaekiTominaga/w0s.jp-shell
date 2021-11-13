@@ -13,15 +13,15 @@ import { NoName as ConfigureCrawlerResource } from '../../configure/type/crawler
  * ウェブページを巡回し、レスポンスボディの差分を調べて通知する
  */
 export default class CrawlerResource extends Component implements ComponentInterface {
-	private readonly config: ConfigureCrawlerResource;
+	readonly #config: ConfigureCrawlerResource;
 
 	readonly #HTML_MIMES: DOMParserSupportedType[] = ['application/xhtml+xml', 'application/xml', 'text/html', 'text/xml'];
 
 	constructor() {
 		super();
 
-		this.config = <ConfigureCrawlerResource>this.readConfig();
-		this.title = this.config.title;
+		this.#config = <ConfigureCrawlerResource>this.readConfig();
+		this.title = this.#config.title;
 	}
 
 	/**
@@ -42,7 +42,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 		for (const targetData of await dao.select(priority)) {
 			const targetHost = new URL(targetData.url).hostname;
 			if (targetHost === prevHost) {
-				await new Promise((resolve) => setTimeout(resolve, this.config.access_interval_host * 1000)); // 接続間隔を空ける
+				await new Promise((resolve) => setTimeout(resolve, this.#config.access_interval_host * 1000)); // 接続間隔を空ける
 			}
 			prevHost = targetHost;
 
@@ -52,7 +52,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 			const signal = controller.signal;
 			const timeoutId = setTimeout(() => {
 				controller.abort();
-			}, this.config.fetch_timeout);
+			}, this.#config.fetch_timeout);
 
 			let responseBody: string;
 			let contentType: string;
@@ -65,7 +65,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 					const errorCount = await this.accessError(dao, targetData);
 
 					this.logger.info(`HTTP Status Code: ${response.status} ${targetData.url} 、エラー回数: ${errorCount}`);
-					if (errorCount % this.config.report_error_count === 0) {
+					if (errorCount % this.#config.report_error_count === 0) {
 						this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${response.status}\nエラー回数: ${errorCount}`);
 					}
 
@@ -101,7 +101,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 							const errorCount = await this.accessError(dao, targetData);
 
 							this.logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${errorCount}`);
-							if (errorCount % this.config.report_error_count === 0) {
+							if (errorCount % this.#config.report_error_count === 0) {
 								this.notice.push(`${targetData.title}\n${targetData.url}\nタイムアウト\nエラー回数: ${errorCount}`);
 							}
 
@@ -153,7 +153,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 
 				/* 通知 */
 				this.notice.push(
-					`${targetData.title} ${targetData.url}\n変更履歴: ${path.dirname(`${this.config.save.url}?dir=${filePath}`)}/ 🔒\nファイルサイズ ${
+					`${targetData.title} ${targetData.url}\n変更履歴: ${path.dirname(`${this.#config.save.url}?dir=${filePath}`)}/ 🔒\nファイルサイズ ${
 						targetData.content_length
 					} → ${contentLength}`
 				);
@@ -176,7 +176,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 		const date = new Date();
 
 		const fileDir = url.hostname;
-		const fileFullDir = `${this.config.save.dir}/${fileDir}`;
+		const fileFullDir = `${this.#config.save.dir}/${fileDir}`;
 		const fileName = `${url.pathname}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}_${String(
 			date.getHours()
 		).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}.txt`;

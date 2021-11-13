@@ -10,21 +10,21 @@ import { Twitter as ConfigureTwitterUserInfoHistoryMadoka } from '../../configur
  * まどか公式系 Twitter アカウントのユーザー情報を API を使用して取得し、 DB に格納済みのデータを照合して更新する
  */
 export default class TwitterUserInfoHistoryMadoka extends Component implements ComponentInterface {
-	private readonly config: ConfigureTwitterUserInfoHistoryMadoka;
+	readonly #config: ConfigureTwitterUserInfoHistoryMadoka;
 
 	constructor() {
 		super();
 
-		this.config = <ConfigureTwitterUserInfoHistoryMadoka>this.readConfig();
-		this.title = this.config.title;
+		this.#config = <ConfigureTwitterUserInfoHistoryMadoka>this.readConfig();
+		this.title = this.#config.title;
 	}
 
 	async execute(): Promise<void> {
 		const twitter = new Twitter({
-			consumer_key: this.config.twitter.production.consumer_key,
-			consumer_secret: this.config.twitter.production.consumer_secret,
-			access_token_key: this.config.twitter.production.access_token ?? '',
-			access_token_secret: this.config.twitter.production.access_token_secret ?? '',
+			consumer_key: this.#config.twitter.production.consumer_key,
+			consumer_secret: this.#config.twitter.production.consumer_secret,
+			access_token_key: this.#config.twitter.production.access_token ?? '',
+			access_token_secret: this.#config.twitter.production.access_token_secret ?? '',
 		});
 
 		if (this.configCommon.sqlite.db.madokatwitter === undefined) {
@@ -256,7 +256,7 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 		const imageBuffer = await response.arrayBuffer();
 
 		const filename = `${new URL(targetUrl).pathname.substring(1).replaceAll('/', '_')}${extension}`;
-		const path = `${this.config.image_dir}/${filename}`;
+		const path = `${this.#config.image_dir}/${filename}`;
 
 		await fs.promises.writeFile(path, new Int8Array(imageBuffer));
 		this.logger.info('Image file saved', path);
