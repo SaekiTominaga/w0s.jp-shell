@@ -2,9 +2,9 @@ import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import fetch from 'node-fetch';
 import fs from 'fs';
-import Twitter from 'twitter';
 import TwitterUserInfoHistoryMadokaDao from '../dao/TwitterUserInfoHistoryMadokaDao.js';
 import { Twitter as ConfigureTwitterUserInfoHistoryMadoka } from '../../configure/type/twitter-user-info-history-madoka';
+import { TwitterApi } from 'twitter-api-v2';
 
 /**
  * まどか公式系 Twitter アカウントのユーザー情報を API を使用して取得し、 DB に格納済みのデータを照合して更新する
@@ -20,12 +20,13 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 	}
 
 	async execute(): Promise<void> {
-		const twitter = new Twitter({
-			consumer_key: this.#config.twitter.production.consumer_key,
-			consumer_secret: this.#config.twitter.production.consumer_secret,
-			access_token_key: this.#config.twitter.production.access_token ?? '',
-			access_token_secret: this.#config.twitter.production.access_token_secret ?? '',
+		const twitterApi = new TwitterApi({
+			appKey: this.#config.twitter.production.consumer_key,
+			appSecret: this.#config.twitter.production.consumer_secret,
+			accessToken: this.#config.twitter.production.access_token ?? '',
+			accessSecret: this.#config.twitter.production.access_token_secret ?? '',
 		});
+		const twitterApiReadOnly = twitterApi.readOnly.v1;
 
 		if (this.configCommon.sqlite.db.madokatwitter === undefined) {
 			throw new Error('共通設定ファイルに madokatwitter テーブルのパスが指定されていない。');
@@ -38,7 +39,7 @@ export default class TwitterUserInfoHistoryMadoka extends Component implements C
 		const userIds = usersEntries.map(([, data]) => data.id); // DB に格納されている全ユーザー ID
 
 		/* Twitter API からユーザー情報を取得 */
-		const apiUsers = <w0s_jp.TwitterV1User[]>await twitter.get('users/lookup', {
+		const apiUsers = await twitterApiReadOnly.users({
 			user_id: userIds.join(','),
 		}); // https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/follow-search-get-users/api-reference/get-users-lookup
 

@@ -41,7 +41,7 @@
 		"relative-to-absolute-iri": "^1.0.6",
 		"sqlite": "^4.0.23",
 		"sqlite3": "^5.0.2",
-		"twitter": "^1.7.1",
+		"twitter-api-v2": "^1.11.0",
 		"twitter-text": "^3.1.0",
 		"uuid": "^8.3.2"
 	},

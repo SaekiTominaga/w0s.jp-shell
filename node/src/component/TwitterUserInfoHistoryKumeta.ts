@@ -4,9 +4,9 @@ import fetch from 'node-fetch';
 import fs from 'fs';
 import puppeteer from 'puppeteer-core';
 import Tweet from '../util/Tweet.js';
-import Twitter from 'twitter';
 import TwitterUserInfoHistoryKumetaDao from '../dao/TwitterUserInfoHistoryKumetaDao.js';
 import { Twitter as ConfigureTwitterUserInfoHistoryKumeta } from '../../configure/type/twitter-user-info-history-kumeta';
+import { TwitterApi } from 'twitter-api-v2';
 
 /**
  * 久米田康治 Twitter アカウントのユーザー情報を API を使用して取得し、 DB に格納済みのデータを照合して更新する
@@ -34,24 +34,25 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 			this.logger.debug('[[ --- Development Mode --- ]]');
 		}
 
-		let twitterAccessTokenOptions: Twitter.AccessTokenOptions;
+		let twitterAccessTokenOptions;
 		if (dev) {
 			twitterAccessTokenOptions = {
-				consumer_key: this.#config.twitter.dev.consumer_key,
-				consumer_secret: this.#config.twitter.dev.consumer_secret,
-				access_token_key: this.#config.twitter.dev.access_token,
-				access_token_secret: this.#config.twitter.dev.access_token_secret,
+				appKey: this.#config.twitter.dev.consumer_key,
+				appSecret: this.#config.twitter.dev.consumer_secret,
+				accessToken: this.#config.twitter.dev.access_token,
+				accessSecret: this.#config.twitter.dev.access_token_secret,
 			};
 		} else {
 			twitterAccessTokenOptions = {
-				consumer_key: this.#config.twitter.production.consumer_key,
-				consumer_secret: this.#config.twitter.production.consumer_secret,
-				access_token_key: this.#config.twitter.production.access_token,
-				access_token_secret: this.#config.twitter.production.access_token_secret,
+				appKey: this.#config.twitter.production.consumer_key,
+				appSecret: this.#config.twitter.production.consumer_secret,
+				accessToken: this.#config.twitter.production.access_token,
+				accessSecret: this.#config.twitter.production.access_token_secret,
 			};
 		}
 
-		const twitter = new Twitter(twitterAccessTokenOptions);
+		const twitterApi = new TwitterApi(twitterAccessTokenOptions);
+		const twitterApiReadOnly = twitterApi.readOnly.v1;
 
 		if (this.configCommon.sqlite.db.kumetatwitter === undefined) {
 			throw new Error('共通設定ファイルに kumetatwitter テーブルのパスが指定されていない。');
@@ -64,7 +65,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		const userIds = usersEntries.map(([, data]) => data.id); // DB に格納されている全ユーザー ID
 
 		/* APIからユーザー情報を取得 */
-		const apiUsers = <w0s_jp.TwitterV1User[]>await twitter.get('users/lookup', {
+		const apiUsers = await twitterApiReadOnly.users({
 			user_id: userIds.join(','),
 		}); // https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/follow-search-get-users/api-reference/get-users-lookup
 
@@ -194,7 +195,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 
 		/* ツイート */
 		if (this.#twitterMessages.size > 0) {
-			const tweet = new Tweet(twitter);
+			const tweet = new Tweet(twitterApi);
 			for (const twitterMessage of this.#twitterMessages) {
 				await tweet.postMessage(twitterMessage.message, twitterMessage.url, twitterMessage.hashtag, twitterMessage.medias);
 			}
