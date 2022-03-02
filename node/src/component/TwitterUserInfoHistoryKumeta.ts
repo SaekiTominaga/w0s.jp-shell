@@ -197,7 +197,13 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		if (this.#twitterMessages.size > 0) {
 			const tweet = new Tweet(twitterApi);
 			for (const twitterMessage of this.#twitterMessages) {
-				await tweet.postMessage(twitterMessage.message, twitterMessage.url, twitterMessage.hashtag, twitterMessage.medias);
+				try {
+					const postTweetResult = await tweet.postMessage(twitterMessage.message, twitterMessage.url, twitterMessage.hashtag, twitterMessage.medias);
+
+					this.logger.info(`ツイート成功: https://twitter.com/_/status/${postTweetResult.data.id}`);
+				} catch (e) {
+					this.logger.error(e);
+				}
 			}
 		}
 	}
