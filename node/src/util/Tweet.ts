@@ -1,9 +1,12 @@
 import TwitterApiv1ReadWrite from 'twitter-api-v2/dist/v1/client.v1.write';
+import TwitterApiv2ReadWrite from 'twitter-api-v2/dist/v2/client.v2.write';
 import TwitterText from 'twitter-text';
-import { TweetV1, TwitterApi } from 'twitter-api-v2';
+import { fileTypeFromBuffer } from 'file-type';
+import { TweetV2PostTweetResult, TwitterApi } from 'twitter-api-v2';
 
 export default class Tweet {
-	readonly #twitterApi: TwitterApiv1ReadWrite;
+	readonly #twitterApiv1: TwitterApiv1ReadWrite;
+	readonly #twitterApiv2: TwitterApiv2ReadWrite;
 
 	/* 画像の添付最大数 */
 	readonly #IMAGE_LIMIT = 4;
@@ -16,7 +19,9 @@ export default class Tweet {
 	#requestCount = 0;
 
 	constructor(twitter: TwitterApi) {
-		this.#twitterApi = twitter.readWrite.v1;
+		const twitterApiReadWrite = twitter.readWrite;
+		this.#twitterApiv1 = twitterApiReadWrite.v1;
+		this.#twitterApiv2 = twitterApiReadWrite.v2;
 	}
 
 	/**
@@ -25,10 +30,12 @@ export default class Tweet {
 	 * @param {string} text - 本文
 	 * @param {string} url - URL
 	 * @param {string} hashtag - ハッシュタグ
-	 * @param {string} medias - 添付するメディア
+	 * @param {Buffer[]} medias - 添付するメディア
+	 *
+	 * @returns {TweetV2PostTweetResult} ツイート結果
 	 */
-	async postMessage(text: string, url?: string, hashtag?: string, medias?: Buffer[]): Promise<TweetV1> {
-		const requestParams: Map<string, string> = new Map();
+	async postMessage(text: string, url?: string, hashtag?: string, medias?: Buffer[]): Promise<TweetV2PostTweetResult> {
+		const requestParams: Map<string, unknown> = new Map();
 
 		/* 本文を組み立てる */
 		let postText = text;
@@ -49,23 +56,26 @@ export default class Tweet {
 				throw new RangeError(`There should be no more than ${this.#IMAGE_LIMIT} media attachments.`);
 			}
 
-			const mediaIds = new Set<string>();
+			const requestMediaIds: Set<string> = new Set();
 			for (const media of medias) {
-				mediaIds.add(await this.uploadMedia(media));
+				requestMediaIds.add(await this.uploadMedia(media));
 			}
 
-			requestParams.set('media_ids', Array.from(mediaIds).join(','));
+			const requestMedia: Map<string, string[]> = new Map();
+			requestMedia.set('media_ids', Array.from(requestMediaIds));
+
+			requestParams.set('media', Object.fromEntries(requestMedia));
 		}
 
 		await this.#apiConnectPreprocessing();
 
-		const response = await this.#twitterApi.tweet(postMessage, Object.fromEntries(requestParams)); // https://developer.twitter.com/en/docs/twitter-api/v1/tweets/post-and-engage/api-reference/post-statuses-update
+		const postResult = await this.#twitterApiv2.tweet(postMessage, Object.fromEntries(requestParams)); // https://developer.twitter.com/en/docs/twitter-api/v1/tweets/post-and-engage/api-reference/post-statuses-update
 
-		if (response.full_text === undefined) {
-			throw new Error(`Tweet failure. ${response.toString()}`);
+		if (postResult.errors !== undefined) {
+			throw new Error(`Tweet failure. ${postResult.errors.toString()}`);
 		}
 
-		return response;
+		return postResult;
 	}
 
 	/**
@@ -76,9 +86,14 @@ export default class Tweet {
 	 * @returns {string} Media ID
 	 */
 	async uploadMedia(media: Buffer): Promise<string> {
+		const fileTypeResult = await fileTypeFromBuffer(media);
+		if (fileTypeResult === undefined) {
+			throw new Error('File type detection failed.');
+		}
+
 		await this.#apiConnectPreprocessing();
 
-		return await this.#twitterApi.uploadMedia(media, { mimeType: 'image/png' }); // https://developer.twitter.com/en/docs/twitter-api/v1/media/upload-media/api-reference/post-media-upload
+		return await this.#twitterApiv1.uploadMedia(media, { mimeType: fileTypeResult.mime }); // https://developer.twitter.com/en/docs/twitter-api/v1/media/upload-media/api-reference/post-media-upload
 	}
 
 	/**
