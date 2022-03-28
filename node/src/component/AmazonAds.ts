@@ -84,10 +84,10 @@ export default class AmazonAds extends Component implements ComponentInterface {
 
 				const asin = item.ASIN;
 				if (targetAsinsBlog.includes(asin)) {
-					await this.blog(dao, item, asin);
+					await this.#blog(dao, item, asin);
 				}
 				if (targetAsinsAmazonAds.includes(asin)) {
-					diffsAmazonAds.push(await this.amazonAds(dao, item, asin));
+					diffsAmazonAds.push(await this.#amazonAds(dao, item, asin));
 				}
 			}
 		}
@@ -96,7 +96,7 @@ export default class AmazonAds extends Component implements ComponentInterface {
 
 		if (diffsAmazonAds.some((diff) => diff.size >= 1)) {
 			/* Web ページで使用する JSON ファイルを出力 */
-			await this.putJson(dao);
+			await this.#createJson();
 		}
 	}
 
@@ -109,7 +109,7 @@ export default class AmazonAds extends Component implements ComponentInterface {
 	 *
 	 * @returns {Map<string, Diff>} API から取得した値と DB に格納済みの値の差分情報
 	 */
-	private async blog(dao: AmazonAdsDao, item: Item, asin: string): Promise<Map<string, Diff>> {
+	async #blog(dao: AmazonAdsDao, item: Item, asin: string): Promise<Map<string, Diff>> {
 		const apiDpUrl = item.DetailPageURL; // 詳細ページURL
 		const apiTitle = item.ItemInfo?.Title?.DisplayValue ?? null; // 製品タイトル
 		if (apiTitle === null) {
@@ -196,7 +196,7 @@ export default class AmazonAds extends Component implements ComponentInterface {
 	 *
 	 * @returns {Map<string, Diff>} API から取得した値と DB に格納済みの値の差分情報
 	 */
-	private async amazonAds(dao: AmazonAdsDao, item: Item, asin: string): Promise<Map<string, Diff>> {
+	async #amazonAds(dao: AmazonAdsDao, item: Item, asin: string): Promise<Map<string, Diff>> {
 		const apiDpUrl = item.DetailPageURL; // 詳細ページURL
 		const apiTitle = item.ItemInfo?.Title?.DisplayValue ?? null; // 製品タイトル
 		if (apiTitle === null) {
@@ -272,16 +272,14 @@ export default class AmazonAds extends Component implements ComponentInterface {
 
 	/**
 	 * Web ページで使用する JSON ファイルを出力
-	 *
-	 * @param {AmazonAdsDao} dao - dao クラス
 	 */
-	private async putJson(dao: AmazonAdsDao): Promise<void> {
-		for (const jsonPath of await dao.getAmazonAdsJsonPaths()) {
-			const endPoint = `${this.#config.ads_put.url_base}/${jsonPath}`;
-			this.logger.info('Fetch', endPoint);
+	async #createJson(): Promise<void> {
+		const endPoint = this.#config.ads_put.url_base;
+		this.logger.info('Fetch', endPoint);
 
+		try {
 			const response = await fetch(endPoint, {
-				method: 'put',
+				method: 'post',
 				headers: {
 					Authorization: `Basic ${Buffer.from(`${this.#config.ads_put.auth.username}:${this.#config.ads_put.auth.password}`).toString('base64')}`,
 				},
@@ -289,6 +287,8 @@ export default class AmazonAds extends Component implements ComponentInterface {
 			if (!response.ok) {
 				this.logger.error('Fetch error', endPoint);
 			}
+		} catch (e) {
+			this.logger.error(e);
 		}
 	}
 }

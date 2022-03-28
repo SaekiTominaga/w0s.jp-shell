@@ -300,29 +300,4 @@ export default class AmazonAdsDao {
 			throw e;
 		}
 	}
-
-	/**
-	 * amazonads テーブルから JSON ファイルのパスを取得する
-	 *
-	 * @returns {string[]} JSON ファイルのパス
-	 */
-	async getAmazonAdsJsonPaths(): Promise<string[]> {
-		const dbh = await this.getDbhAmazonAds();
-
-		const sth = await dbh.prepare(`
-			SELECT
-				json_path
-			FROM
-				m_category
-		`);
-		const rows = await sth.all();
-		await sth.finalize();
-
-		const jsonPaths: string[] = [];
-		for (const row of rows) {
-			jsonPaths.push(row.json_path);
-		}
-
-		return jsonPaths;
-	}
 }
