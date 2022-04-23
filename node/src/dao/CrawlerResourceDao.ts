@@ -114,7 +114,7 @@ export default class CrawlerResourceDao {
 					url = :url
 			`);
 			await sth.run({
-				':last_modified': lastModified,
+				':last_modified': DbUtil.dateToUnix(lastModified),
 				':content_length': contentLength,
 				':url': data.url,
 			});
