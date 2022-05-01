@@ -1,6 +1,5 @@
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
-import fetch from 'node-fetch';
 import fs from 'fs';
 import puppeteer from 'puppeteer-core';
 import Tweet from '../util/Tweet.js';

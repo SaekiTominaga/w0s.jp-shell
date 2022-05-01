@@ -3,7 +3,6 @@ import AmazonAdsDao from '../dao/AmazonAdsDao.js';
 import amazonPaapi from 'amazon-paapi';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
-import fetch from 'node-fetch';
 import PaapiUtil from '../util/Paapi.js';
 import { Amazon as ConfigureAmazonAds } from '../../configure/type/amazon-ads';
 import { Buffer } from 'buffer';

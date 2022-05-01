@@ -1,6 +1,5 @@
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
-import fetch from 'node-fetch';
 import ThumbImageDao from '../dao/ThumbImageDao.js';
 import { NoName as ConfigureTest } from '../../configure/type/thumb-image';
 

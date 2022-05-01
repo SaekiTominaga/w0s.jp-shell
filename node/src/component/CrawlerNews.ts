@@ -2,7 +2,6 @@ import AbortController from 'abort-controller';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import CrawlerNewsDao from '../dao/CrawlerNewsDao.js';
-import fetch from 'node-fetch';
 import jsdom from 'jsdom';
 import MIMEParser from '@saekitominaga/mime-parser';
 import puppeteer from 'puppeteer-core';

@@ -1,6 +1,5 @@
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
-import fetch from 'node-fetch';
 import fs from 'fs';
 import TwitterUserInfoHistoryMadokaDao from '../dao/TwitterUserInfoHistoryMadokaDao.js';
 import { Twitter as ConfigureTwitterUserInfoHistoryMadoka } from '../../configure/type/twitter-user-info-history-madoka';

@@ -2,7 +2,6 @@ import AbortController from 'abort-controller';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import CrawlerResourceDao from '../dao/CrawlerResourceDao.js';
-import fetch from 'node-fetch';
 import fs from 'fs';
 import jsdom from 'jsdom';
 import MIMEParser from '@saekitominaga/mime-parser';
