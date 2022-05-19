@@ -149,11 +149,11 @@ export default class CrawlerResource extends Component implements ComponentInter
 				await dao.update(targetData, contentLength, lastModified);
 
 				/* ファイル保存 */
-				const filePath = this.saveFile(targetData.url, responseBody);
+				const fileDir = await this.saveFile(targetData.url, responseBody);
 
 				/* 通知 */
 				this.notice.push(
-					`${targetData.title} ${targetData.url}\n変更履歴: ${path.dirname(`${this.#config.save.url}?dir=${filePath}`)} 🔒\nファイルサイズ ${
+					`${targetData.title} ${targetData.url}\n変更履歴: ${this.#config.save.url}?dir=${fileDir} 🔒\nファイルサイズ ${
 						targetData.content_length
 					} → ${contentLength}`
 				);
@@ -169,48 +169,34 @@ export default class CrawlerResource extends Component implements ComponentInter
 	 * @param {string} urlText - URL
 	 * @param {string} responseBody - レスポンスボディ
 	 *
-	 * @returns {string} ファイルパス
+	 * @returns {string} ファイルディレクトリ
 	 */
-	private saveFile(urlText: string, responseBody: string): string {
+	private async saveFile(urlText: string, responseBody: string): Promise<string> {
 		const url = new URL(urlText);
 		const date = new Date();
 
-		const fileDir = url.hostname;
+		const fileDir = url.pathname === '/' ? url.hostname : `${url.hostname}${url.pathname.replace(/\/[^/]*$/g, '')}`;
 		const fileFullDir = `${this.#config.save.dir}/${fileDir}`;
-		const fileName = `${url.pathname}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}_${String(
-			date.getHours()
-		).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}.txt`;
+		const fileName = `${url.pathname.split('/').at(-1)}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(
+			2,
+			'0'
+		)}_${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}.txt`;
 
-		const filePath = `${fileDir}${fileName}`; // ドキュメントルート基準のパス
-		const fileFullPath = `${fileFullDir}${fileName}`; // ドキュメントルート基準のパス
+		const filePath = `${fileDir}/${fileName}`; // ドキュメントルート基準のパス
+		const fileFullPath = `${fileFullDir}/${fileName}`; // ドキュメントルート基準のパス
 
-		this.logger.info(`ファイル保存: ${filePath}`);
+		try {
+			await fs.promises.opendir(fileFullPath);
+		} catch {
+			await fs.promises.mkdir(fileFullDir, { recursive: true });
+			this.logger.info('mkdir', fileDir);
+		}
 
-		fs.opendir(fileFullPath, (error) => {
-			if (error !== null) {
-				this.logger.debug(`ディレクトリ作成: ${fileDir}`);
+		const fileHandle = await fs.promises.open(fileFullPath, 'wx');
+		await fs.promises.writeFile(fileHandle, responseBody);
+		this.logger.info('File write success', filePath);
 
-				fs.mkdirSync(fileFullDir, { recursive: true });
-			}
-
-			fs.open(fileFullPath, 'wx', (error, fd) => {
-				if (error !== null) {
-					this.logger.error(`${filePath} のオープンに失敗`);
-					throw error;
-				}
-
-				fs.write(fd, responseBody, (error) => {
-					if (error !== null) {
-						this.logger.error('File output failed.', filePath, error);
-						return;
-					}
-
-					this.logger.info('File output success.', filePath);
-				});
-			});
-		});
-
-		return filePath;
+		return fileDir;
 	}
 
 	/**
