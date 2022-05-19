@@ -6,7 +6,6 @@ import fetch from 'node-fetch';
 import fs from 'fs';
 import jsdom from 'jsdom';
 import MIMEParser from '@saekitominaga/mime-parser';
-import path from 'path';
 import { NoName as ConfigureCrawlerResource } from '../../configure/type/crawler-resource';
 
 /**
@@ -62,7 +61,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 					signal,
 				});
 				if (!response.ok) {
-					const errorCount = await this.accessError(dao, targetData);
+					const errorCount = await this.#accessError(dao, targetData);
 
 					this.logger.info(`HTTP Status Code: ${response.status} ${targetData.url} 、エラー回数: ${errorCount}`);
 					if (errorCount % this.#config.report_error_count === 0) {
@@ -87,7 +86,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 					lastModified = new Date(lastModifiedText);
 					if (lastModified.getTime() === targetData.modified_at?.getTime()) {
 						this.logger.info('Last-Modified ヘッダが前回と同じ');
-						this.accessSuccess(dao, targetData);
+						this.#accessSuccess(dao, targetData);
 						continue;
 					}
 				}
@@ -98,7 +97,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 				if (e instanceof Error) {
 					switch (e.name) {
 						case 'AbortError': {
-							const errorCount = await this.accessError(dao, targetData);
+							const errorCount = await this.#accessError(dao, targetData);
 
 							this.logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${errorCount}`);
 							if (errorCount % this.#config.report_error_count === 0) {
@@ -149,7 +148,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 				await dao.update(targetData, contentLength, lastModified);
 
 				/* ファイル保存 */
-				const fileDir = await this.saveFile(targetData.url, responseBody);
+				const fileDir = await this.#saveFile(targetData.url, responseBody);
 
 				/* 通知 */
 				this.notice.push(
@@ -159,7 +158,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 				);
 			}
 
-			await this.accessSuccess(dao, targetData);
+			await this.#accessSuccess(dao, targetData);
 		}
 	}
 
@@ -171,7 +170,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 	 *
 	 * @returns {string} ファイルディレクトリ
 	 */
-	private async saveFile(urlText: string, responseBody: string): Promise<string> {
+	async #saveFile(urlText: string, responseBody: string): Promise<string> {
 		const url = new URL(urlText);
 		const date = new Date();
 
@@ -205,7 +204,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 	 * @param {CrawlerResourceDao} dao - dao クラス
 	 * @param {object} targetData - 登録データ
 	 */
-	private async accessSuccess(dao: CrawlerResourceDao, targetData: CrawlerDb.Resource): Promise<void> {
+	async #accessSuccess(dao: CrawlerResourceDao, targetData: CrawlerDb.Resource): Promise<void> {
 		if (targetData.error > 0) {
 			/* 前回アクセス時がエラーだった場合 */
 			await dao.resetError(targetData.url);
@@ -220,7 +219,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 	 *
 	 * @returns {number} 連続アクセスエラー回数
 	 */
-	private async accessError(dao: CrawlerResourceDao, targetData: CrawlerDb.Resource): Promise<number> {
+	async #accessError(dao: CrawlerResourceDao, targetData: CrawlerDb.Resource): Promise<number> {
 		const error = targetData.error + 1; // 連続アクセスエラー回数
 
 		await dao.updateError(targetData.url, error);
