@@ -3,25 +3,52 @@
 	"$id": "https://schema.w0s.jp/yokohama-library-hold-notice.json",
 	"type": "object",
 	"title": "横浜市立図書館　予約連絡",
-	"required": ["title", "url", "urlParam", "ready", "notice"],
+	"required": ["title", "id", "password", "url", "login", "ready", "notice"],
 	"properties": {
 		"title": {
 			"type": "string",
 			"title": "コンポーネントタイトル",
 			"description": "自然言語による、人間が見て分かりやすい名前を設定する。通知メールの件名などで使用される。"
 		},
+		"id": {
+			"type": "string",
+			"title": "ユーザー ID（図書館カード番号）"
+		},
+		"password": {
+			"type": "string",
+			"title": "パスワード"
+		},
 		"url": {
 			"type": "string",
 			"title": "アクセスする URL"
 		},
-		"urlParam": {
-			"type": "string",
-			"title": "URL の POST に付与するパラメーター",
-			"examples": ["foo=hoge&bar=piyo"]
+		"login": {
+			"type": "object",
+			"title": "ログインフォーム",
+			"required": ["idSelector", "passwordSelector", "submitSelector", "errorSelector"],
+			"properties": {
+				"idSelector": {
+					"type": "string",
+					"title": "ユーザー ID 入力欄のセレクター"
+				},
+				"passwordSelector": {
+					"type": "string",
+					"title": "パスワード入力欄のセレクター"
+				},
+				"submitSelector": {
+					"type": "string",
+					"title": "送信ボタンのセレクター"
+				},
+				"errorSelector": {
+					"type": "string",
+					"title": "エラーメッセージのセレクター"
+				}
+			},
+			"additionalProperties": false
 		},
 		"ready": {
 			"type": "object",
-			"title": "新たに到着した本があった場合にのみ表示される通知ページの情報",
+			"title": "新着予約があった場合にのみ表示される通知ページの情報",
 			"required": ["wrapSelector", "titleSelector", "confirmButtonSelector"],
 			"properties": {
 				"wrapSelector": {
@@ -42,7 +69,7 @@
 		"notice": {
 			"type": "object",
 			"title": "通知メッセージ",
-			"required": ["messagePrefix", "messageSuffix", "separator"],
+			"required": ["messagePrefix", "messageSuffix"],
 			"properties": {
 				"messagePrefix": {
 					"type": "string",
@@ -51,10 +78,6 @@
 				"messageSuffix": {
 					"type": "string",
 					"title": "資料名の後に付けるメッセージ"
-				},
-				"separator": {
-					"type": "string",
-					"title": "複数資料が同時に到着した場合の資料名の区切り文字"
 				}
 			},
 			"additionalProperties": false
