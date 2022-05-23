@@ -1,7 +1,7 @@
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
-import jsdom from 'jsdom';
 import puppeteer from 'puppeteer-core';
+import { JSDOM } from 'jsdom';
 import { NoName as ConfigureYokohamaLibraryHoldNotice } from '../../configure/type/yokohama-library-hold-notice';
 
 /**
@@ -39,14 +39,16 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 			this.logger.debug(responseBody);
 
 			/* DOM 化 */
-			const document = new jsdom.JSDOM(responseBody).window.document;
+			const document = new JSDOM(responseBody).window.document;
 
-			const readyBookWrapElements = <NodeListOf<HTMLElement>>document.querySelectorAll(this.#config.ready.wrapSelector);
-			if (readyBookWrapElements.length > 0) {
+			const readyBookWrapElements = document.querySelectorAll(this.#config.ready.wrapSelector);
+			if (readyBookWrapElements.length === 0) {
+				this.logger.info('新着予約なし');
+			} else {
 				const readyBookTitleList: string[] = [];
 
 				for (const readyWrapElement of readyBookWrapElements) {
-					const readyBookTitleElement = <HTMLElement | null>readyWrapElement.querySelector(this.#config.ready.titleSelector);
+					const readyBookTitleElement = readyWrapElement.querySelector(this.#config.ready.titleSelector);
 					if (readyBookTitleElement === null) {
 						throw new Error(`書名の HTML 要素（${this.#config.ready.titleSelector}）が存在しない。`);
 					}
