@@ -39,7 +39,7 @@
 		"log4js": "^6.4.6",
 		"node-fetch": "^3.2.4",
 		"nodemailer": "^6.7.4",
-		"puppeteer-core": "^13.7.0",
+		"puppeteer-core": "^15.4.0",
 		"relative-to-absolute-iri": "^1.0.6",
 		"sqlite": "^4.1.1",
 		"sqlite3": "^5.0.6",

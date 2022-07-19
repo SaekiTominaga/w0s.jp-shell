@@ -310,12 +310,12 @@ export default class CrawlerNews extends Component implements ComponentInterface
 			const response = await page.goto(targetData.url, {
 				waitUntil: 'networkidle0',
 			});
-			if (!response.ok) {
+			if (response === null || !response.ok) {
 				const errorCount = await this.accessError(dao, targetData);
 
-				this.logger.info(`HTTP Status Code: ${response.status} ${targetData.url} 、エラー回数: ${errorCount}`);
+				this.logger.info(`HTTP Status Code: ${response?.status} ${targetData.url} 、エラー回数: ${errorCount}`);
 				if (errorCount % this.#config.report_error_count === 0) {
-					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${response.status}\nエラー回数: ${errorCount}`);
+					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${response?.status}\nエラー回数: ${errorCount}`);
 				}
 
 				return null;
