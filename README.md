@@ -14,6 +14,7 @@ w0s.jp サーバーで稼働しているシェルスクリプト
 | [Amazon 商品情報チェッカー](node/src/component/AmazonAds.ts) | AmazonAds | blog, amazonads | Amazon 商品情報を PA-API を使用して取得し、 DB に格納済みのデータを照合して更新する。 |
 | [ウェブ巡回（新着）](node/src/component/CrawlerNews.ts) | CrawlerNews | crawler | ウェブページを巡回し（HTML ページのみ）、新着情報の差分を調べて通知する。 |
 | [ウェブ巡回（リソース）](node/src/component/CrawlerResource.ts) | CrawlerResource | crawler | ウェブページを巡回し（HTML リソースに限らない）、レスポンスボディの差分を調べて通知する。 |
+| [JR 空席確認](node/src/component/JrCyberStation.ts) | JrCyberStation | ― | JR CYBER STATION で空席があれば通知する |
 | [久米田康治 Twitter ユーザー履歴](node/src/component/TwitterUserInfoHistoryKumeta.ts) | TwitterUserInfoHistoryKumeta | kumetatwitter | 漫画家、久米田康治の Twitter アカウントについて、アイコン画像やフォロワー数などの変更を検知して [Twitter: @kumeta_icon](https://twitter.com/kumeta_icon) に投稿する。 |
 | [まどか Twitter ユーザー履歴](node/src/component/TwitterUserInfoHistoryMadoka.ts) | TwitterUserInfoHistoryMadoka | madokatwitter | アニメ『魔法少女まどか☆マギカ』関連の Twitter アカウントについて、アイコン画像、バナー画像の変更を検知して履歴を保存する。 |
 | [横浜市立図書館　予約連絡](node/src/component/YokohamaLibraryHoldNotice.ts) | YokohamaLibraryHoldNotice | ― | [横浜市立図書館蔵書検索](https://opac.lib.city.yokohama.lg.jp/opac/)で予約した本は受取可能になっても予約連絡メールが送信されるのは翌朝なので、到着日に受け取れるようログインページをスクレイピングして独自に通知メールを送る。（受け取り可能になる時間帯は各館によって概ね決まっているため、その時間帯に実行すれば良い） |

@@ -1,0 +1,55 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://schema.w0s.jp/jr-cyber-station.json",
+	"type": "object",
+	"title": "JR 空席確認",
+	"required": ["title", "station_url", "search_url", "search_interval", "search"],
+	"properties": {
+		"title": {
+			"type": "string",
+			"title": "コンポーネントタイトル",
+			"description": "自然言語による、人間が見て分かりやすい名前を設定する。通知メールの件名などで使用される。"
+		},
+		"station_url": {
+			"type": "string",
+			"title": "駅リストの URL"
+		},
+		"search_url": {
+			"type": "string",
+			"title": "検索ページの URL"
+		},
+		"search_interval": {
+			"type": "integer",
+			"minimum": 0,
+			"title": "検索ページのリクエスト間隔（秒）"
+		},
+		"search": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["depature", "arrival", "date"],
+				"properties": {
+					"depature": {
+						"type": "string",
+						"title": "出発駅"
+					},
+					"arrival": {
+						"type": "string",
+						"title": "到着駅"
+					},
+					"date": {
+						"type": "string",
+						"title": "年月日"
+					},
+					"time": {
+						"type": "string",
+						"title": "時分"
+					}
+				},
+				"additionalProperties": false
+			},
+			"title": "検索情報"
+		}
+	},
+	"additionalProperties": false
+}
