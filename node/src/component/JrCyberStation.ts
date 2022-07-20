@@ -19,14 +19,17 @@ export default class JrCyberStation extends Component implements ComponentInterf
 	}
 
 	async execute(): Promise<void> {
-		/* 駅名リスト */
+		if (this.#config.search.length === 0) {
+			return;
+		}
+
+		/* 駅名リストを取得 */
 		const response = await fetch(this.#config.station_url);
 		if (!response.ok) {
 			this.notice.push(`HTTP Status Code: ${response.status} <${this.#config.station_url}>`);
 			return;
 		}
 
-		/* レスポンスボディ */
 		const stationList: Map<string, string> = new Map();
 		(await response.text())
 			.split('\n')
@@ -39,16 +42,12 @@ export default class JrCyberStation extends Component implements ComponentInterf
 			});
 		this.logger.debug(stationList);
 
+		/* 空席検索 */
 		const browser = await puppeteer.launch({ executablePath: this.configCommon.browser.path });
 
 		let requestCount = 0;
 		try {
 			for (const search of this.#config.search) {
-				requestCount++;
-				if (requestCount > 1) {
-					await new Promise((resolve) => setTimeout(resolve, this.#config.search_interval * 1000)); // 接続間隔を空ける
-				}
-
 				const depatureStationId = stationList.get(search.depature);
 				if (depatureStationId === undefined) {
 					this.notice.push(`出発駅が存在しない: ${search.depature}`);
@@ -70,12 +69,17 @@ export default class JrCyberStation extends Component implements ComponentInterf
 				urlSearchParams.append('day', date.format('D'));
 				urlSearchParams.append('hour', date.format('H'));
 				urlSearchParams.append('minute', date.format('m'));
-				urlSearchParams.append('train', '5');
+				urlSearchParams.append('train', '5'); // 在来線
 				urlSearchParams.append('dep_stnpb', depatureStationId);
 				urlSearchParams.append('arr_stnpb', arrivalStationId);
 				urlSearchParams.append('script', '1');
 
 				/* ブラウザで対象ページにアクセス */
+				requestCount++;
+				if (requestCount > 1) {
+					await new Promise((resolve) => setTimeout(resolve, this.#config.search_interval * 1000)); // 接続間隔を空ける
+				}
+
 				const page = await browser.newPage();
 				await page.setRequestInterception(true);
 				page.on('request', (request) => {
@@ -123,7 +127,7 @@ export default class JrCyberStation extends Component implements ComponentInterf
 				this.logger.debug('空席のある列車', vacancyTrain);
 
 				if (vacancyTrain.length >= 1) {
-					this.notice.push(`${date.format('YYYY年M月D日')} の${vacancyTrain.map((train) => `「${train}」`).join('')}に空席`);
+					this.notice.push(`${date.format('YYYY年M月D日')}の${vacancyTrain.map((train) => `「${train}」`).join('')}に空席`);
 				}
 			}
 		} finally {
