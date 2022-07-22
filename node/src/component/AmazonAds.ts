@@ -163,13 +163,12 @@ export default class AmazonAds extends Component implements ComponentInterface {
 		}
 
 		if (diff.size === 0) {
-			this.logger.debug(`${asin} の情報に変更がないので DB の更新処理は行わない`);
-			return diff;
+			this.logger.debug(`${asin} の情報に変更がない`);
+		} else {
+			this.logger.info(`${asin} の情報が更新`, diff);
 		}
 
 		/* 更新処理を行う */
-		this.logger.info(`${asin} の情報が更新`, diff);
-
 		await dao.updateBlog({
 			asin: asin,
 			dp_url: apiDpUrl,
