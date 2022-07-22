@@ -53,7 +53,7 @@ export default class AmazonAds extends Component implements ComponentInterface {
 			}
 
 			const asins = targetAsins.splice(0, this.#config.paapi.getitems_itemids_chunk);
-			this.logger.info('PA-API 接続（GetItems.ItemIds）:', asins);
+			this.logger.info('PA-API 接続（GetItems.ItemIds）', asins);
 
 			const paapiResponse = <GetItemsResponse>await amazonPaapi.GetItems(
 				{
@@ -225,8 +225,6 @@ export default class AmazonAds extends Component implements ComponentInterface {
 		this.logger.debug(`amazonads データベースの d_dp テーブルから ASIN: ${asin} の検索処理を開始`);
 
 		const db = await dao.selectAmazonAds(asin);
-
-		this.logger.debug('selectAmazonAds() 終了');
 
 		const diff = new Map<string, Diff>(); // API から取得した値と DB に格納済みの値を比較し、その差分情報を格納する
 		if (apiDpUrl !== db.dp_url) {
