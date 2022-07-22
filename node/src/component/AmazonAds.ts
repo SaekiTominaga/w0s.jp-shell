@@ -42,6 +42,7 @@ export default class AmazonAds extends Component implements ComponentInterface {
 		this.logger.debug('処理対象の ASIN', targetAsins);
 
 		/* PA-API を使用してデータを取得する */
+		const diffsBlog: Map<string, Diff>[] = [];
 		const diffsAmazonAds: Map<string, Diff>[] = [];
 
 		let requestCount = 0;
@@ -83,7 +84,7 @@ export default class AmazonAds extends Component implements ComponentInterface {
 
 				const asin = item.ASIN;
 				if (targetAsinsBlog.includes(asin)) {
-					await this.#blog(dao, item, asin);
+					diffsBlog.push(await this.#blog(dao, item, asin));
 				}
 				if (targetAsinsAmazonAds.includes(asin)) {
 					diffsAmazonAds.push(await this.#amazonAds(dao, item, asin));
@@ -91,8 +92,13 @@ export default class AmazonAds extends Component implements ComponentInterface {
 			}
 		}
 
-		this.logger.debug(diffsAmazonAds);
+		this.logger.debug(diffsBlog);
+		if (diffsBlog.some((diff) => diff.size >= 1)) {
+			/* DB の更新日時を更新 */
+			await dao.updateBlogModified();
+		}
 
+		this.logger.debug(diffsAmazonAds);
 		if (diffsAmazonAds.some((diff) => diff.size >= 1)) {
 			/* Web ページで使用する JSON ファイルを出力 */
 			await this.#createJson();

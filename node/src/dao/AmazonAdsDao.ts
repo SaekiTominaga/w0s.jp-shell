@@ -259,6 +259,32 @@ export default class AmazonAdsDao {
 	}
 
 	/**
+	 * 最終更新日時を記録する
+	 */
+	async updateBlogModified(): Promise<void> {
+		const dbh = await this.getDbhBlog();
+
+		await dbh.exec('BEGIN');
+		try {
+			const sth = await dbh.prepare(`
+				UPDATE
+					d_info
+				SET
+					modified = :modified
+			`);
+			await sth.run({
+				':modified': DbUtil.dateToUnix(),
+			});
+			await sth.finalize();
+
+			dbh.exec('COMMIT');
+		} catch (e) {
+			dbh.exec('ROLLBACK');
+			throw e;
+		}
+	}
+
+	/**
 	 * amazonads テーブルの Amazon 商品データを更新する
 	 *
 	 * @param {object} data - Amazon 商品データ
