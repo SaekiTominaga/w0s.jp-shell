@@ -90,33 +90,6 @@ declare namespace KumetaTwitterDb {
 	}
 }
 
-declare namespace MadokaTwitterDb {
-	export interface User {
-		id: string;
-		username: string;
-		name: string;
-		location: string | null;
-		description: string | null;
-		url: string | null;
-		created_at: Date;
-	}
-
-	export interface ProfileImage {
-		id: string;
-		url: string | null;
-		url_api: string | null;
-		file_name: string | null;
-		registed_at: Date;
-	}
-
-	export interface Banner {
-		id: string;
-		url: string | null;
-		file_name: string | null;
-		registed_at: Date;
-	}
-}
-
 declare namespace ThumbImageDb {
 	export interface Queue {
 		file_path: string;
