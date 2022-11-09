@@ -1,14 +1,14 @@
 import AbortController from 'abort-controller';
-import Component from '../Component.js';
-import ComponentInterface from '../ComponentInterface.js';
-import CrawlerNewsDao from '../dao/CrawlerNewsDao.js';
 import fetch from 'node-fetch';
 import jsdom from 'jsdom';
 import MIMEParser from '@saekitominaga/mime-parser';
 import puppeteer from 'puppeteer-core';
-import { NoName as ConfigureCrawlerNews } from '../../configure/type/crawler-news';
 import { resolve } from 'relative-to-absolute-iri';
 import { v4 as uuidV4 } from 'uuid';
+import Component from '../Component.js';
+import ComponentInterface from '../ComponentInterface.js';
+import CrawlerNewsDao from '../dao/CrawlerNewsDao.js';
+import { NoName as ConfigureCrawlerNews } from '../../configure/type/crawler-news';
 
 /**
  * ウェブページを巡回し、新着情報の差分を調べて通知する
@@ -28,7 +28,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	constructor() {
 		super();
 
-		this.#config = <ConfigureCrawlerNews>this.readConfig();
+		this.#config = this.readConfig() as ConfigureCrawlerNews;
 		this.title = this.#config.title;
 	}
 
@@ -46,18 +46,18 @@ export default class CrawlerNews extends Component implements ComponentInterface
 
 		const dao = new CrawlerNewsDao(this.configCommon);
 
-		for (const targetData of await dao.select(priority)) {
+		(await dao.select(priority)).forEach(async (targetData) => {
 			const newUrl = !(await dao.selectDataCount(targetData.url)); // 新規追加された URL か
 
 			this.logger.info(`取得処理を実行: ${targetData.url}`);
 
 			const responseBody = targetData.browser ? await this.requestBrowser(dao, targetData) : await this.requestFetch(dao, targetData);
 			if (responseBody === null) {
-				continue;
+				return;
 			}
 
 			/* DOM 化 */
-			const document = new jsdom.JSDOM(responseBody).window.document;
+			const { document } = new jsdom.JSDOM(responseBody).window;
 
 			let wrapElements: NodeListOf<Element>;
 			try {
@@ -68,11 +68,11 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				} else {
 					this.logger.error(e);
 				}
-				continue;
+				return;
 			}
 			if (wrapElements.length === 0) {
 				this.logger.error(`包括要素（${targetData.selector_wrap}）が存在しない: ${targetData.url}\n\n${responseBody}`);
-				continue;
+				return;
 			}
 
 			for (const wrapElement of wrapElements) {
@@ -199,8 +199,8 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				}
 			}
 
-			await this.accessSuccess(dao, targetData);
-		}
+			await CrawlerNews.#accessSuccess(dao, targetData);
+		});
 	}
 
 	/**
@@ -213,7 +213,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	 */
 	private async requestFetch(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<string | null> {
 		const controller = new AbortController();
-		const signal = controller.signal;
+		const { signal } = controller;
 		const timeoutId = setTimeout(() => {
 			controller.abort();
 		}, this.#config.fetch_timeout);
@@ -223,7 +223,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				signal,
 			});
 			if (!response.ok) {
-				const errorCount = await this.accessError(dao, targetData);
+				const errorCount = await CrawlerNews.#accessError(dao, targetData);
 
 				this.logger.info(`HTTP Status Code: ${response.status} ${targetData.url} 、エラー回数: ${errorCount}`);
 				if (errorCount % this.#config.report_error_count === 0) {
@@ -253,7 +253,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 			if (e instanceof Error) {
 				switch (e.name) {
 					case 'AbortError': {
-						const errorCount = await this.accessError(dao, targetData);
+						const errorCount = await CrawlerNews.#accessError(dao, targetData);
 
 						this.logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${errorCount}`);
 						if (errorCount % this.#config.report_error_count === 0) {
@@ -311,7 +311,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				waitUntil: 'networkidle0',
 			});
 			if (response === null || !response.ok) {
-				const errorCount = await this.accessError(dao, targetData);
+				const errorCount = await CrawlerNews.#accessError(dao, targetData);
 
 				this.logger.info(`HTTP Status Code: ${response?.status} ${targetData.url} 、エラー回数: ${errorCount}`);
 				if (errorCount % this.#config.report_error_count === 0) {
@@ -335,9 +335,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				return null;
 			}
 
-			responseBody = await page.evaluate(() => {
-				return document.documentElement.outerHTML;
-			});
+			responseBody = await page.evaluate(() => document.documentElement.outerHTML);
 		} finally {
 			await browser.close();
 		}
@@ -351,7 +349,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	 * @param {CrawlerNewsDao} dao - dao クラス
 	 * @param {object} targetData - 登録データ
 	 */
-	private async accessSuccess(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<void> {
+	static async #accessSuccess(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<void> {
 		if (targetData.error > 0) {
 			/* 前回アクセス時がエラーだった場合 */
 			await dao.resetError(targetData.url);
@@ -366,7 +364,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	 *
 	 * @returns {number} 連続アクセスエラー回数
 	 */
-	private async accessError(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<number> {
+	static async #accessError(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<number> {
 		const error = targetData.error + 1; // 連続アクセスエラー回数
 
 		await dao.updateError(targetData.url, error);

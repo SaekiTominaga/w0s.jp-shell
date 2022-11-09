@@ -1,9 +1,9 @@
-import Component from '../Component.js';
-import ComponentInterface from '../ComponentInterface.js';
 import dayjs from 'dayjs';
 import puppeteer from 'puppeteer-core';
-import { JR as ConfigureJrCyberStation } from '../../configure/type/jr-cyber-station';
 import { JSDOM } from 'jsdom';
+import Component from '../Component.js';
+import ComponentInterface from '../ComponentInterface.js';
+import { JR as ConfigureJrCyberStation } from '../../configure/type/jr-cyber-station';
 
 /**
  * JR CYBER STATION で空席があれば通知する
@@ -14,7 +14,7 @@ export default class JrCyberStation extends Component implements ComponentInterf
 	constructor() {
 		super();
 
-		this.#config = <ConfigureJrCyberStation>this.readConfig();
+		this.#config = this.readConfig() as ConfigureJrCyberStation;
 		this.title = this.#config.title;
 	}
 
@@ -47,16 +47,16 @@ export default class JrCyberStation extends Component implements ComponentInterf
 
 		let requestCount = 0;
 		try {
-			for (const search of this.#config.search) {
+			this.#config.search.forEach(async (search) => {
 				const depatureStationId = stationList.get(search.depature);
 				if (depatureStationId === undefined) {
 					this.notice.push(`出発駅が存在しない: ${search.depature}`);
-					continue;
+					return;
 				}
 				const arrivalStationId = stationList.get(search.arrival);
 				if (arrivalStationId === undefined) {
 					this.notice.push(`到着駅が存在しない: ${search.arrival}`);
-					continue;
+					return;
 				}
 
 				const date = dayjs(`${search.date}T${search.time ?? '04:00'}:00+09:00`);
@@ -75,9 +75,11 @@ export default class JrCyberStation extends Component implements ComponentInterf
 				urlSearchParams.append('script', '1');
 
 				/* ブラウザで対象ページにアクセス */
-				requestCount++;
+				requestCount += 1;
 				if (requestCount > 1) {
-					await new Promise((resolve) => setTimeout(resolve, this.#config.search_interval * 1000)); // 接続間隔を空ける
+					await new Promise((resolve) => {
+						setTimeout(resolve, this.#config.search_interval * 1000);
+					}); // 接続間隔を空ける
 				}
 
 				const page = await browser.newPage();
@@ -99,11 +101,11 @@ export default class JrCyberStation extends Component implements ComponentInterf
 					waitUntil: 'domcontentloaded',
 				});
 
-				const response = await page.content();
-				this.logger.debug(response);
+				const content = await page.content();
+				this.logger.debug(content);
 
 				/* DOM 化 */
-				const document = new JSDOM(response).window.document;
+				const { document } = new JSDOM(content).window;
 
 				const errorMessageElement = document.querySelector('.jcs_error_msg');
 				if (errorMessageElement !== null) {
@@ -114,22 +116,22 @@ export default class JrCyberStation extends Component implements ComponentInterf
 				const vacancyTableElement = document.querySelector('#table_vacancy');
 				if (vacancyTableElement === null) {
 					this.notice.push(`対象列車が存在しない: ${date.format('YYYY年M月D日HH:mm')} ${search.depature}→${search.arrival}`);
-					continue;
+					return;
 				}
 
 				const vacancyTrain = Array.from(vacancyTableElement.querySelectorAll('tbody > tr'))
-					.filter((trElement) => {
-						return Array.from(trElement.querySelectorAll('td.uk-text-center')).some(
+					.filter((trElement) =>
+						Array.from(trElement.querySelectorAll('td.uk-text-center')).some(
 							(tdElement) => tdElement.textContent !== null && ['○', '△'].includes(tdElement.textContent)
-						);
-					})
+						)
+					)
 					.map((trElement) => trElement.querySelector('td:first-child .table_train_name')?.textContent);
 				this.logger.debug('空席のある列車', vacancyTrain);
 
 				if (vacancyTrain.length >= 1) {
 					this.notice.push(`${date.format('YYYY年M月D日')}の${vacancyTrain.map((train) => `「${train}」`).join('')}に空席`);
 				}
-			}
+			});
 		} finally {
 			this.logger.debug('browser.close()');
 			await browser.close();

@@ -1,6 +1,6 @@
 import * as sqlite from 'sqlite';
-import DbUtil from '../util/DbUtil.js';
 import sqlite3 from 'sqlite3';
+import DbUtil from '../util/DbUtil.js';
 import { NoName as Configure } from '../../configure/type/common';
 
 /**
@@ -8,6 +8,7 @@ import { NoName as Configure } from '../../configure/type/common';
  */
 export default class CrawlerNewsDao {
 	#dbh: sqlite.Database<sqlite3.Database, sqlite3.Statement> | null = null;
+
 	readonly #config: Configure;
 
 	/**

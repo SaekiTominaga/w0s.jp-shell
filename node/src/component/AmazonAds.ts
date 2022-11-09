@@ -1,12 +1,12 @@
-import AmazonAdsDao from '../dao/AmazonAdsDao.js';
 // @ts-expect-error: ts(7016)
 import amazonPaapi from 'amazon-paapi';
+import { Buffer } from 'buffer';
+import { GetItemsResponse, Item } from 'paapi5-typescript-sdk';
+import AmazonAdsDao from '../dao/AmazonAdsDao.js';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import PaapiUtil from '../util/Paapi.js';
 import { Amazon as ConfigureAmazonAds } from '../../configure/type/amazon-ads';
-import { Buffer } from 'buffer';
-import { GetItemsResponse, Item } from 'paapi5-typescript-sdk';
 
 interface Diff {
 	db: string;
@@ -22,7 +22,7 @@ export default class AmazonAds extends Component implements ComponentInterface {
 	constructor() {
 		super();
 
-		this.#config = <ConfigureAmazonAds>this.readConfig();
+		this.#config = this.readConfig() as ConfigureAmazonAds;
 		this.title = this.#config.title;
 	}
 
@@ -47,15 +47,17 @@ export default class AmazonAds extends Component implements ComponentInterface {
 
 		let requestCount = 0;
 		while (targetAsins.length > 0) {
-			requestCount++;
+			requestCount += 1;
 			if (requestCount > 1) {
-				await new Promise((resolve) => setTimeout(resolve, this.#config.paapi.access_interval * 1000)); // 接続間隔を空ける
+				await new Promise((resolve) => {
+					setTimeout(resolve, this.#config.paapi.access_interval * 1000);
+				}); // 接続間隔を空ける
 			}
 
 			const asins = targetAsins.splice(0, this.#config.paapi.getitems_itemids_chunk);
 			this.logger.info('PA-API 接続（GetItems.ItemIds）', asins);
 
-			const paapiResponse = <GetItemsResponse>await amazonPaapi.GetItems(
+			const paapiResponse = (await amazonPaapi.GetItems(
 				{
 					PartnerTag: this.#config.paapi.request.partner_tag,
 					PartnerType: 'Associates',
@@ -69,7 +71,7 @@ export default class AmazonAds extends Component implements ComponentInterface {
 					ItemIds: asins,
 					Resources: ['Images.Primary.Large', 'ItemInfo.Classifications', 'ItemInfo.ContentInfo', 'ItemInfo.Title'],
 				}
-			);
+			)) as GetItemsResponse;
 
 			const paapiResponseErrors = paapiResponse.Errors;
 			if (paapiResponseErrors !== undefined) {
@@ -79,7 +81,7 @@ export default class AmazonAds extends Component implements ComponentInterface {
 				continue;
 			}
 
-			for (const item of paapiResponse.ItemsResult.Items) {
+			paapiResponse.ItemsResult.Items.forEach(async (item) => {
 				this.logger.debug(item);
 
 				const asin = item.ASIN;
@@ -89,7 +91,7 @@ export default class AmazonAds extends Component implements ComponentInterface {
 				if (targetAsinsAmazonAds.includes(asin)) {
 					diffsAmazonAds.push(await this.#amazonAds(dao, item, asin));
 				}
-			}
+			});
 		}
 
 		this.logger.debug(diffsBlog);

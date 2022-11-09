@@ -1,16 +1,20 @@
 import fs from 'fs';
 import Log4js from 'log4js';
 import nodemailer from 'nodemailer';
-import { NoName as ConfigureCommon } from '../configure/type/common';
 import { headerCase } from 'header-case';
+import { NoName as ConfigureCommon } from '../configure/type/common';
 
 export default class Component {
 	readonly #name: string; // コンポーネント名（ファイル名などに使用されるプログラムのための名前）
+
 	protected title: string | undefined; // コンポーネントタイトル（自然言語による人間が見て分かりやすい名前）
 
 	protected readonly configCommon: ConfigureCommon; // 共通の設定内容
+
 	readonly #CONFIGURE_DIRNAME = 'node/configure'; // 設定ファイルの格納ディレクトリ
+
 	readonly #CONFIGURE_EXTENSION = '.json'; // 設定ファイルの拡張子
+
 	readonly #CONFIGURE_COMMON_FILENAME = 'common'; // 共通の設定ファイルのファイル名
 
 	protected readonly logger: Log4js.Logger; // Logger
@@ -24,7 +28,7 @@ export default class Component {
 		this.logger = Log4js.getLogger(this.#name);
 
 		/* 設定ファイル */
-		this.configCommon = <ConfigureCommon>this.readConfig(this.#CONFIGURE_COMMON_FILENAME);
+		this.configCommon = this.readConfig(this.#CONFIGURE_COMMON_FILENAME) as ConfigureCommon;
 	}
 
 	/**

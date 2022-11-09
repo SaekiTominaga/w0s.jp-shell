@@ -1,11 +1,11 @@
-import Component from '../Component.js';
-import ComponentInterface from '../ComponentInterface.js';
 import fs from 'fs';
 import puppeteer from 'puppeteer-core';
+import { TwitterApi } from 'twitter-api-v2';
+import Component from '../Component.js';
+import ComponentInterface from '../ComponentInterface.js';
 import Tweet from '../util/Tweet.js';
 import TwitterUserInfoHistoryKumetaDao from '../dao/TwitterUserInfoHistoryKumetaDao.js';
 import { Twitter as ConfigureTwitterUserInfoHistoryKumeta } from '../../configure/type/twitter-user-info-history-kumeta';
-import { TwitterApi } from 'twitter-api-v2';
 
 /**
  * 久米田康治 Twitter アカウントのユーザー情報を API を使用して取得し、 DB に格納済みのデータを照合して更新する
@@ -18,7 +18,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 	constructor() {
 		super();
 
-		this.#config = <ConfigureTwitterUserInfoHistoryKumeta>this.readConfig();
+		this.#config = this.readConfig() as ConfigureTwitterUserInfoHistoryKumeta;
 		this.title = this.#config.title;
 	}
 
@@ -74,7 +74,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		}
 		this.logger.debug('API で取得した値', apiUsers);
 
-		for (const apiUser of apiUsers) {
+		apiUsers.forEach(async (apiUser) => {
 			this.logger.info(`@${apiUser.screen_name} の処理を開始`);
 
 			const apiId = apiUser.id_str;
@@ -105,7 +105,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 
 			const userEntries = usersEntries.find(([, data]) => data.id === apiId); // DB に格納されていた全ユーザー情報
 			if (userEntries === undefined) {
-				continue;
+				return;
 			}
 			const [, user] = userEntries;
 
@@ -190,12 +190,12 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 			if (apiProfileBannerUrl !== null) {
 				await this.profileBanner(dao, apiId, apiName, apiUsername, apiProfileBannerUrl);
 			}
-		}
+		});
 
 		/* ツイート */
 		if (this.#twitterMessages.size > 0) {
 			const tweet = new Tweet(twitterApi);
-			for (const twitterMessage of this.#twitterMessages) {
+			this.#twitterMessages.forEach(async (twitterMessage) => {
 				try {
 					const postTweetResult = await tweet.postMessage(twitterMessage.message, twitterMessage.url, twitterMessage.hashtag, twitterMessage.medias);
 
@@ -203,7 +203,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 				} catch (e) {
 					this.logger.error(e);
 				}
-			}
+			});
 		}
 	}
 
@@ -380,7 +380,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 				waitUntil: 'networkidle0',
 			});
 
-			image = <Buffer>await page.screenshot({ path: filePath }); // オプションで `encoding` を指定しない場合、返り値は Buffer になる。 https://github.com/puppeteer/puppeteer/blob/v7.1.0/docs/api.md#pagescreenshotoptions
+			image = (await page.screenshot({ path: filePath })) as Buffer; // オプションで `encoding` を指定しない場合、返り値は Buffer になる。 https://github.com/puppeteer/puppeteer/blob/v7.1.0/docs/api.md#pagescreenshotoptions
 		} finally {
 			await browser.close();
 		}
