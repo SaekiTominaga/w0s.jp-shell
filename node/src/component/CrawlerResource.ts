@@ -1,11 +1,11 @@
 import AbortController from 'abort-controller';
-import Component from '../Component.js';
-import ComponentInterface from '../ComponentInterface.js';
-import CrawlerResourceDao from '../dao/CrawlerResourceDao.js';
 import fetch from 'node-fetch';
 import fs from 'fs';
 import jsdom from 'jsdom';
 import MIMEParser from '@saekitominaga/mime-parser';
+import Component from '../Component.js';
+import ComponentInterface from '../ComponentInterface.js';
+import CrawlerResourceDao from '../dao/CrawlerResourceDao.js';
 import { NoName as ConfigureCrawlerResource } from '../../configure/type/crawler-resource';
 
 /**
@@ -19,7 +19,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 	constructor() {
 		super();
 
-		this.#config = <ConfigureCrawlerResource>this.readConfig();
+		this.#config = this.readConfig() as ConfigureCrawlerResource;
 		this.title = this.#config.title;
 	}
 
@@ -37,18 +37,20 @@ export default class CrawlerResource extends Component implements ComponentInter
 
 		const dao = new CrawlerResourceDao(this.configCommon);
 
-		let prevHost: string | undefined = undefined; // ひとつ前のループで処理したホスト名
-		for (const targetData of await dao.select(priority)) {
+		let prevHost: string | undefined; // ひとつ前のループで処理したホスト名
+		(await dao.select(priority)).forEach(async (targetData) => {
 			const targetHost = new URL(targetData.url).hostname;
 			if (targetHost === prevHost) {
-				await new Promise((resolve) => setTimeout(resolve, this.#config.access_interval_host * 1000)); // 接続間隔を空ける
+				await new Promise((resolve) => {
+					setTimeout(resolve, this.#config.access_interval_host * 1000);
+				}); // 接続間隔を空ける
 			}
 			prevHost = targetHost;
 
 			this.logger.info(`取得処理を実行: ${targetData.url}`);
 
 			const controller = new AbortController();
-			const signal = controller.signal;
+			const { signal } = controller;
 			const timeoutId = setTimeout(() => {
 				controller.abort();
 			}, this.#config.fetch_timeout);
@@ -61,14 +63,14 @@ export default class CrawlerResource extends Component implements ComponentInter
 					signal,
 				});
 				if (!response.ok) {
-					const errorCount = await this.#accessError(dao, targetData);
+					const errorCount = await CrawlerResource.#accessError(dao, targetData);
 
 					this.logger.info(`HTTP Status Code: ${response.status} ${targetData.url} 、エラー回数: ${errorCount}`);
 					if (errorCount % this.#config.report_error_count === 0) {
 						this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${response.status}\nエラー回数: ${errorCount}`);
 					}
 
-					continue;
+					return;
 				}
 
 				/* レスポンスヘッダーのチェック */
@@ -77,7 +79,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 				const contentTypeText = responseHeaders.get('Content-Type');
 				if (contentTypeText === null) {
 					this.logger.error(`Content-Type ヘッダーが null: ${targetData.url}`);
-					continue;
+					return;
 				}
 				contentType = contentTypeText;
 
@@ -86,8 +88,8 @@ export default class CrawlerResource extends Component implements ComponentInter
 					lastModified = new Date(lastModifiedText);
 					if (lastModified.getTime() === targetData.modified_at?.getTime()) {
 						this.logger.info('Last-Modified ヘッダが前回と同じ');
-						this.#accessSuccess(dao, targetData);
-						continue;
+						CrawlerResource.#accessSuccess(dao, targetData);
+						return;
 					}
 				}
 
@@ -97,7 +99,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 				if (e instanceof Error) {
 					switch (e.name) {
 						case 'AbortError': {
-							const errorCount = await this.#accessError(dao, targetData);
+							const errorCount = await CrawlerResource.#accessError(dao, targetData);
 
 							this.logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${errorCount}`);
 							if (errorCount % this.#config.report_error_count === 0) {
@@ -114,25 +116,25 @@ export default class CrawlerResource extends Component implements ComponentInter
 					throw e;
 				}
 
-				continue;
+				return;
 			} finally {
 				clearTimeout(timeoutId);
 			}
 
 			let contentLength = responseBody.length;
-			if (this.#HTML_MIMES.includes(<DOMParserSupportedType>new MIMEParser(contentType).getEssence())) {
+			if (this.#HTML_MIMES.includes(new MIMEParser(contentType).getEssence() as DOMParserSupportedType)) {
 				/* DOM 化 */
-				const document = new jsdom.JSDOM(responseBody).window.document;
+				const { document } = new jsdom.JSDOM(responseBody).window;
 
 				const narrowingSelector = targetData.selector ?? 'body';
 				const contentsElement = document.querySelector(narrowingSelector);
 				if (contentsElement === null) {
 					this.logger.error(`セレクター (${narrowingSelector}) に該当するノードが存在しない: ${targetData.url}`);
-					continue;
+					return;
 				}
 				if (contentsElement.textContent === null) {
 					this.logger.error(`セレクター (${narrowingSelector}) の結果が空です: ${targetData.url}`);
-					continue;
+					return;
 				}
 
 				contentLength = contentsElement.textContent.length;
@@ -158,8 +160,8 @@ export default class CrawlerResource extends Component implements ComponentInter
 				);
 			}
 
-			await this.#accessSuccess(dao, targetData);
-		}
+			await CrawlerResource.#accessSuccess(dao, targetData);
+		});
 	}
 
 	/**
@@ -204,7 +206,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 	 * @param {CrawlerResourceDao} dao - dao クラス
 	 * @param {object} targetData - 登録データ
 	 */
-	async #accessSuccess(dao: CrawlerResourceDao, targetData: CrawlerDb.Resource): Promise<void> {
+	static async #accessSuccess(dao: CrawlerResourceDao, targetData: CrawlerDb.Resource): Promise<void> {
 		if (targetData.error > 0) {
 			/* 前回アクセス時がエラーだった場合 */
 			await dao.resetError(targetData.url);
@@ -219,7 +221,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 	 *
 	 * @returns {number} 連続アクセスエラー回数
 	 */
-	async #accessError(dao: CrawlerResourceDao, targetData: CrawlerDb.Resource): Promise<number> {
+	static async #accessError(dao: CrawlerResourceDao, targetData: CrawlerDb.Resource): Promise<number> {
 		const error = targetData.error + 1; // 連続アクセスエラー回数
 
 		await dao.updateError(targetData.url, error);

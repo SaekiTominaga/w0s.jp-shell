@@ -1,3 +1,4 @@
+/* eslint-disable semi */
 export default interface Component {
 	/**
 	 * Execute the process

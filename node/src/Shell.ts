@@ -1,19 +1,20 @@
-import Component from './ComponentInterface';
 import Log4js from 'log4js';
+import Component from './ComponentInterface';
 
 /**
  * Shell Common Processing
  */
 class Shell {
 	/* スクリプトに渡される引数（process.argv）の最低指定数 */
-	private static readonly _ARGS_MINLENGTH = 2;
+	static readonly #ARGS_MINLENGTH = 2;
 
 	/* Logger */
-	private static readonly _LOGGER_FILE_PATH = 'node/log4js.json'; // 設定ファイルのパス
+	static readonly #LOGGER_FILE_PATH = 'node/log4js.json'; // 設定ファイルのパス
 
 	/* コンポーネントクラス */
-	private static readonly _COMPONENT_DIR = './component'; // 格納ディレクトリ
-	private static readonly _COMPONENT_EXTENSION = '.js'; // 拡張子
+	static readonly #COMPONENT_DIR = './component'; // 格納ディレクトリ
+
+	static readonly #COMPONENT_EXTENSION = '.js'; // 拡張子
 
 	/**
 	 * @param {string[]} args - Arguments passed to the script. The first [required] is the component name, the second [required] is the number of timeout seconds（warn if this value is exceeded, below 0 is ∞）, the third and subsequent [optional] are unique to the component's arguments.
@@ -23,11 +24,11 @@ class Shell {
 		const startDate = new Date();
 
 		/* Logger 設定 */
-		Log4js.configure(this._LOGGER_FILE_PATH);
+		Log4js.configure(this.#LOGGER_FILE_PATH);
 		const loggerShell = Log4js.getLogger(Shell.name);
 
 		/* 引数の数チェック */
-		if (args.length < this._ARGS_MINLENGTH) {
+		if (args.length < this.#ARGS_MINLENGTH) {
 			loggerShell.fatal('Insufficient number of citations', args);
 			return;
 		}
@@ -43,8 +44,9 @@ class Shell {
 			loggerComponent.info('----- Start processing');
 
 			try {
-				const component = <Component>new (await import(`${this._COMPONENT_DIR}/${componentName}${this._COMPONENT_EXTENSION}`)).default();
-				await component.execute(args.slice(this._ARGS_MINLENGTH));
+				// eslint-disable-next-line new-cap
+				const component = new (await import(`${this.#COMPONENT_DIR}/${componentName}${this.#COMPONENT_EXTENSION}`)).default() as Component;
+				await component.execute(args.slice(this.#ARGS_MINLENGTH));
 				await component.destructor();
 
 				/* タイムアウト判定 */

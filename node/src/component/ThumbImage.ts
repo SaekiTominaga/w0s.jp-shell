@@ -12,7 +12,7 @@ export default class ThumbImage extends Component implements ComponentInterface 
 	constructor() {
 		super();
 
-		this.#config = <ConfigureTest>this.readConfig();
+		this.#config = this.readConfig() as ConfigureTest;
 		this.title = this.#config.title;
 	}
 

@@ -8,7 +8,9 @@ import DbUtil from '../util/DbUtil.js';
  */
 export default class AmazonAdsDao {
 	#dbhBlog: sqlite.Database<sqlite3.Database, sqlite3.Statement> | null = null;
+
 	#dbhAmazonAds: sqlite.Database<sqlite3.Database, sqlite3.Statement> | null = null;
+
 	readonly #config: Configure;
 
 	/**

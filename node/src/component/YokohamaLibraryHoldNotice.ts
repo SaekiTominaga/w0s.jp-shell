@@ -1,7 +1,7 @@
-import Component from '../Component.js';
-import ComponentInterface from '../ComponentInterface.js';
 import puppeteer from 'puppeteer-core';
 import { JSDOM } from 'jsdom';
+import Component from '../Component.js';
+import ComponentInterface from '../ComponentInterface.js';
 import { NoName as ConfigureYokohamaLibraryHoldNotice } from '../../configure/type/yokohama-library-hold-notice';
 
 /**
@@ -13,7 +13,7 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 	constructor() {
 		super();
 
-		this.#config = <ConfigureYokohamaLibraryHoldNotice>this.readConfig();
+		this.#config = this.readConfig() as ConfigureYokohamaLibraryHoldNotice;
 		this.title = this.#config.title;
 	}
 
@@ -40,7 +40,7 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 			this.logger.debug(response);
 
 			/* DOM 化 */
-			const document = new JSDOM(response).window.document;
+			const { document } = new JSDOM(response).window;
 
 			const errorElement = document.querySelector(this.#config.login.errorSelector);
 			if (errorElement !== null) {
