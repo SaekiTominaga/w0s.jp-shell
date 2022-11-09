@@ -2,7 +2,7 @@ import AbortController from 'abort-controller';
 import fetch from 'node-fetch';
 import fs from 'fs';
 import jsdom from 'jsdom';
-import MIMEParser from '@saekitominaga/mime-parser';
+import MIMETypeParser from '@saekitominaga/mime-parser';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import CrawlerResourceDao from '../dao/CrawlerResourceDao.js';
@@ -122,7 +122,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 			}
 
 			let contentLength = responseBody.length;
-			if (this.#HTML_MIMES.includes(new MIMEParser(contentType).getEssence() as DOMParserSupportedType)) {
+			if (this.#HTML_MIMES.includes(new MIMETypeParser(contentType).getEssence() as DOMParserSupportedType)) {
 				/* DOM 化 */
 				const { document } = new jsdom.JSDOM(responseBody).window;
 

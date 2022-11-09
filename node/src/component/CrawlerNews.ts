@@ -1,7 +1,7 @@
 import AbortController from 'abort-controller';
 import fetch from 'node-fetch';
 import jsdom from 'jsdom';
-import MIMEParser from '@saekitominaga/mime-parser';
+import MIMETypeParser from '@saekitominaga/mime-parser';
 import puppeteer from 'puppeteer-core';
 import { resolve } from 'relative-to-absolute-iri';
 import { v4 as uuidV4 } from 'uuid';
@@ -241,7 +241,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				this.logger.error(`Content-Type ヘッダーが存在しない: ${targetData.url}`);
 				return null;
 			}
-			const contentTypeEssence = new MIMEParser(contentType).getEssence();
+			const contentTypeEssence = new MIMETypeParser(contentType).getEssence();
 			if (!this.#HTML_MIMES.includes(<DOMParserSupportedType>contentTypeEssence)) {
 				this.logger.error(`HTML ページではない（${contentType}）: ${targetData.url}`);
 				return null;
@@ -329,7 +329,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				this.logger.error(`Content-Type ヘッダーが存在しない: ${targetData.url}`);
 				return null;
 			}
-			const contentTypeEssence = new MIMEParser(contentType).getEssence();
+			const contentTypeEssence = new MIMETypeParser(contentType).getEssence();
 			if (!this.#HTML_MIMES.includes(<DOMParserSupportedType>contentTypeEssence)) {
 				this.logger.error(`HTML ページではない（${contentType}）: ${targetData.url}`);
 				return null;
