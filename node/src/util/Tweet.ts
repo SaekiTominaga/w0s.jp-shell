@@ -60,9 +60,9 @@ export default class Tweet {
 			}
 
 			const requestMediaIds: Set<string> = new Set();
-			medias.forEach(async (media) => {
+			for (const media of medias) {
 				requestMediaIds.add(await this.uploadMedia(media));
-			});
+			}
 
 			const requestMedia: Map<string, string[]> = new Map();
 			requestMedia.set('media_ids', Array.from(requestMediaIds));

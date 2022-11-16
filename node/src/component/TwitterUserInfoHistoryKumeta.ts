@@ -74,7 +74,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		}
 		this.logger.debug('API で取得した値', apiUsers);
 
-		apiUsers.forEach(async (apiUser) => {
+		for (const apiUser of apiUsers) {
 			this.logger.info(`@${apiUser.screen_name} の処理を開始`);
 
 			const apiId = apiUser.id_str;
@@ -105,7 +105,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 
 			const userEntries = usersEntries.find(([, data]) => data.id === apiId); // DB に格納されていた全ユーザー情報
 			if (userEntries === undefined) {
-				return;
+				continue;
 			}
 			const [, user] = userEntries;
 
@@ -190,12 +190,12 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 			if (apiProfileBannerUrl !== null) {
 				await this.profileBanner(dao, apiId, apiName, apiUsername, apiProfileBannerUrl);
 			}
-		});
+		}
 
 		/* ツイート */
 		if (this.#twitterMessages.size > 0) {
 			const tweet = new Tweet(twitterApi);
-			this.#twitterMessages.forEach(async (twitterMessage) => {
+			for (const twitterMessage of this.#twitterMessages) {
 				try {
 					const postTweetResult = await tweet.postMessage(twitterMessage.message, twitterMessage.url, twitterMessage.hashtag, twitterMessage.medias);
 
@@ -203,7 +203,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 				} catch (e) {
 					this.logger.error(e);
 				}
-			});
+			}
 		}
 	}
 

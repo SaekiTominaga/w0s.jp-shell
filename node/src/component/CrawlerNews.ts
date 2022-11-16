@@ -46,14 +46,14 @@ export default class CrawlerNews extends Component implements ComponentInterface
 
 		const dao = new CrawlerNewsDao(this.configCommon);
 
-		(await dao.select(priority)).forEach(async (targetData) => {
+		for (const targetData of await dao.select(priority)) {
 			const newUrl = !(await dao.selectDataCount(targetData.url)); // 新規追加された URL か
 
 			this.logger.info(`取得処理を実行: ${targetData.url}`);
 
 			const responseBody = targetData.browser ? await this.requestBrowser(dao, targetData) : await this.requestFetch(dao, targetData);
 			if (responseBody === null) {
-				return;
+				continue;
 			}
 
 			/* DOM 化 */
@@ -68,11 +68,11 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				} else {
 					this.logger.error(e);
 				}
-				return;
+				continue;
 			}
 			if (wrapElements.length === 0) {
 				this.logger.error(`包括要素（${targetData.selector_wrap}）が存在しない: ${targetData.url}\n\n${responseBody}`);
-				return;
+				continue;
 			}
 
 			for (const wrapElement of wrapElements) {
@@ -200,7 +200,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 			}
 
 			await CrawlerNews.#accessSuccess(dao, targetData);
-		});
+		}
 	}
 
 	/**

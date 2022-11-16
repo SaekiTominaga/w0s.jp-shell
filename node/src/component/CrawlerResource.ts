@@ -38,7 +38,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 		const dao = new CrawlerResourceDao(this.configCommon);
 
 		let prevHost: string | undefined; // ひとつ前のループで処理したホスト名
-		(await dao.select(priority)).forEach(async (targetData) => {
+		for (const targetData of await dao.select(priority)) {
 			const targetHost = new URL(targetData.url).hostname;
 			if (targetHost === prevHost) {
 				await new Promise((resolve) => {
@@ -70,7 +70,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 						this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${response.status}\nエラー回数: ${errorCount}`);
 					}
 
-					return;
+					continue;
 				}
 
 				/* レスポンスヘッダーのチェック */
@@ -79,7 +79,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 				const contentTypeText = responseHeaders.get('Content-Type');
 				if (contentTypeText === null) {
 					this.logger.error(`Content-Type ヘッダーが null: ${targetData.url}`);
-					return;
+					continue;
 				}
 				contentType = contentTypeText;
 
@@ -89,7 +89,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 					if (lastModified.getTime() === targetData.modified_at?.getTime()) {
 						this.logger.info('Last-Modified ヘッダが前回と同じ');
 						CrawlerResource.#accessSuccess(dao, targetData);
-						return;
+						continue;
 					}
 				}
 
@@ -116,7 +116,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 					throw e;
 				}
 
-				return;
+				continue;
 			} finally {
 				clearTimeout(timeoutId);
 			}
@@ -130,11 +130,11 @@ export default class CrawlerResource extends Component implements ComponentInter
 				const contentsElement = document.querySelector(narrowingSelector);
 				if (contentsElement === null) {
 					this.logger.error(`セレクター (${narrowingSelector}) に該当するノードが存在しない: ${targetData.url}`);
-					return;
+					continue;
 				}
 				if (contentsElement.textContent === null) {
 					this.logger.error(`セレクター (${narrowingSelector}) の結果が空です: ${targetData.url}`);
-					return;
+					continue;
 				}
 
 				contentLength = contentsElement.textContent.length;
@@ -161,7 +161,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 			}
 
 			await CrawlerResource.#accessSuccess(dao, targetData);
-		});
+		}
 	}
 
 	/**

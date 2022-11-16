@@ -81,7 +81,7 @@ export default class AmazonAds extends Component implements ComponentInterface {
 				continue;
 			}
 
-			paapiResponse.ItemsResult.Items.forEach(async (item) => {
+			for (const item of paapiResponse.ItemsResult.Items) {
 				this.logger.debug(item);
 
 				const asin = item.ASIN;
@@ -91,7 +91,7 @@ export default class AmazonAds extends Component implements ComponentInterface {
 				if (targetAsinsAmazonAds.includes(asin)) {
 					diffsAmazonAds.push(await this.#amazonAds(dao, item, asin));
 				}
-			});
+			}
 		}
 
 		this.logger.debug(diffsBlog);
