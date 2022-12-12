@@ -3,8 +3,23 @@
 	"env": {
 		"es2022": true
 	},
-	"extends": ["w0s"],
+	"extends": ["@w0s/eslint-config"],
 	"parserOptions": {
 		"sourceType": "module"
-	}
+	},
+	"ignorePatterns": ["node/dist/**/*.js"],
+	"overrides": [
+		{
+			"files": ["node/src/Shell.ts"],
+			"rules": {
+				"new-cap": "off"
+			}
+		},
+		{
+			"files": ["node/src/*Interface.ts"],
+			"rules": {
+				"semi": "off"
+			}
+		}
+	]
 }

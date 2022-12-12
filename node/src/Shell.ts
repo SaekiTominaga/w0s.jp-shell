@@ -44,7 +44,6 @@ class Shell {
 			loggerComponent.info('----- Start processing');
 
 			try {
-				// eslint-disable-next-line new-cap
 				const component = new (await import(`${this.#COMPONENT_DIR}/${componentName}${this.#COMPONENT_EXTENSION}`)).default() as Component;
 				await component.execute(args.slice(this.#ARGS_MINLENGTH));
 				await component.destructor();
