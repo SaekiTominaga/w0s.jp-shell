@@ -5,7 +5,7 @@ import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import Tweet from '../util/Tweet.js';
 import TwitterUserInfoHistoryKumetaDao from '../dao/TwitterUserInfoHistoryKumetaDao.js';
-import { Twitter as ConfigureTwitterUserInfoHistoryKumeta } from '../../configure/type/twitter-user-info-history-kumeta';
+import { Twitter as ConfigureTwitterUserInfoHistoryKumeta } from '../../configure/type/twitter-user-info-history-kumeta.js';
 
 /**
  * 久米田康治 Twitter アカウントのユーザー情報を API を使用して取得し、 DB に格納済みのデータを照合して更新する
@@ -53,7 +53,7 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		const twitterApi = new TwitterApi(twitterAccessTokenOptions);
 		const twitterApiReadOnly = twitterApi.readOnly.v1;
 
-		if (this.configCommon.sqlite.db.kumetatwitter === undefined) {
+		if (this.configCommon.sqlite.db.kumeta_twitter === undefined) {
 			throw new Error('共通設定ファイルに kumetatwitter テーブルのパスが指定されていない。');
 		}
 

@@ -1,4 +1,4 @@
-import AbortController from 'abort-controller';
+import { AbortController } from 'abort-controller';
 import fetch from 'node-fetch';
 import jsdom from 'jsdom';
 import MIMETypeParser from '@saekitominaga/mime-parser';
@@ -8,7 +8,7 @@ import { v4 as uuidV4 } from 'uuid';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import CrawlerNewsDao from '../dao/CrawlerNewsDao.js';
-import { NoName as ConfigureCrawlerNews } from '../../configure/type/crawler-news';
+import { NoName as ConfigureCrawlerNews } from '../../configure/type/crawler-news.js';
 
 /**
  * ウェブページを巡回し、新着情報の差分を調べて通知する

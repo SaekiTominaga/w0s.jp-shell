@@ -1,5 +1,5 @@
 import Log4js from 'log4js';
-import Component from './ComponentInterface';
+import Component from './ComponentInterface.js';
 
 /**
  * Shell Common Processing

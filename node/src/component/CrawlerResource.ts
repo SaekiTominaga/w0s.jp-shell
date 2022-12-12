@@ -1,4 +1,4 @@
-import AbortController from 'abort-controller';
+import { AbortController } from 'abort-controller';
 import fetch from 'node-fetch';
 import fs from 'fs';
 import jsdom from 'jsdom';
@@ -6,7 +6,7 @@ import MIMETypeParser from '@saekitominaga/mime-parser';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import CrawlerResourceDao from '../dao/CrawlerResourceDao.js';
-import { NoName as ConfigureCrawlerResource } from '../../configure/type/crawler-resource';
+import { NoName as ConfigureCrawlerResource } from '../../configure/type/crawler-resource.js';
 
 /**
  * ウェブページを巡回し、レスポンスボディの差分を調べて通知する

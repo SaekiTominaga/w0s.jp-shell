@@ -1,13 +1,11 @@
-import TwitterApiv1ReadWrite from 'twitter-api-v2/dist/v1/client.v1.write';
-import TwitterApiv2ReadWrite from 'twitter-api-v2/dist/v2/client.v2.write';
 import TwitterText from 'twitter-text';
 import { fileTypeFromBuffer } from 'file-type';
 import { TweetV2PostTweetResult, TwitterApi } from 'twitter-api-v2';
 
 export default class Tweet {
-	readonly #twitterApiv1: TwitterApiv1ReadWrite;
+	readonly #twitterApiv1;
 
-	readonly #twitterApiv2: TwitterApiv2ReadWrite;
+	readonly #twitterApiv2;
 
 	/* 画像の添付最大数 */
 	readonly #IMAGE_LIMIT = 4;

@@ -7,7 +7,11 @@
 
 export type NoName2 = string;
 export type NoName3 = string;
-export type DBNode = string;
+export type AmazonAds = string;
+export type Crawler = string;
+export type Blog = string;
+export type Kumetatwitter = string;
+export type Thumbimage = string;
 
 export interface NoName {
   browser: NoName1;
@@ -30,5 +34,9 @@ export interface SQLite {
   db: DB;
 }
 export interface DB {
-  [k: string]: DBNode;
+  amazon_ads: AmazonAds;
+  crawler: Crawler;
+  blog: Blog;
+  kumeta_twitter: Kumetatwitter;
+  thumb_image: Thumbimage;
 }

@@ -1,7 +1,7 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
 import DbUtil from '../util/DbUtil.js';
-import { NoName as Configure } from '../../configure/type/common';
+import { NoName as Configure } from '../../configure/type/common.js';
 
 /**
  * 久米田康治 Twitter ユーザー履歴
@@ -34,7 +34,7 @@ export default class TwitterUserInfoHistoryKumetaDao {
 		}
 
 		const dbh = await sqlite.open({
-			filename: this.#config.sqlite.db.kumetatwitter,
+			filename: this.#config.sqlite.db.kumeta_twitter,
 			driver: sqlite3.Database,
 		});
 
