@@ -2,7 +2,7 @@ import puppeteer from 'puppeteer-core';
 import { JSDOM } from 'jsdom';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
-import { NoName as ConfigureYokohamaLibraryHoldNotice } from '../../configure/type/yokohama-library-hold-notice';
+import { NoName as ConfigureYokohamaLibraryHoldNotice } from '../../configure/type/yokohama-library-hold-notice.js';
 
 /**
  * 横浜市立図書館で予約した本が到着したらメールで連絡する

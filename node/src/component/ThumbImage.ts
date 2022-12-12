@@ -1,7 +1,7 @@
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import ThumbImageDao from '../dao/ThumbImageDao.js';
-import { NoName as ConfigureTest } from '../../configure/type/thumb-image';
+import { NoName as ConfigureTest } from '../../configure/type/thumb-image.js';
 
 /**
  * サムネイル画像生成

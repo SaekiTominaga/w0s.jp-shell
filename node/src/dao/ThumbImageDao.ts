@@ -1,7 +1,7 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
 import DbUtil from '../util/DbUtil.js';
-import { NoName as Configure } from '../../configure/type/common';
+import { NoName as Configure } from '../../configure/type/common.js';
 
 /**
  * サムネイル画像生成
@@ -34,7 +34,7 @@ export default class ThumbImageDao {
 		}
 
 		const dbh = await sqlite.open({
-			filename: this.#config.sqlite.db.thumbimage,
+			filename: this.#config.sqlite.db.thumb_image,
 			driver: sqlite3.Database,
 		});
 

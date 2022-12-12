@@ -3,7 +3,7 @@ import puppeteer from 'puppeteer-core';
 import { JSDOM } from 'jsdom';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
-import { JR as ConfigureJrCyberStation } from '../../configure/type/jr-cyber-station';
+import { JR as ConfigureJrCyberStation } from '../../configure/type/jr-cyber-station.js';
 
 /**
  * JR CYBER STATION で空席があれば通知する
@@ -35,9 +35,12 @@ export default class JrCyberStation extends Component implements ComponentInterf
 			.split('\n')
 			.map((col) => col.trim())
 			.forEach((col) => {
-				const matched = col.match(/\["(?<shinkansen>[0-9]{10})","(?<id>[0-9]{4})","(?<yomi>.+?)","(?<name>.+?)"\],?/);
-				if (matched?.groups !== undefined) {
-					stationList.set(matched.groups.name, matched.groups.id);
+				const patternMatchGroups = col.match(/\["(?<shinkansen>[0-9]{10})","(?<id>[0-9]{4})","(?<yomi>.+?)","(?<name>.+?)"\],?/)?.groups;
+				if (patternMatchGroups !== undefined) {
+					const { name, id } = patternMatchGroups;
+					if (name !== undefined && id !== undefined) {
+						stationList.set(name, id);
+					}
 				}
 			});
 		this.logger.debug(stationList);

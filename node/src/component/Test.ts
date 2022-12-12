@@ -1,6 +1,6 @@
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
-import { NoName as ConfigureTest } from '../../configure/type/test';
+import { NoName as ConfigureTest } from '../../configure/type/test.js';
 
 /**
  * シェル機能のテスト用

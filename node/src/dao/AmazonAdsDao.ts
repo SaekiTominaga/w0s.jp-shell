@@ -1,6 +1,6 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
-import { NoName as Configure } from '../../configure/type/common';
+import { NoName as Configure } from '../../configure/type/common.js';
 import DbUtil from '../util/DbUtil.js';
 
 /**
@@ -56,7 +56,7 @@ export default class AmazonAdsDao {
 		}
 
 		const dbh = await sqlite.open({
-			filename: this.#config.sqlite.db.amazonads,
+			filename: this.#config.sqlite.db.amazon_ads,
 			driver: sqlite3.Database,
 		});
 

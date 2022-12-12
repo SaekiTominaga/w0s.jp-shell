@@ -1,5 +1,5 @@
 {
-	"extends": "../tsconfig.json",
+	"extends": "@w0s/tsconfig",
 	"include": ["src/**/*.ts", "@types/*.d.ts"],
 	"compilerOptions": {
 		/* Project Options */

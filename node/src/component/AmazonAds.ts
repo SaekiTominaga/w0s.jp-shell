@@ -6,7 +6,7 @@ import AmazonAdsDao from '../dao/AmazonAdsDao.js';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import PaapiUtil from '../util/Paapi.js';
-import { Amazon as ConfigureAmazonAds } from '../../configure/type/amazon-ads';
+import { Amazon as ConfigureAmazonAds } from '../../configure/type/amazon-ads.js';
 
 interface Diff {
 	db: string;
@@ -30,7 +30,7 @@ export default class AmazonAds extends Component implements ComponentInterface {
 		if (this.configCommon.sqlite.db.blog === undefined) {
 			throw new Error('共通設定ファイルに blog テーブルのパスが指定されていない。');
 		}
-		if (this.configCommon.sqlite.db.amazonads === undefined) {
+		if (this.configCommon.sqlite.db.amazon_ads === undefined) {
 			throw new Error('共通設定ファイルに amazonads テーブルのパスが指定されていない。');
 		}
 
