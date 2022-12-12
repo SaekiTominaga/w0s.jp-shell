@@ -64,7 +64,7 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 							throw new Error(`書名の HTML 要素（${this.#config.ready.titleSelector}）の内容が空。`);
 						}
 
-						readyBookTitleList.push(readyBookTitle.replace(/^　+|　+$/, '')); // eslint-disable-line no-irregular-whitespace
+						readyBookTitleList.push(readyBookTitle.replace(/^　+|　+$/, ''));
 					}
 
 					this.notice.push(`${this.#config.notice.messagePrefix}${readyBookTitleList.join('\n')}\n\n${this.#config.url}${this.#config.notice.messageSuffix}`);
