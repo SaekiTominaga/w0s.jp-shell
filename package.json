@@ -19,7 +19,6 @@
 		"shell-JrCyberStation": "node node/dist/Shell.js JrCyberStation 20",
 		"shell-ThumbImage": "node node/dist/Shell.js ThumbImage 30 true",
 		"shell-TwitterUserInfoHistoryKumeta": "node node/dist/Shell.js TwitterUserInfoHistoryKumeta 0 true",
-		"shell-TwitterUserInfoHistoryMadoka": "node node/dist/Shell.js TwitterUserInfoHistoryMadoka 0",
 		"shell-YokohamaLibraryHoldNotice": "node node/dist/Shell.js YokohamaLibraryHoldNotice 10",
 		"_config-validate:amazon-ads": "ajv --spec=draft7 -s node/configure/schema/amazon-ads.json -d node/configure/amazon-ads.json",
 		"_config-validate:common": "ajv --spec=draft7 -s node/configure/schema/common.json -d node/configure/common.json",
@@ -29,7 +28,6 @@
 		"_config-validate:test": "ajv --spec=draft7 -s node/configure/schema/test.json -d node/configure/test.json",
 		"_config-validate:thumb-image": "ajv --spec=draft7 -s node/configure/schema/thumb-image.json -d node/configure/thumb-image.json",
 		"_config-validate:twitter-user-info-history-kumeta": "ajv --spec=draft7 -s node/configure/schema/twitter-user-info-history-kumeta.json -d node/configure/twitter-user-info-history-kumeta.json",
-		"_config-validate:twitter-user-info-history-madoka": "ajv --spec=draft7 -s node/configure/schema/twitter-user-info-history-madoka.json -d node/configure/twitter-user-info-history-madoka.json",
 		"_config-validate:yokohama-library-hold-notice": "ajv --spec=draft7 -s node/configure/schema/yokohama-library-hold-notice.json -d node/configure/yokohama-library-hold-notice.json"
 	},
 	"dependencies": {
