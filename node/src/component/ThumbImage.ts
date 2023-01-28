@@ -1,3 +1,4 @@
+import { parseArgs } from 'node:util';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import ThumbImageDao from '../dao/ThumbImageDao.js';
@@ -16,11 +17,18 @@ export default class ThumbImage extends Component implements ComponentInterface 
 		this.title = this.#config.title;
 	}
 
-	/**
-	 * @param {string[]} args - Arguments passed to the script
-	 */
-	async execute(args: string[]): Promise<void> {
-		const dev = Boolean(args[0]); // 開発モード
+	async execute(): Promise<void> {
+		const argsParsedValues = parseArgs({
+			options: {
+				dev: {
+					type: 'boolean',
+					default: false,
+				},
+			},
+			strict: false,
+		}).values;
+
+		const dev = Boolean(argsParsedValues['dev']); // 開発モード
 
 		if (dev) {
 			this.logger.debug('[[ --- Development Mode --- ]]');

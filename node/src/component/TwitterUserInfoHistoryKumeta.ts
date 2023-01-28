@@ -1,3 +1,4 @@
+import { parseArgs } from 'node:util';
 import fs from 'fs';
 import puppeteer from 'puppeteer-core';
 import { TwitterApi } from 'twitter-api-v2';
@@ -22,12 +23,18 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		this.title = this.#config.title;
 	}
 
-	/**
-	 * @param {string[]} args - Arguments passed to the script
-	 *   {booean} args[0] [optional] debug mode
-	 */
-	async execute(args: string[]): Promise<void> {
-		const dev = Boolean(args[0]); // 開発モード
+	async execute(): Promise<void> {
+		const argsParsedValues = parseArgs({
+			options: {
+				dev: {
+					type: 'boolean',
+					default: false,
+				},
+			},
+			strict: false,
+		}).values;
+
+		const dev = Boolean(argsParsedValues['dev']); // 開発モード
 
 		if (dev) {
 			this.logger.debug('[[ --- Development Mode --- ]]');
