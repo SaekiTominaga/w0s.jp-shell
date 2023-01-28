@@ -1,66 +1,47 @@
+import { parseArgs } from 'node:util';
 import Log4js from 'log4js';
 import Component from './ComponentInterface.js';
 
-/**
- * Shell Common Processing
- */
-class Shell {
-	/* スクリプトに渡される引数（process.argv）の最低指定数 */
-	static readonly #ARGS_MINLENGTH = 2;
+/* タイムアウト判定用計測 */
+const startTime = Date.now();
 
-	/* Logger */
-	static readonly #LOGGER_FILE_PATH = 'node/log4js.json'; // 設定ファイルのパス
+/* 引数処理 */
+const argsParsedValues = parseArgs({
+	options: {
+		component: {
+			type: 'string',
+			short: 'c',
+		},
+		timeout: {
+			type: 'string',
+			short: 't',
+		},
+	},
+	strict: false,
+}).values;
 
-	/* コンポーネントクラス */
-	static readonly #COMPONENT_DIR = './component'; // 格納ディレクトリ
+const componentName = String(argsParsedValues['component']); // 機能名
+const timeout = Number(argsParsedValues['timeout']); // タイムアウト秒数（この値を超えたら警告する、0以下は∞）
 
-	static readonly #COMPONENT_EXTENSION = '.js'; // 拡張子
+/* Logger 設定 */
+Log4js.configure('node/log4js.json');
+const logger = Log4js.getLogger(componentName);
 
-	/**
-	 * @param {string[]} args - Arguments passed to the script. The first [required] is the component name, the second [required] is the number of timeout seconds（warn if this value is exceeded, below 0 is ∞）, the third and subsequent [optional] are unique to the component's arguments.
-	 */
-	static main(args: string[]): void {
-		/* タイムアウト判定用計測 */
-		const startDate = new Date();
+try {
+	/* コンポーネントの読み込みと実行 */
+	logger.info('----- Start processing');
 
-		/* Logger 設定 */
-		Log4js.configure(this.#LOGGER_FILE_PATH);
-		const loggerShell = Log4js.getLogger(Shell.name);
+	const component = new (await import(`./component/${componentName}.js`)).default() as Component;
+	await component.execute();
+	await component.destructor();
 
-		/* 引数の数チェック */
-		if (args.length < this.#ARGS_MINLENGTH) {
-			loggerShell.fatal('Insufficient number of citations', args);
-			return;
-		}
-
-		const componentName = args[0]; // 機能名
-		const timeout = Number(args[1]); // タイムアウト秒数（この値を超えたら警告する、0以下は∞）
-
-		/* Logger 設定 */
-		const loggerComponent = Log4js.getLogger(componentName);
-
-		/* コンポーネントの読み込みと実行 */
-		(async () => {
-			loggerComponent.info('----- Start processing');
-
-			try {
-				const component = new (await import(`${this.#COMPONENT_DIR}/${componentName}${this.#COMPONENT_EXTENSION}`)).default() as Component;
-				await component.execute(args.slice(this.#ARGS_MINLENGTH));
-				await component.destructor();
-
-				/* タイムアウト判定 */
-				const processingTimeSecond = (Date.now() - startDate.getTime()) / 1000;
-
-				if (timeout > 0 && processingTimeSecond > timeout) {
-					loggerComponent.error(`End of process (excessive processing time): ${Math.round(processingTimeSecond)}s -----`);
-				} else {
-					loggerComponent.info(`End of process: ${Math.round(processingTimeSecond)}s -----`);
-				}
-			} catch (e) {
-				loggerComponent.fatal(e);
-			}
-		})();
+	/* タイムアウト判定 */
+	const processingTime = (Date.now() - startTime) / 1000;
+	if (timeout > 0 && processingTime > timeout) {
+		logger.error(`End of process (excessive processing time): ${Math.round(processingTime)}s -----`);
+	} else {
+		logger.info(`End of process: ${Math.round(processingTime)}s -----`);
 	}
+} catch (e) {
+	logger.fatal(e);
 }
-
-Shell.main(process.argv.slice(2));

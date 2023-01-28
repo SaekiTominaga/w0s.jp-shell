@@ -1,3 +1,4 @@
+import { parseArgs } from 'node:util';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import { NoName as ConfigureTest } from '../../configure/type/test.js';
@@ -15,11 +16,8 @@ export default class Test extends Component implements ComponentInterface {
 		this.title = this.#config.title;
 	}
 
-	/**
-	 * @param {string[]} args - Arguments passed to the script
-	 */
-	async execute(args: string[]): Promise<void> {
-		this.logger.info('args', args);
+	async execute(): Promise<void> {
+		this.logger.info('args', parseArgs({ strict: false }).values);
 		this.logger.info('config', this.#config);
 	}
 }

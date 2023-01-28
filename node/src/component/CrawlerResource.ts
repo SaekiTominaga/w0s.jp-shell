@@ -1,3 +1,4 @@
+import { parseArgs } from 'node:util';
 import { AbortController } from 'abort-controller';
 import fetch from 'node-fetch';
 import fs from 'fs';
@@ -23,12 +24,18 @@ export default class CrawlerResource extends Component implements ComponentInter
 		this.title = this.#config.title;
 	}
 
-	/**
-	 * @param {string[]} args - Arguments passed to the script
-	 *   {number} args[0] [optional] priority
-	 */
-	async execute(args: string[]): Promise<void> {
-		const priority = args.length >= 1 ? Number(args[0]) : 0; // 優先度
+	async execute(): Promise<void> {
+		const argsParsedValues = parseArgs({
+			options: {
+				priority: {
+					type: 'string',
+					default: '0',
+				},
+			},
+			strict: false,
+		}).values;
+
+		const priority = Number(argsParsedValues['priority']); // 優先度
 		this.logger.info(`優先度: ${priority}`);
 
 		if (this.configCommon.sqlite.db.crawler === undefined) {
