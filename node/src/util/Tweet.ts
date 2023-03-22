@@ -52,15 +52,17 @@ export default class Tweet {
 		}
 
 		/* メディアをアップロードする */
-		if (medias !== undefined) {
+		if (medias !== undefined && medias.length >= 1) {
 			if (medias.length > this.#IMAGE_LIMIT) {
 				throw new RangeError(`There should be no more than ${this.#IMAGE_LIMIT} media attachments.`);
 			}
 
 			const requestMediaIds: Set<string> = new Set();
-			for (const media of medias) {
-				requestMediaIds.add(await this.uploadMedia(media));
-			}
+			await Promise.all(
+				[...medias].map(async (media) => {
+					requestMediaIds.add(await this.uploadMedia(media));
+				})
+			);
 
 			const requestMedia: Map<string, string[]> = new Map();
 			requestMedia.set('media_ids', Array.from(requestMediaIds));
