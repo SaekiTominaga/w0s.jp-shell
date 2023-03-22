@@ -41,58 +41,62 @@ export default class AmazonAds extends Component implements ComponentInterface {
 		const targetAsins = [...new Set(targetAsinsBlog.concat(targetAsinsAmazonAds))]; // マージした上で重複した値を削除する
 		this.logger.debug('処理対象の ASIN', targetAsins);
 
+		const targetAsinsChunk: string[][] = new Array(Math.ceil(targetAsins.length / this.#config.paapi.getitems_itemids_chunk)).fill([]).map((_, index) => {
+			const chunk = this.#config.paapi.getitems_itemids_chunk;
+			return targetAsins.slice(index * chunk, (index + 1) * chunk);
+		}); // 処理対象の ASIN を一度のリクエストに含められる数ごとに分割する
+
 		/* PA-API を使用してデータを取得する */
 		const diffsBlog: Map<string, Diff>[] = [];
 		const diffsAmazonAds: Map<string, Diff>[] = [];
 
-		let requestCount = 0;
-		while (targetAsins.length > 0) {
-			requestCount += 1;
-			if (requestCount > 1) {
-				await new Promise((resolve) => {
-					setTimeout(resolve, this.#config.paapi.access_interval * 1000);
-				}); // 接続間隔を空ける
-			}
-
-			const asins = targetAsins.splice(0, this.#config.paapi.getitems_itemids_chunk);
-			this.logger.info('PA-API 接続（GetItems.ItemIds）', asins);
-
-			const paapiResponse = (await amazonPaapi.GetItems(
-				{
-					PartnerTag: this.#config.paapi.request.partner_tag,
-					PartnerType: 'Associates',
-					AccessKey: this.#config.paapi.request.access_key,
-					SecretKey: this.#config.paapi.request.secret_key,
-					Marketplace: this.#config.paapi.request.marketplace,
-					Host: this.#config.paapi.request.host,
-					Region: this.#config.paapi.request.region,
-				},
-				{
-					ItemIds: asins,
-					Resources: ['Images.Primary.Large', 'ItemInfo.Classifications', 'ItemInfo.ContentInfo', 'ItemInfo.Title'],
+		await Promise.all(
+			targetAsinsChunk.map(async (asins, index) => {
+				if (index >= 1) {
+					await new Promise((resolve) => {
+						setTimeout(resolve, this.#config.paapi.access_interval * 1000);
+					}); // 接続間隔を空ける
 				}
-			)) as GetItemsResponse;
 
-			const paapiResponseErrors = paapiResponse.Errors;
-			if (paapiResponseErrors !== undefined) {
-				for (const error of paapiResponseErrors) {
-					this.logger.error(`${error.Code} : ${error.Message}`);
-				}
-				continue;
-			}
+				this.logger.info('PA-API 接続（GetItems.ItemIds）', asins);
 
-			for (const item of paapiResponse.ItemsResult.Items) {
-				this.logger.debug(item);
+				const paapiResponse = (await amazonPaapi.GetItems(
+					{
+						PartnerTag: this.#config.paapi.request.partner_tag,
+						PartnerType: 'Associates',
+						AccessKey: this.#config.paapi.request.access_key,
+						SecretKey: this.#config.paapi.request.secret_key,
+						Marketplace: this.#config.paapi.request.marketplace,
+						Host: this.#config.paapi.request.host,
+						Region: this.#config.paapi.request.region,
+					},
+					{
+						ItemIds: asins,
+						Resources: ['Images.Primary.Large', 'ItemInfo.Classifications', 'ItemInfo.ContentInfo', 'ItemInfo.Title'],
+					}
+				)) as GetItemsResponse;
 
-				const asin = item.ASIN;
-				if (targetAsinsBlog.includes(asin)) {
-					diffsBlog.push(await this.#blog(dao, item, asin));
+				const paapiResponseErrors = paapiResponse.Errors;
+				if (paapiResponseErrors !== undefined) {
+					for (const error of paapiResponseErrors) {
+						this.logger.error(`${error.Code} : ${error.Message}`);
+					}
+					return;
 				}
-				if (targetAsinsAmazonAds.includes(asin)) {
-					diffsAmazonAds.push(await this.#amazonAds(dao, item, asin));
+
+				for (const item of paapiResponse.ItemsResult.Items) {
+					this.logger.debug(item);
+
+					const asin = item.ASIN;
+					if (targetAsinsBlog.includes(asin)) {
+						diffsBlog.push(await this.#blog(dao, item, asin));
+					}
+					if (targetAsinsAmazonAds.includes(asin)) {
+						diffsAmazonAds.push(await this.#amazonAds(dao, item, asin));
+					}
 				}
-			}
-		}
+			})
+		);
 
 		this.logger.debug(diffsBlog);
 		if (diffsBlog.some((diff) => diff.size >= 1)) {

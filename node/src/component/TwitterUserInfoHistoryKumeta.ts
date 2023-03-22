@@ -81,136 +81,140 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		}
 		this.logger.debug('API で取得した値', apiUsers);
 
-		for (const apiUser of apiUsers) {
-			this.logger.info(`@${apiUser.screen_name} の処理を開始`);
+		await Promise.all(
+			apiUsers.map(async (apiUser) => {
+				this.logger.info(`@${apiUser.screen_name} の処理を開始`);
 
-			const apiId = apiUser.id_str;
-			const apiName = apiUser.name;
-			const apiUsername = apiUser.screen_name;
-			const apiLocation = apiUser.location ?? null;
-			let apiDescription = apiUser.description ?? null;
-			if (apiDescription !== null && apiUser.entities?.description?.urls !== undefined) {
-				for (const url of apiUser.entities.description.urls) {
-					apiDescription = apiDescription.replaceAll(url.url, url.expanded_url);
-				}
-			}
-			let apiUrl = apiUser.url ?? null;
-			if (apiUrl !== null && apiUser.entities?.url?.urls !== undefined) {
-				for (const url of apiUser.entities.url.urls) {
-					if (apiUrl === url.url) {
-						apiUrl = url.expanded_url;
-						break;
+				const apiId = apiUser.id_str;
+				const apiName = apiUser.name;
+				const apiUsername = apiUser.screen_name;
+				const apiLocation = apiUser.location ?? null;
+				let apiDescription = apiUser.description ?? null;
+				if (apiDescription !== null && apiUser.entities?.description?.urls !== undefined) {
+					for (const url of apiUser.entities.description.urls) {
+						apiDescription = apiDescription.replaceAll(url.url, url.expanded_url);
 					}
 				}
-			}
-			const apiFollowers = apiUser.followers_count;
-			const apiFollowing = apiUser.friends_count;
-			const apiLikes = apiUser.favourites_count;
-			const apiCreatedAt = new Date(apiUser.created_at);
-			const apiProfileImageUrl = apiUser.profile_image_url_https ?? null;
-			const apiProfileBannerUrl = apiUser.profile_banner_url ?? null;
+				let apiUrl = apiUser.url ?? null;
+				if (apiUrl !== null && apiUser.entities?.url?.urls !== undefined) {
+					for (const url of apiUser.entities.url.urls) {
+						if (apiUrl === url.url) {
+							apiUrl = url.expanded_url;
+							break;
+						}
+					}
+				}
+				const apiFollowers = apiUser.followers_count;
+				const apiFollowing = apiUser.friends_count;
+				const apiLikes = apiUser.favourites_count;
+				const apiCreatedAt = new Date(apiUser.created_at);
+				const apiProfileImageUrl = apiUser.profile_image_url_https ?? null;
+				const apiProfileBannerUrl = apiUser.profile_banner_url ?? null;
 
-			const userEntries = usersEntries.find(([, data]) => data.id === apiId); // DB に格納されていた全ユーザー情報
-			if (userEntries === undefined) {
-				continue;
-			}
-			const [, user] = userEntries;
+				const userEntries = usersEntries.find(([, data]) => data.id === apiId); // DB に格納されていた全ユーザー情報
+				if (userEntries === undefined) {
+					return;
+				}
+				const [, user] = userEntries;
 
-			if (
-				apiName === user.name &&
-				apiUsername === user.username &&
-				apiLocation === user.location &&
-				apiDescription === user.description &&
-				apiUrl === user.url &&
-				apiFollowers === user.followers &&
-				apiFollowing === user.following &&
-				apiLikes === user.likes &&
-				apiCreatedAt.getTime() === user.created_at.getTime()
-			) {
-				this.logger.info(`@${apiUsername} の情報に更新なし`);
-			} else {
-				/* ユーザー情報に更新があれば DB を UPDATE する */
-				this.logger.info(`@${apiUsername} の情報に更新があるので DB を update`);
-
-				await dao.updateUsers({
-					id: apiId,
-					username: apiUsername,
-					name: apiName,
-					location: apiLocation,
-					description: apiDescription,
-					url: apiUrl,
-					followers: apiFollowers,
-					following: apiFollowing,
-					likes: apiLikes,
-					created_at: apiCreatedAt,
-				});
-
-				/* 管理者向け通知 */
-				const noticeMessage: string[] = [];
-				if (apiName !== user.name) {
-					noticeMessage.push(`表示名: ${user.name} → ${apiName}`);
-				}
-				if (apiUsername !== user.username) {
-					noticeMessage.push(`アカウント名: @${user.username} → @${apiUsername}`);
-				}
-				if (apiLocation !== user.location) {
-					noticeMessage.push(`場所: ${user.location} → ${apiLocation}`);
-				}
-				if (apiDescription !== user.description) {
-					noticeMessage.push(`自己紹介: ${user.description}\n↓\n${apiDescription}`);
-				}
-				if (apiUrl !== user.url) {
-					noticeMessage.push(`ウェブサイト: ${user.url} → ${apiUrl}`);
-				}
-				if (apiFollowing !== user.following) {
-					noticeMessage.push(`フォロー数: ${user.following} → ${apiFollowing}`);
-				}
-				if (apiLikes !== user.likes) {
-					noticeMessage.push(`お気に入り数: ${user.likes} → ${apiLikes}`);
-				}
-				if (noticeMessage.length > 0) {
-					this.notice.push(`@${apiUsername} のユーザー情報更新 https://twitter.com/${apiUsername}\n\n${noticeMessage.join('\n')}`);
-				}
-
-				/* フォロワー数がキリのいい数字を超えた場合 */
 				if (
-					apiFollowers !== null &&
-					Math.floor(Number(user.followers) / this.#config.followers_threshold) < Math.floor(apiFollowers / this.#config.followers_threshold)
+					apiName === user.name &&
+					apiUsername === user.username &&
+					apiLocation === user.location &&
+					apiDescription === user.description &&
+					apiUrl === user.url &&
+					apiFollowers === user.followers &&
+					apiFollowing === user.following &&
+					apiLikes === user.likes &&
+					apiCreatedAt.getTime() === user.created_at.getTime()
 				) {
-					this.notice.push(`@${apiUsername} のフォロワー数が ${apiFollowers} になりました。`);
+					this.logger.info(`@${apiUsername} の情報に更新なし`);
+				} else {
+					/* ユーザー情報に更新があれば DB を UPDATE する */
+					this.logger.info(`@${apiUsername} の情報に更新があるので DB を update`);
 
-					this.#twitterMessages.add({
-						message: `${apiName}（@${apiUsername}) のフォロワー数が ${
-							Math.floor(apiFollowers / this.#config.followers_threshold) * this.#config.followers_threshold
-						} を超えました。`,
-						url: '',
+					await dao.updateUsers({
+						id: apiId,
+						username: apiUsername,
+						name: apiName,
+						location: apiLocation,
+						description: apiDescription,
+						url: apiUrl,
+						followers: apiFollowers,
+						following: apiFollowing,
+						likes: apiLikes,
+						created_at: apiCreatedAt,
 					});
+
+					/* 管理者向け通知 */
+					const noticeMessage: string[] = [];
+					if (apiName !== user.name) {
+						noticeMessage.push(`表示名: ${user.name} → ${apiName}`);
+					}
+					if (apiUsername !== user.username) {
+						noticeMessage.push(`アカウント名: @${user.username} → @${apiUsername}`);
+					}
+					if (apiLocation !== user.location) {
+						noticeMessage.push(`場所: ${user.location} → ${apiLocation}`);
+					}
+					if (apiDescription !== user.description) {
+						noticeMessage.push(`自己紹介: ${user.description}\n↓\n${apiDescription}`);
+					}
+					if (apiUrl !== user.url) {
+						noticeMessage.push(`ウェブサイト: ${user.url} → ${apiUrl}`);
+					}
+					if (apiFollowing !== user.following) {
+						noticeMessage.push(`フォロー数: ${user.following} → ${apiFollowing}`);
+					}
+					if (apiLikes !== user.likes) {
+						noticeMessage.push(`お気に入り数: ${user.likes} → ${apiLikes}`);
+					}
+					if (noticeMessage.length > 0) {
+						this.notice.push(`@${apiUsername} のユーザー情報更新 https://twitter.com/${apiUsername}\n\n${noticeMessage.join('\n')}`);
+					}
+
+					/* フォロワー数がキリのいい数字を超えた場合 */
+					if (
+						apiFollowers !== null &&
+						Math.floor(Number(user.followers) / this.#config.followers_threshold) < Math.floor(apiFollowers / this.#config.followers_threshold)
+					) {
+						this.notice.push(`@${apiUsername} のフォロワー数が ${apiFollowers} になりました。`);
+
+						this.#twitterMessages.add({
+							message: `${apiName}（@${apiUsername}) のフォロワー数が ${
+								Math.floor(apiFollowers / this.#config.followers_threshold) * this.#config.followers_threshold
+							} を超えました。`,
+							url: '',
+						});
+					}
 				}
-			}
 
-			/* アイコン画像 */
-			if (apiProfileImageUrl !== null) {
-				await this.profileImage(dao, apiId, apiName, apiUsername, apiProfileImageUrl);
-			}
+				/* アイコン画像 */
+				if (apiProfileImageUrl !== null) {
+					await this.profileImage(dao, apiId, apiName, apiUsername, apiProfileImageUrl);
+				}
 
-			/* バナー画像 */
-			if (apiProfileBannerUrl !== null) {
-				await this.profileBanner(dao, apiId, apiName, apiUsername, apiProfileBannerUrl);
-			}
-		}
+				/* バナー画像 */
+				if (apiProfileBannerUrl !== null) {
+					await this.profileBanner(dao, apiId, apiName, apiUsername, apiProfileBannerUrl);
+				}
+			})
+		);
 
 		/* ツイート */
 		if (this.#twitterMessages.size > 0) {
 			const tweet = new Tweet(twitterApi);
-			for (const twitterMessage of this.#twitterMessages) {
-				try {
-					const postTweetResult = await tweet.postMessage(twitterMessage.message, twitterMessage.url, twitterMessage.hashtag, twitterMessage.medias);
+			await Promise.all(
+				[...this.#twitterMessages].map(async (twitterMessage) => {
+					try {
+						const postTweetResult = await tweet.postMessage(twitterMessage.message, twitterMessage.url, twitterMessage.hashtag, twitterMessage.medias);
 
-					this.logger.info(`ツイート成功: https://twitter.com/_/status/${postTweetResult.data.id}`);
-				} catch (e) {
-					this.logger.error(e);
-				}
-			}
+						this.logger.info(`ツイート成功: https://twitter.com/_/status/${postTweetResult.data.id}`);
+					} catch (e) {
+						this.logger.error(e);
+					}
+				})
+			);
 		}
 	}
 
