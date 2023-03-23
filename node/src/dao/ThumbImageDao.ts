@@ -111,9 +111,9 @@ export default class ThumbImageDao {
 			});
 			await sth.finalize();
 
-			dbh.exec('COMMIT');
+			await dbh.exec('COMMIT');
 		} catch (e) {
-			dbh.exec('ROLLBACK');
+			await dbh.exec('ROLLBACK');
 			throw e;
 		}
 	}

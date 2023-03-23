@@ -121,9 +121,9 @@ export default class CrawlerResourceDao {
 			});
 			await sth.finalize();
 
-			dbh.exec('COMMIT');
+			await dbh.exec('COMMIT');
 		} catch (e) {
-			dbh.exec('ROLLBACK');
+			await dbh.exec('ROLLBACK');
 			throw e;
 		}
 	}
@@ -153,9 +153,9 @@ export default class CrawlerResourceDao {
 			});
 			await sth.finalize();
 
-			dbh.exec('COMMIT');
+			await dbh.exec('COMMIT');
 		} catch (e) {
-			dbh.exec('ROLLBACK');
+			await dbh.exec('ROLLBACK');
 			throw e;
 		}
 	}
