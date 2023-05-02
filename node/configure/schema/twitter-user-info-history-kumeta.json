@@ -3,7 +3,7 @@
 	"$id": "https://schema.w0s.jp/twitter-user-info-history-kumeta.json",
 	"type": "object",
 	"title": "久米田康治 Twitter ユーザー履歴",
-	"required": ["title", "followers_threshold", "image_dir", "screenshot", "twitter"],
+	"required": ["title", "followers_threshold", "image_dir", "twitter"],
 	"properties": {
 		"title": {
 			"type": "string",
@@ -19,32 +19,6 @@
 		"image_dir": {
 			"type": "string",
 			"title": "画像ファイルの保存ディレクトリ（ドキュメントルート基準）"
-		},
-		"screenshot": {
-			"type": "object",
-			"title": "Twitter 画面のスクリーンショット",
-			"required": ["dir", "extension", "width", "height"],
-			"properties": {
-				"dir": {
-					"type": "string",
-					"title": "画像ファイルの保存ディレクトリ（ドキュメントルート基準）"
-				},
-				"extension": {
-					"type": "string",
-					"title": "画像ファイルの拡張子"
-				},
-				"width": {
-					"type": "integer",
-					"minimum": 0,
-					"title": "ビューポートの幅"
-				},
-				"height": {
-					"type": "integer",
-					"minimum": 0,
-					"title": "ビューポートの幅"
-				}
-			},
-			"additionalProperties": false
 		},
 		"twitter": {
 			"type": "object",

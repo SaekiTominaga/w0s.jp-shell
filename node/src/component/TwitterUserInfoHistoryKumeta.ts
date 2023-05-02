@@ -1,10 +1,8 @@
 import { parseArgs } from 'node:util';
 import fs from 'fs';
-import puppeteer from 'puppeteer-core';
 import { TwitterApi } from 'twitter-api-v2';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
-import Tweet from '../util/Tweet.js';
 import TwitterUserInfoHistoryKumetaDao from '../dao/TwitterUserInfoHistoryKumetaDao.js';
 import { Twitter as ConfigureTwitterUserInfoHistoryKumeta } from '../../configure/type/twitter-user-info-history-kumeta.js';
 
@@ -13,8 +11,6 @@ import { Twitter as ConfigureTwitterUserInfoHistoryKumeta } from '../../configur
  */
 export default class TwitterUserInfoHistoryKumeta extends Component implements ComponentInterface {
 	readonly #config: ConfigureTwitterUserInfoHistoryKumeta;
-
-	#twitterMessages = new Set<{ message: string; url?: string; hashtag?: string; medias?: Buffer[] }>(); // Twitter への通知メッセージ
 
 	constructor() {
 		super();
@@ -179,13 +175,6 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 						Math.floor(Number(user.followers) / this.#config.followers_threshold) < Math.floor(apiFollowers / this.#config.followers_threshold)
 					) {
 						this.notice.push(`@${apiUsername} のフォロワー数が ${apiFollowers} になりました。`);
-
-						this.#twitterMessages.add({
-							message: `${apiName}（@${apiUsername}) のフォロワー数が ${
-								Math.floor(apiFollowers / this.#config.followers_threshold) * this.#config.followers_threshold
-							} を超えました。`,
-							url: '',
-						});
 					}
 				}
 
@@ -200,22 +189,6 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 				}
 			})
 		);
-
-		/* ツイート */
-		if (this.#twitterMessages.size > 0) {
-			const tweet = new Tweet(twitterApi);
-			await Promise.all(
-				[...this.#twitterMessages].map(async (twitterMessage) => {
-					try {
-						const postTweetResult = await tweet.postMessage(twitterMessage.message, twitterMessage.url, twitterMessage.hashtag, twitterMessage.medias);
-
-						this.logger.info(`ツイート成功: https://twitter.com/_/status/${postTweetResult.data.id}`);
-					} catch (e) {
-						this.logger.error(e);
-					}
-				})
-			);
-		}
 	}
 
 	/**
@@ -257,14 +230,6 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 			});
 
 			this.notice.push(`${apiName}（@${apiUsername}）のアイコン画像更新\nhttps://twitter.com/${apiUsername}\n${apiProfileImageOriginalUrl}`);
-
-			const screenshotImage = await this.screenshotTwitterHome(apiUsername);
-
-			this.#twitterMessages.add({
-				message: `${apiName}（@${apiUsername}）のアイコン画像が更新されました。`,
-				url: apiProfileImageOriginalUrl,
-				medias: [screenshotImage],
-			});
 		}
 	}
 
@@ -303,14 +268,6 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 			});
 
 			this.notice.push(`${apiName}（@${apiUsername}）のバナー画像更新\nhttps://twitter.com/${apiUsername}\n${apiProfileBannerUrl}`);
-
-			const screenshotImage = await this.screenshotTwitterHome(apiUsername);
-
-			this.#twitterMessages.add({
-				message: `${apiName}（@${apiUsername}）のバナー画像が更新されました。`,
-				url: apiProfileBannerUrl,
-				medias: [screenshotImage],
-			});
 		}
 	}
 
@@ -359,43 +316,5 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		this.logger.info('Image file saved', path);
 
 		return filename;
-	}
-
-	/**
-	 * Twitter 画面のスクリーンショットを撮る
-	 *
-	 * @param {string} username - ユーザー名
-	 *
-	 * @returns {Buffer} スクリーンショットの画像
-	 */
-	private async screenshotTwitterHome(username: string): Promise<Buffer> {
-		const date = new Date();
-		const fileName = `@${username}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}_${String(
-			date.getHours()
-		).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}`;
-		const filePath = `${this.#config.screenshot.dir}/${fileName}${this.#config.screenshot.extension}`;
-
-		const url = `https://twitter.com/${username}`;
-		this.logger.debug('スクショ開始', url);
-
-		let image: Buffer;
-
-		const browser = await puppeteer.launch({ executablePath: this.configCommon.browser.path });
-		try {
-			const page = await browser.newPage();
-			page.setViewport({
-				width: this.#config.screenshot.width,
-				height: this.#config.screenshot.height,
-			});
-			await page.goto(url, {
-				waitUntil: 'networkidle0',
-			});
-
-			image = (await page.screenshot({ path: filePath })) as Buffer; // オプションで `encoding` を指定しない場合、返り値は Buffer になる。 https://github.com/puppeteer/puppeteer/blob/v7.1.0/docs/api.md#pagescreenshotoptions
-		} finally {
-			await browser.close();
-		}
-
-		return image;
 	}
 }
