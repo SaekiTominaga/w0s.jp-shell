@@ -20,6 +20,19 @@
 			"rules": {
 				"semi": "off"
 			}
+		},
+		{
+			"files": ["node/src/component/AmazonAds.ts"],
+			"rules": {
+				"no-await-in-loop": "warn"
+			}
+		},
+		{
+			"files": ["node/src/component/CrawlerNews.ts", "node/src/component/CrawlerResource.ts"],
+			"rules": {
+				"no-await-in-loop": "warn",
+				"no-continue": "warn"
+			}
 		}
 	]
 }
