@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import Log4js from 'log4js';
 import nodemailer from 'nodemailer';
 import { headerCase } from 'header-case';

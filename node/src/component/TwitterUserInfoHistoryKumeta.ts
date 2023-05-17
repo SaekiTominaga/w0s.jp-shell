@@ -1,5 +1,5 @@
+import fs from 'node:fs';
 import { parseArgs } from 'node:util';
-import fs from 'fs';
 import { TwitterApi } from 'twitter-api-v2';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
