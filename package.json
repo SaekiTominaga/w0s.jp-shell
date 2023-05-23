@@ -1,5 +1,6 @@
 {
 	"name": "w0s.jp-shell",
+	"private": true,
 	"version": "1.0.0",
 	"description": "shell",
 	"license": "MIT",
