@@ -1,9 +1,6 @@
 {
 	"name": "w0s.jp-shell",
-	"version": "1.0.0",
-	"description": "shell",
-	"license": "MIT",
-	"author": "Saeki Tominaga",
+	"private": true,
 	"type": "module",
 	"scripts": {
 		"build-watch": "tsc --project node/tsconfig.json -w",
