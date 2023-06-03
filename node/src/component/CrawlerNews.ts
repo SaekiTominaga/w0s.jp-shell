@@ -9,7 +9,7 @@ import { v4 as uuidV4 } from 'uuid';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import CrawlerNewsDao from '../dao/CrawlerNewsDao.js';
-import { NoName as ConfigureCrawlerNews } from '../../configure/type/crawler-news.js';
+import { NoName as ConfigureCrawlerNews } from '../../../configure/type/crawler-news.js';
 
 /**
  * ウェブページを巡回し、新着情報の差分を調べて通知する

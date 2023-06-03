@@ -3,7 +3,7 @@ import puppeteer from 'puppeteer-core';
 import { JSDOM } from 'jsdom';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
-import { JR as ConfigureJrCyberStation } from '../../configure/type/jr-cyber-station.js';
+import { JR as ConfigureJrCyberStation } from '../../../configure/type/jr-cyber-station.js';
 
 /**
  * JR CYBER STATION で空席があれば通知する

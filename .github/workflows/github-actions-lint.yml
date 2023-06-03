@@ -1,23 +1,19 @@
-name: lint
+name: github-actions-lint
 on:
   pull_request:
     branches:
       - main
     paths:
-      - 'node/src/**/*.ts'
-      - 'node/__tests__/*.test.js'
-      - 'node/@types/*.d.ts'
+      - '.github/workflows/*.yml'
   push:
     branches:
       - main
     paths:
-      - 'node/src/**/*.ts'
-      - 'node/__tests__/*.test.js'
-      - 'node/@types/*.d.ts'
+      - '.github/workflows/*.yml'
   workflow_dispatch:
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -25,4 +21,4 @@ jobs:
         with:
           node-version: 18
       - run: npm ci
-      - run: npm run lint
+      - run: npm run github-actions-lint

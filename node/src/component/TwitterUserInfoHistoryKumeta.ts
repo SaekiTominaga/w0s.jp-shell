@@ -4,7 +4,7 @@ import { TwitterApi } from 'twitter-api-v2';
 import Component from '../Component.js';
 import ComponentInterface from '../ComponentInterface.js';
 import TwitterUserInfoHistoryKumetaDao from '../dao/TwitterUserInfoHistoryKumetaDao.js';
-import { Twitter as ConfigureTwitterUserInfoHistoryKumeta } from '../../configure/type/twitter-user-info-history-kumeta.js';
+import { Twitter as ConfigureTwitterUserInfoHistoryKumeta } from '../../../configure/type/twitter-user-info-history-kumeta.js';
 
 /**
  * 久米田康治 Twitter アカウントのユーザー情報を API を使用して取得し、 DB に格納済みのデータを照合して更新する
