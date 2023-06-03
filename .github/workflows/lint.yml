@@ -1,12 +1,20 @@
 name: lint
 on:
-  push:
-    branches: 
+  pull_request:
+    branches:
       - main
     paths:
       - 'node/src/**/*.ts'
       - 'node/__tests__/*.test.js'
       - 'node/@types/*.d.ts'
+  push:
+    branches:
+      - main
+    paths:
+      - 'node/src/**/*.ts'
+      - 'node/__tests__/*.test.js'
+      - 'node/@types/*.d.ts'
+  workflow_dispatch:
 
 jobs:
   build:
