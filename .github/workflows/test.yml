@@ -1,0 +1,28 @@
+name: test
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'node/src/**/*.ts'
+      - 'node/__tests__/*.test.js'
+      - 'node/@types/*.d.ts'
+  push:
+    branches:
+      - main
+    paths:
+      - 'node/src/**/*.ts'
+      - 'node/__tests__/*.test.js'
+      - 'node/@types/*.d.ts'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: npm ci
+      - run: npm run test
