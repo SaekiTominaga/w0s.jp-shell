@@ -3,40 +3,13 @@
 	"$id": "https://schema.w0s.jp/amazon-ads.json",
 	"type": "object",
 	"title": "Amazon 商品情報チェッカー",
-	"required": ["title", "ads_put", "blog_select_limit", "paapi"],
+	"required": ["title", "blog_select_limit", "paapi"],
 	"properties": {
 		"title": {
 			"type": "string",
 			"title": "コンポーネントタイトル",
 			"description": "自然言語による、人間が見て分かりやすい名前を設定する。通知メールの件名などで使用される。",
 			"examples": ["Amazon 商品情報チェッカー"]
-		},
-		"ads_put": {
-			"type": "object",
-			"title": "JSON ファイル生成",
-			"required": ["url_base", "auth"],
-			"properties": {
-				"url_base": {
-					"type": "string",
-					"title": "JSON ファイルを生成する URL"
-				},
-				"auth": {
-					"type": "object",
-					"title": "認証情報",
-					"required": ["username", "password"],
-					"properties": {
-						"username": {
-							"type": "string",
-							"title": "ユーザー名"
-						},
-						"password": {
-							"type": "string",
-							"title": "パスワード"
-						}
-					},
-					"additionalProperties": false
-				}
-			}
 		},
 		"blog_select_limit": {
 			"type": "integer",
