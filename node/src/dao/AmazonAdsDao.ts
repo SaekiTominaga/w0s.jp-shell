@@ -9,8 +9,6 @@ import DbUtil from '../util/DbUtil.js';
 export default class AmazonAdsDao {
 	#dbhBlog: sqlite.Database<sqlite3.Database, sqlite3.Statement> | null = null;
 
-	#dbhAmazonAds: sqlite.Database<sqlite3.Database, sqlite3.Statement> | null = null;
-
 	readonly #config: Configure;
 
 	/**
@@ -46,26 +44,6 @@ export default class AmazonAdsDao {
 	}
 
 	/**
-	 * DB 接続情報を取得する（amazonads テーブル）
-	 *
-	 * @returns {sqlite.Database} DB 接続情報
-	 */
-	async getDbhAmazonAds(): Promise<sqlite.Database<sqlite3.Database, sqlite3.Statement>> {
-		if (this.#dbhAmazonAds !== null) {
-			return this.#dbhAmazonAds;
-		}
-
-		const dbh = await sqlite.open({
-			filename: this.#config.sqlite.db.amazon_ads,
-			driver: sqlite3.Database,
-		});
-
-		this.#dbhAmazonAds = dbh;
-
-		return dbh;
-	}
-
-	/**
 	 * blog テーブルから処理対象の ASIN を取得する
 	 *
 	 * @param {number} limit - 最大取得数
@@ -89,31 +67,6 @@ export default class AmazonAdsDao {
 		await sth.bind({
 			':limit': limit,
 		});
-		const rows = await sth.all();
-		await sth.finalize();
-
-		const asins: string[] = [];
-		for (const row of rows) {
-			asins.push(row.asin);
-		}
-
-		return asins;
-	}
-
-	/**
-	 * amazonads テーブルから処理対象の ASIN を取得する
-	 *
-	 * @returns {string[]} 処理対象の ASIN
-	 */
-	async getAsinsAmazonAds(): Promise<string[]> {
-		const dbh = await this.getDbhAmazonAds();
-
-		const sth = await dbh.prepare(`
-			SELECT
-				asin
-			FROM
-				d_dp
-		`);
 		const rows = await sth.all();
 		await sth.finalize();
 
@@ -168,48 +121,6 @@ export default class AmazonAdsDao {
 			image_width: row.image_width,
 			image_height: row.image_height,
 			modified_at: DbUtil.unixToDate(row.modified_at),
-		};
-	}
-
-	/**
-	 * amazonads テーブルから Amazon 商品データを取得する
-	 *
-	 * @param {string} asin - ASIN
-	 *
-	 * @returns {object} Amazon 商品データ
-	 */
-	async selectAmazonAds(asin: string): Promise<AmazonAdsDb.Dp> {
-		const dbh = await this.getDbhAmazonAds();
-
-		const sth = await dbh.prepare(`
-			SELECT
-				url AS dp_url,
-				title,
-				binding,
-				date AS publication_date,
-				image_url,
-				image_width,
-				image_height
-			FROM
-				d_dp
-			WHERE
-				asin = :asin
-		`);
-		await sth.bind({
-			':asin': asin,
-		});
-		const row = await sth.get();
-		await sth.finalize();
-
-		return {
-			asin: asin,
-			dp_url: row.dp_url,
-			title: row.title,
-			binding: row.binding,
-			publication_date: DbUtil.unixToDate(row.publication_date),
-			image_url: row.image_url,
-			image_width: row.image_width,
-			image_height: row.image_height,
 		};
 	}
 
@@ -276,49 +187,6 @@ export default class AmazonAdsDao {
 			`);
 			await sth.run({
 				':modified': DbUtil.dateToUnix(),
-			});
-			await sth.finalize();
-
-			await dbh.exec('COMMIT');
-		} catch (e) {
-			await dbh.exec('ROLLBACK');
-			throw e;
-		}
-	}
-
-	/**
-	 * amazonads テーブルの Amazon 商品データを更新する
-	 *
-	 * @param {object} data - Amazon 商品データ
-	 */
-	async updateAmazonAds(data: AmazonAdsDb.Dp): Promise<void> {
-		const dbh = await this.getDbhAmazonAds();
-
-		await dbh.exec('BEGIN');
-		try {
-			const sth = await dbh.prepare(`
-				UPDATE
-					d_dp
-				SET
-					url = :dp_url,
-					title = :title,
-					binding = :binding,
-					date = :publication_date,
-					image_url = :image_url,
-					image_width = :image_width,
-					image_height = :image_height
-				WHERE
-					asin = :asin
-			`);
-			await sth.run({
-				':dp_url': data.dp_url,
-				':title': data.title,
-				':binding': data.binding,
-				':publication_date': DbUtil.dateToUnix(data.publication_date),
-				':image_url': data.image_url,
-				':image_width': data.image_width,
-				':image_height': data.image_height,
-				':asin': data.asin,
 			});
 			await sth.finalize();
 
