@@ -11,7 +11,6 @@ w0s.jp サーバーで稼働しているシェルスクリプト
 | 名称 | 機能名 | 使用データベース | 概要 |
 |-|-|-|-|
 | [テスト](node/src/component/Test.ts) | Test | ― | 動作確認用。環境整備する際は、まずはこれが動くことを目指す。 |
-| [Amazon 商品情報チェッカー](node/src/component/AmazonAds.ts) | AmazonAds | blog | Amazon 商品情報を PA-API を使用して取得し、 DB に格納済みのデータを照合して更新する。 |
 | [ウェブ巡回（新着）](node/src/component/CrawlerNews.ts) | CrawlerNews | crawler | ウェブページを巡回し（HTML ページのみ）、新着情報の差分を調べて通知する。 |
 | [ウェブ巡回（リソース）](node/src/component/CrawlerResource.ts) | CrawlerResource | crawler | ウェブページを巡回し（HTML リソースに限らない）、レスポンスボディの差分を調べて通知する。 |
 | [JR 空席確認](node/src/component/JrCyberStation.ts) | JrCyberStation | ― | JR CYBER STATION で空席があれば通知する |
