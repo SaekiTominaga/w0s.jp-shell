@@ -68,10 +68,9 @@ declare namespace KumetaTwitterDb {
 		location: string | null;
 		description: string | null;
 		url: string | null;
-		followers: number;
-		following: number;
-		likes: number;
-		created_at: Date;
+		followers: number | null;
+		following: number | null;
+		created_at: Date | null;
 	}
 
 	export interface ProfileImage {
