@@ -80,7 +80,6 @@ export default class TwitterUserInfoHistoryKumetaDao {
 				url: row.url,
 				followers: row.followers,
 				following: row.following,
-				likes: row.likes,
 				created_at: <Date>DbUtil.unixToDate(row.created_at),
 			});
 		}
@@ -109,7 +108,6 @@ export default class TwitterUserInfoHistoryKumetaDao {
 					url = :url,
 					followers = :followers,
 					follows = :following,
-					favourites = :likes,
 					created = :created_at
 				WHERE
 					id = :id
@@ -120,10 +118,9 @@ export default class TwitterUserInfoHistoryKumetaDao {
 				':location': data.location,
 				':description': data.description,
 				':url': data.url,
-				':followers': data.followers,
-				':following': data.following,
-				':likes': data.likes,
-				':created_at': DbUtil.dateToUnix(data.created_at),
+				':followers': data.followers ?? 0, // TODO: API v2 で null 許可されたための暫定的な対応
+				':following': data.following ?? 0, // TODO: API v2 で null 許可されたための暫定的な対応
+				':created_at': DbUtil.dateToUnix(data.created_at) ?? 0, // TODO: API v2 で null 許可されたための暫定的な対応
 				':id': data.id,
 			});
 			await sth.finalize();
