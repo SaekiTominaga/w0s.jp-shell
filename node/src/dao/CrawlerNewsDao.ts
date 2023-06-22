@@ -1,5 +1,5 @@
 import * as sqlite from 'sqlite';
-import * as sqlite3 from 'sqlite3';
+import sqlite3 from 'sqlite3';
 import DbUtil from '../util/DbUtil.js';
 
 /**
