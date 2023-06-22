@@ -47,11 +47,12 @@ export default class CrawlerNews extends Component implements ComponentInterface
 		const priority = Number(argsParsedValues['priority']); // 優先度
 		this.logger.info(`優先度: ${priority}`);
 
-		if (this.configCommon.sqlite.db.crawler === undefined) {
+		const dbFilePath = this.configCommon.sqlite.db['crawler'];
+		if (dbFilePath === undefined) {
 			throw new Error('共通設定ファイルに crawler テーブルのパスが指定されていない。');
 		}
 
-		const dao = new CrawlerNewsDao(this.configCommon);
+		const dao = new CrawlerNewsDao(dbFilePath);
 
 		for (const targetData of await dao.select(priority)) {
 			const newUrl = !(await dao.selectDataCount(targetData.url)); // 新規追加された URL か

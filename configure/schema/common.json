@@ -58,30 +58,10 @@
 				"db": {
 					"type": "object",
 					"title": "DB ファイル情報",
-					"required": ["amazon_ads", "crawler", "blog", "kumeta_twitter", "thumb_image"],
-					"properties": {
-						"amazon_ads": {
-							"type": "string",
-							"title": "amazon_ads テーブル"
-						},
-						"crawler": {
-							"type": "string",
-							"title": "crawler テーブル"
-						},
-						"blog": {
-							"type": "string",
-							"title": "blog テーブル"
-						},
-						"kumeta_twitter": {
-							"type": "string",
-							"title": "kumetatwitter テーブル"
-						},
-						"thumb_image": {
-							"type": "string",
-							"title": "thumbimage テーブル"
-						}
-					},
-					"additionalProperties": false
+					"additionalProperties": {
+						"type": "string",
+						"title": "テーブル名"
+					}
 				}
 			},
 			"additionalProperties": false
