@@ -1,7 +1,13 @@
+/.tweet/
+
 /configure/type/
 /configure/*.json
+
 /coverage/
+
 /log/
+
 /node/dist/
 /node/log4js*.json
+
 /node_modules/
