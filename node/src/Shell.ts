@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util';
 import Log4js from 'log4js';
-import Component from './ComponentInterface.js';
+import type Component from './ComponentInterface.js';
 
 /* タイムアウト判定用計測 */
 const startTime = Date.now();
