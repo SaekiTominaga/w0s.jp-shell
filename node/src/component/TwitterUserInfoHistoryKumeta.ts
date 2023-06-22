@@ -46,11 +46,12 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 		const twitterApi = new TwitterApi(twitterBearerToken);
 		const twitterApiReadOnly = twitterApi.readOnly.v2;
 
-		if (this.configCommon.sqlite.db.kumeta_twitter === undefined) {
+		const dbFilePath = this.configCommon.sqlite.db['kumeta_twitter'];
+		if (dbFilePath === undefined) {
 			throw new Error('共通設定ファイルに kumetatwitter テーブルのパスが指定されていない。');
 		}
 
-		const dao = new TwitterUserInfoHistoryKumetaDao(this.configCommon);
+		const dao = new TwitterUserInfoHistoryKumetaDao(dbFilePath);
 
 		const users = await dao.selectUsers(); // DB に格納されている全ユーザー情報
 		const usersEntries = Object.entries(users);
