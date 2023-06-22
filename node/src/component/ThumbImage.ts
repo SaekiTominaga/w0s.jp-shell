@@ -1,8 +1,8 @@
 import { parseArgs } from 'node:util';
 import Component from '../Component.js';
-import ComponentInterface from '../ComponentInterface.js';
+import type ComponentInterface from '../ComponentInterface.js';
 import ThumbImageDao from '../dao/ThumbImageDao.js';
-import { NoName as ConfigureTest } from '../../../configure/type/thumb-image.js';
+import type { NoName as ConfigureTest } from '../../../configure/type/thumb-image.js';
 
 /**
  * サムネイル画像生成

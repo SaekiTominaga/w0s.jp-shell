@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 import { TwitterApi } from 'twitter-api-v2';
 import Component from '../Component.js';
-import ComponentInterface from '../ComponentInterface.js';
+import type ComponentInterface from '../ComponentInterface.js';
 import TwitterUserInfoHistoryKumetaDao from '../dao/TwitterUserInfoHistoryKumetaDao.js';
 import type { Twitter as ConfigureTwitterUserInfoHistoryKumeta } from '../../../configure/type/twitter-user-info-history-kumeta.js';
 

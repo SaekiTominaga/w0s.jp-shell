@@ -1,7 +1,7 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
 import DbUtil from '../util/DbUtil.js';
-import { NoName as Configure } from '../../../configure/type/common.js';
+import type { NoName as Configure } from '../../../configure/type/common.js';
 
 /**
  * ウェブ巡回（リソース）

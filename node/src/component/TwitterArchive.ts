@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import puppeteer from 'puppeteer-core';
 import { JSDOM } from 'jsdom';
 import Component from '../Component.js';
-import ComponentInterface from '../ComponentInterface.js';
-import { NoName as ConfigureTwitterArchive } from '../../../configure/type/twitter-archive.js';
+import type ComponentInterface from '../ComponentInterface.js';
+import type { NoName as ConfigureTwitterArchive } from '../../../configure/type/twitter-archive.js';
 
 interface Tweet {
 	url: string;

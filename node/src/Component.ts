@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import Log4js from 'log4js';
 import nodemailer from 'nodemailer';
 import { headerCase } from 'header-case';
-import { NoName as ConfigureCommon } from '../../configure/type/common.js';
+import type { NoName as ConfigureCommon } from '../../configure/type/common.js';
 
 export default class Component {
 	readonly #name: string; // コンポーネント名（ファイル名などに使用されるプログラムのための名前）
