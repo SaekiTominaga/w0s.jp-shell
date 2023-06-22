@@ -1,6 +1,6 @@
 import fs from 'node:fs';
-import puppeteer from 'puppeteer-core';
 import { JSDOM } from 'jsdom';
+import puppeteer from 'puppeteer-core';
 import Component from '../Component.js';
 import type ComponentInterface from '../ComponentInterface.js';
 import type { NoName as ConfigureTwitterArchive } from '../../../configure/type/twitter-archive.js';
@@ -109,18 +109,20 @@ export default class TwitterArchive extends Component implements ComponentInterf
 				this.logger.debug(`スクロール ${index} 回目`);
 			}
 
-			await page.screenshot({ path: `${this.#config.file_dir}/${this.#config.account.file.screenshot_prefix}${index + 1}.png` });
+			const screennshotFile = `${this.#config.file_dir}/${this.#config.account.file.screenshot_prefix}${index + 1}.png`;
+			await page.screenshot({ path: screennshotFile });
+			this.logger.debug(`スクリーンショット: ${screennshotFile}`);
 			const response = await page.content();
 
 			/* DOM 化 */
 			const { document } = new JSDOM(response).window;
 
-			[...document.querySelectorAll('section > h1 + div > div > div[data-testid="cellInnerDiv"]')].forEach((tweetElement) => {
-				if (tweetElement.textContent === '') {
+			[...document.querySelectorAll('section > h1 + div [data-testid="cellInnerDiv"]')].forEach((tweetElement) => {
+				if (tweetElement.textContent === null || tweetElement.textContent === '') {
 					return;
 				}
 
-				const timeElement = tweetElement.querySelector<HTMLTimeElement>('div[data-testid="User-Name"] time');
+				const timeElement = tweetElement.querySelector<HTMLTimeElement>('[data-testid="User-Name"] time');
 				if (timeElement === null) {
 					return;
 				}
@@ -131,16 +133,16 @@ export default class TwitterArchive extends Component implements ComponentInterf
 					return;
 				}
 
-				const message = tweetElement.querySelector('div[data-testid="tweetText"]')?.textContent;
+				const message = tweetElement.querySelector('[data-testid="tweetText"]')?.textContent;
 
 				let link: string | undefined;
-				const cardElement = tweetElement.querySelector('div[data-testid="card.wrapper"]');
+				const cardElement = tweetElement.querySelector('[data-testid="card.wrapper"]');
 				if (cardElement !== null) {
 					link = cardElement.querySelector<HTMLAnchorElement>('a[role=link]')?.href;
 				}
 
 				const photos: string[] = [];
-				for (const photoElement of tweetElement.querySelectorAll('div[data-testid="tweetPhoto"]')) {
+				for (const photoElement of tweetElement.querySelectorAll('[data-testid="tweetPhoto"]')) {
 					const src = photoElement.querySelector('img')?.src;
 					if (src !== undefined) {
 						photos.push(src);
@@ -161,8 +163,15 @@ export default class TwitterArchive extends Component implements ComponentInterf
 			});
 		}
 
-		await fs.promises.writeFile(`${this.#config.file_dir}/${this.#config.account.file.url}`, tweets.map((tweet) => tweet.url).join('\n'));
-		await fs.promises.writeFile(`${this.#config.file_dir}/${this.#config.account.file.data}`, JSON.stringify(tweets, null, '\t'));
-		this.logger.info('ファイル書き込み完了');
+		if (tweets.length === 0) {
+			this.logger.warn('ツイートが取得できない');
+			return;
+		}
+
+		await Promise.all([
+			fs.promises.writeFile(`${this.#config.file_dir}/${this.#config.account.file.url}`, tweets.map((tweet) => tweet.url).join('\n')),
+			fs.promises.writeFile(`${this.#config.file_dir}/${this.#config.account.file.data}`, JSON.stringify(tweets, null, '\t')),
+		]);
+		this.logger.info('処理完了');
 	}
 }
