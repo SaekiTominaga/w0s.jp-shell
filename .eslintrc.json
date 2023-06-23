@@ -10,7 +10,7 @@
 	"ignorePatterns": ["node/dist/**/*.js"],
 	"overrides": [
 		{
-			"files": ["node/src/Shell.ts"],
+			"files": ["node/src/shell.ts"],
 			"rules": {
 				"new-cap": "off"
 			}
@@ -19,12 +19,6 @@
 			"files": ["node/src/*Interface.ts"],
 			"rules": {
 				"semi": "off"
-			}
-		},
-		{
-			"files": ["node/src/component/AmazonAds.ts"],
-			"rules": {
-				"no-await-in-loop": "warn"
 			}
 		},
 		{
