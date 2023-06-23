@@ -7,6 +7,7 @@ on:
       - 'node/src/**/*.ts'
       - 'node/__tests__/*.test.js'
       - 'node/@types/*.d.ts'
+      - '.eslintrc.json'
   push:
     branches:
       - main
@@ -14,6 +15,7 @@ on:
       - 'node/src/**/*.ts'
       - 'node/__tests__/*.test.js'
       - 'node/@types/*.d.ts'
+      - '.eslintrc.json'
   workflow_dispatch:
 
 jobs:
