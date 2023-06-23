@@ -1,6 +1,4 @@
 import { parseArgs } from 'node:util';
-import { AbortController } from 'abort-controller';
-import fetch from 'node-fetch';
 import jsdom from 'jsdom';
 import MIMETypeParser from '@saekitominaga/mime-parser';
 import puppeteer from 'puppeteer-core';
