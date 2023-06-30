@@ -11,8 +11,8 @@ export default class CrawlerNewsDao {
 	readonly #filepath: string;
 
 	/**
-	 * @param {string} filepath - DB ファイルパス
-	 * @param {sqlite.Database} dbh - DB 接続情報
+	 * @param filepath - DB ファイルパス
+	 * @param dbh - DB 接続情報
 	 */
 	constructor(filepath: string, dbh?: sqlite.Database<sqlite3.Database, sqlite3.Statement>) {
 		this.#filepath = filepath;
@@ -25,7 +25,7 @@ export default class CrawlerNewsDao {
 	/**
 	 * DB 接続情報を取得する
 	 *
-	 * @returns {sqlite.Database} DB 接続情報
+	 * @returns DB 接続情報
 	 */
 	async getDbh(): Promise<sqlite.Database<sqlite3.Database, sqlite3.Statement>> {
 		if (this.#dbh !== null) {
@@ -45,9 +45,9 @@ export default class CrawlerNewsDao {
 	/**
 	 * 登録データを取得する
 	 *
-	 * @param {number} priority - 優先度
+	 * @param priority - 優先度
 	 *
-	 * @returns {object[]} 登録データ
+	 * @returns 登録データ
 	 */
 	async select(priority: number): Promise<CrawlerDb.News[]> {
 		const dbh = await this.getDbh();
@@ -95,9 +95,9 @@ export default class CrawlerNewsDao {
 	/**
 	 * ニュースデータの登録件数を取得する
 	 *
-	 * @param {string} url - URL
+	 * @param url - URL
 	 *
-	 * @returns {number} 登録件数
+	 * @returns 登録件数
 	 */
 	async selectDataCount(url: string): Promise<number> {
 		const dbh = await this.getDbh();
@@ -122,10 +122,10 @@ export default class CrawlerNewsDao {
 	/**
 	 * ニュースデータが登録されているか
 	 *
-	 * @param {string} url - URL
-	 * @param {string} content - 内容
+	 * @param url - URL
+	 * @param content - 内容
 	 *
-	 * @returns {number} 登録件数
+	 * @returns 登録件数
 	 */
 	async existData(url: string, content: string): Promise<boolean> {
 		const dbh = await this.getDbh();
@@ -152,7 +152,7 @@ export default class CrawlerNewsDao {
 	/**
 	 * ニュースデータを登録する
 	 *
-	 * @param {object} data - 登録データ
+	 * @param data - 登録データ
 	 */
 	async insertData(data: CrawlerDb.NewsData): Promise<void> {
 		const dbh = await this.getDbh();
@@ -185,8 +185,8 @@ export default class CrawlerNewsDao {
 	/**
 	 * 累積アクセスエラー回数を更新する
 	 *
-	 * @param {string} url - 対象 URL
-	 * @param {number} errorCount - 累積アクセスエラー回数
+	 * @param url - 対象 URL
+	 * @param errorCount - 累積アクセスエラー回数
 	 */
 	async updateError(url: string, errorCount: number): Promise<void> {
 		const dbh = await this.getDbh();
@@ -217,7 +217,7 @@ export default class CrawlerNewsDao {
 	/**
 	 * 累積アクセスエラー回数をリセットする
 	 *
-	 * @param {string} url - 対象 URL
+	 * @param url - 対象 URL
 	 */
 	async resetError(url: string): Promise<void> {
 		await this.updateError(url, 0);

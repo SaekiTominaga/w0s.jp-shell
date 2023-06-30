@@ -11,8 +11,8 @@ export default class TwitterUserInfoHistoryKumetaDao {
 	readonly #filepath: string;
 
 	/**
-	 * @param {string} filepath - DB ファイルパス
-	 * @param {sqlite.Database} dbh - DB 接続情報
+	 * @param filepath - DB ファイルパス
+	 * @param dbh - DB 接続情報
 	 */
 	constructor(filepath: string, dbh?: sqlite.Database<sqlite3.Database, sqlite3.Statement>) {
 		this.#filepath = filepath;
@@ -25,7 +25,7 @@ export default class TwitterUserInfoHistoryKumetaDao {
 	/**
 	 * DB 接続情報を取得する
 	 *
-	 * @returns {sqlite.Database} DB 接続情報
+	 * @returns DB 接続情報
 	 */
 	async getDbh(): Promise<sqlite.Database<sqlite3.Database, sqlite3.Statement>> {
 		if (this.#dbh !== null) {
@@ -45,7 +45,7 @@ export default class TwitterUserInfoHistoryKumetaDao {
 	/**
 	 * ユーザーデータを取得する
 	 *
-	 * @returns {object[]} ユーザーデータ
+	 * @returns ユーザーデータ
 	 */
 	async selectUsers(): Promise<KumetaTwitterDb.User[]> {
 		const dbh = await this.getDbh();
@@ -89,7 +89,7 @@ export default class TwitterUserInfoHistoryKumetaDao {
 	/**
 	 * ユーザーデータを更新する
 	 *
-	 * @param {object[]} data - ユーザーデータ
+	 * @param data - ユーザーデータ
 	 */
 	async updateUsers(data: KumetaTwitterDb.User): Promise<void> {
 		const dbh = await this.getDbh();
@@ -134,9 +134,9 @@ export default class TwitterUserInfoHistoryKumetaDao {
 	/**
 	 * 対象ユーザーの最新のアイコンデータを取得する
 	 *
-	 * @param {string} id - Twitter ID
+	 * @param id - Twitter ID
 	 *
-	 * @returns {object[]} アイコンデータ
+	 * @returns アイコンデータ
 	 */
 	async selectLatestProfileImage(id: string): Promise<KumetaTwitterDb.ProfileImage | null> {
 		const dbh = await this.getDbh();
@@ -177,7 +177,7 @@ export default class TwitterUserInfoHistoryKumetaDao {
 	/**
 	 * アイコンデータを登録する
 	 *
-	 * @param {object[]} data - アイコンデータ
+	 * @param data - アイコンデータ
 	 */
 	async insertProfileImage(data: KumetaTwitterDb.ProfileImage): Promise<void> {
 		const dbh = await this.getDbh();
@@ -210,9 +210,9 @@ export default class TwitterUserInfoHistoryKumetaDao {
 	/**
 	 * 対象ユーザーの最新のバナーデータを取得する
 	 *
-	 * @param {string} id - Twitter ID
+	 * @param id - Twitter ID
 	 *
-	 * @returns {object[]} バナーデータ
+	 * @returns バナーデータ
 	 */
 	async selectLatestBanner(id: string): Promise<KumetaTwitterDb.Banner | null> {
 		const dbh = await this.getDbh();
@@ -251,7 +251,7 @@ export default class TwitterUserInfoHistoryKumetaDao {
 	/**
 	 * バナーデータを登録する
 	 *
-	 * @param {object[]} data - バナーデータ
+	 * @param data - バナーデータ
 	 */
 	async insertBanner(data: KumetaTwitterDb.Banner): Promise<void> {
 		const dbh = await this.getDbh();

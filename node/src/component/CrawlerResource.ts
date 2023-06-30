@@ -173,10 +173,10 @@ export default class CrawlerResource extends Component implements ComponentInter
 	/**
 	 * ファイル保存
 	 *
-	 * @param {string} urlText - URL
-	 * @param {string} responseBody - レスポンスボディ
+	 * @param urlText - URL
+	 * @param responseBody - レスポンスボディ
 	 *
-	 * @returns {string} ファイルディレクトリ
+	 * @returns ファイルディレクトリ
 	 */
 	async #saveFile(urlText: string, responseBody: string): Promise<string> {
 		const url = new URL(urlText);
@@ -209,8 +209,8 @@ export default class CrawlerResource extends Component implements ComponentInter
 	/**
 	 * URL へのアクセスが成功した時の処理
 	 *
-	 * @param {CrawlerResourceDao} dao - dao クラス
-	 * @param {object} targetData - 登録データ
+	 * @param dao - dao クラス
+	 * @param targetData - 登録データ
 	 */
 	static async #accessSuccess(dao: CrawlerResourceDao, targetData: CrawlerDb.Resource): Promise<void> {
 		if (targetData.error > 0) {
@@ -222,10 +222,10 @@ export default class CrawlerResource extends Component implements ComponentInter
 	/**
 	 * URL へのアクセスエラーが起こった時の処理
 	 *
-	 * @param {CrawlerResourceDao} dao - dao クラス
-	 * @param {object} targetData - 登録データ
+	 * @param dao - dao クラス
+	 * @param targetData - 登録データ
 	 *
-	 * @returns {number} 連続アクセスエラー回数
+	 * @returns 連続アクセスエラー回数
 	 */
 	static async #accessError(dao: CrawlerResourceDao, targetData: CrawlerDb.Resource): Promise<number> {
 		const error = targetData.error + 1; // 連続アクセスエラー回数
