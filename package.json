@@ -41,7 +41,6 @@
 		"relative-to-absolute-iri": "^1.0.7",
 		"sqlite": "^4.2.1",
 		"sqlite3": "^5.1.6",
-		"twitter-api-v2": "^1.15.0",
 		"uuid": "^9.0.0"
 	},
 	"devDependencies": {
