@@ -16,7 +16,6 @@
 		"shell-JrCyberStation": "node node/dist/shell.js -c JrCyberStation -t 20",
 		"shell-ThumbImage": "node node/dist/shell.js -c ThumbImage -t 30 --dev",
 		"shell-TwitterArchive": "node node/dist/shell.js -c TwitterArchive -t 0",
-		"shell-TwitterUserInfoHistoryKumeta": "node node/dist/shell.js -c TwitterUserInfoHistoryKumeta -t 0 --dev",
 		"shell-YokohamaLibraryHoldNotice": "node node/dist/shell.js -c YokohamaLibraryHoldNotice -t 10",
 		"_config-validate:common": "ajv --spec=draft7 -s configure/schema/common.json -d configure/common.json",
 		"_config-validate:crawler-news": "ajv --spec=draft7 -s configure/schema/crawler-news.json -d configure/crawler-news.json",
@@ -25,7 +24,6 @@
 		"_config-validate:test": "ajv --spec=draft7 -s configure/schema/test.json -d configure/test.json",
 		"_config-validate:thumb-image": "ajv --spec=draft7 -s configure/schema/thumb-image.json -d configure/thumb-image.json",
 		"_config-validate:twitter-archive": "ajv --spec=draft7 -s configure/schema/twitter-archive.json -d configure/twitter-archive.json",
-		"_config-validate:twitter-user-info-history-kumeta": "ajv --spec=draft7 -s configure/schema/twitter-user-info-history-kumeta.json -d configure/twitter-user-info-history-kumeta.json",
 		"_config-validate:yokohama-library-hold-notice": "ajv --spec=draft7 -s configure/schema/yokohama-library-hold-notice.json -d configure/yokohama-library-hold-notice.json"
 	},
 	"dependencies": {
