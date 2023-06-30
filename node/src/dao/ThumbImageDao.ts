@@ -11,8 +11,8 @@ export default class ThumbImageDao {
 	readonly #filepath: string;
 
 	/**
-	 * @param {string} filepath - DB ファイルパス
-	 * @param {sqlite.Database} dbh - DB 接続情報
+	 * @param filepath - DB ファイルパス
+	 * @param dbh - DB 接続情報
 	 */
 	constructor(filepath: string, dbh?: sqlite.Database<sqlite3.Database, sqlite3.Statement>) {
 		this.#filepath = filepath;
@@ -25,7 +25,7 @@ export default class ThumbImageDao {
 	/**
 	 * DB 接続情報を取得する
 	 *
-	 * @returns {sqlite.Database} DB 接続情報
+	 * @returns DB 接続情報
 	 */
 	async getDbh(): Promise<sqlite.Database<sqlite3.Database, sqlite3.Statement>> {
 		if (this.#dbh !== null) {
@@ -45,7 +45,7 @@ export default class ThumbImageDao {
 	/**
 	 * キューに登録された画像情報を 1 件取り出す
 	 *
-	 * @returns {object} キューに登録された画像情報
+	 * @returns キューに登録された画像情報
 	 */
 	async selectQueue(): Promise<ThumbImageDb.Queue | null> {
 		const dbh = await this.getDbh();
@@ -84,7 +84,7 @@ export default class ThumbImageDao {
 	/**
 	 * キューに登録された画像情報を削除する
 	 *
-	 * @param {object} queue - キューに登録された画像情報
+	 * @param queue - キューに登録された画像情報
 	 */
 	async deleteQueue(queue: ThumbImageDb.Queue): Promise<void> {
 		const dbh = await this.getDbh();

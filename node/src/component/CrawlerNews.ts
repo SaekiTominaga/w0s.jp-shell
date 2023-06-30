@@ -212,10 +212,10 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	/**
 	 * fetch() で URL にリクエストを行い、レスポンスボディを取得する
 	 *
-	 * @param {CrawlerNewsDao} dao - dao クラス
-	 * @param {object} targetData - 登録データ
+	 * @param dao - dao クラス
+	 * @param targetData - 登録データ
 	 *
-	 * @returns {string | null} レスポンスボディ
+	 * @returns レスポンスボディ
 	 */
 	private async requestFetch(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<string | null> {
 		const controller = new AbortController();
@@ -285,10 +285,10 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	/**
 	 * ブラウザで URL にリクエストを行い、レスポンスボディを取得する
 	 *
-	 * @param {CrawlerNewsDao} dao - dao クラス
-	 * @param {object} targetData - 登録データ
+	 * @param dao - dao クラス
+	 * @param targetData - 登録データ
 	 *
-	 * @returns {string | null} レスポンスボディ
+	 * @returns レスポンスボディ
 	 */
 	private async requestBrowser(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<string | null> {
 		let responseBody: string;
@@ -352,8 +352,8 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	/**
 	 * URL へのアクセスが成功した時の処理
 	 *
-	 * @param {CrawlerNewsDao} dao - dao クラス
-	 * @param {object} targetData - 登録データ
+	 * @param dao - dao クラス
+	 * @param targetData - 登録データ
 	 */
 	static async #accessSuccess(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<void> {
 		if (targetData.error > 0) {
@@ -365,10 +365,10 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	/**
 	 * URL へのアクセスエラーが起こった時の処理
 	 *
-	 * @param {CrawlerNewsDao} dao - dao クラス
-	 * @param {object} targetData - 登録データ
+	 * @param dao - dao クラス
+	 * @param targetData - 登録データ
 	 *
-	 * @returns {number} 連続アクセスエラー回数
+	 * @returns 連続アクセスエラー回数
 	 */
 	static async #accessError(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<number> {
 		const error = targetData.error + 1; // 連続アクセスエラー回数

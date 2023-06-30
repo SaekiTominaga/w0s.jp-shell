@@ -34,9 +34,9 @@ export default class Component {
 	/**
 	 * 設定ファイルを読み込む
 	 *
-	 * @param {string} name - 設定ファイル名（拡張子を除いた名前）
+	 * @param name - 設定ファイル名（拡張子を除いた名前）
 	 *
-	 * @returns {object} 設定ファイルの中身
+	 * @returns 設定ファイルの中身
 	 */
 	protected readConfig(name: string = headerCase(this.#name).toLowerCase()): unknown {
 		const targetPath = `${this.#CONFIGURE_DIRNAME}/${name}${this.#CONFIGURE_EXTENSION}`;

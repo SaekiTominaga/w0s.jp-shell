@@ -171,11 +171,11 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 	/**
 	 * DB に登録されたアイコン画像と比較
 	 *
-	 * @param {TwitterUserInfoHistoryKumetaDao} dao - dao クラス
-	 * @param {string} id - ユーザー ID
-	 * @param {string} apiName - API から取得した表示名
-	 * @param {string} apiUsername - API から取得したハンドル名（@アカウント）
-	 * @param {string} apiProfileImageUrl - API から取得したアイコン画像 URL
+	 * @param dao - dao クラス
+	 * @param id - ユーザー ID
+	 * @param apiName - API から取得した表示名
+	 * @param apiUsername - API から取得したハンドル名（@アカウント）
+	 * @param apiProfileImageUrl - API から取得したアイコン画像 URL
 	 */
 	async #profileImage(dao: TwitterUserInfoHistoryKumetaDao, id: string, apiName: string, apiUsername: string, apiProfileImageUrl: string): Promise<void> {
 		this.logger.debug(`@${apiUsername} のアイコン画像チェック`);
@@ -207,9 +207,9 @@ export default class TwitterUserInfoHistoryKumeta extends Component implements C
 	/**
 	 * 画像ファイルを保存する
 	 *
-	 * @param {string} targetUrl - 画像を取得する URL
+	 * @param targetUrl - 画像を取得する URL
 	 *
-	 * @returns {string} ファイル名
+	 * @returns ファイル名
 	 */
 	async #saveImage(targetUrl: string): Promise<string> {
 		const response = await fetch(targetUrl);
