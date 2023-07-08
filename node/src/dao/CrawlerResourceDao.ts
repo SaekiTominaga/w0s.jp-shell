@@ -55,7 +55,7 @@ export default class CrawlerResourceDao {
 			SELECT
 				url,
 				title,
-				class,
+				category,
 				priority,
 				browser,
 				selector,
@@ -77,7 +77,7 @@ export default class CrawlerResourceDao {
 			datas.push({
 				url: row.url,
 				title: row.title,
-				class: row.class,
+				category: row.category,
 				priority: row.priority,
 				browser: Boolean(row.browser),
 				selector: row.selector,

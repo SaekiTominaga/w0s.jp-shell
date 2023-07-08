@@ -22,7 +22,7 @@ declare namespace CrawlerDb {
 	export interface Resource {
 		url: string;
 		title: string;
-		class: number;
+		category: number;
 		priority: number;
 		browser: boolean;
 		selector: string | null;
