@@ -2,16 +2,25 @@ import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
 import MIMETypeParser from '@saekitominaga/mime-parser';
+import puppeteer from 'puppeteer-core';
 import Component from '../Component.js';
 import type ComponentInterface from '../ComponentInterface.js';
 import CrawlerResourceDao from '../dao/CrawlerResourceDao.js';
 import type { NoName as ConfigureCrawlerResource } from '../../../configure/type/crawler-resource.js';
+
+interface Response {
+	contentType: string;
+	lastModified: Date | null;
+	body: string;
+}
 
 /**
  * ウェブページを巡回し、レスポンスボディの差分を調べて通知する
  */
 export default class CrawlerResource extends Component implements ComponentInterface {
 	readonly #config: ConfigureCrawlerResource;
+
+	readonly #dao: CrawlerResourceDao;
 
 	readonly #HTML_MIMES: DOMParserSupportedType[] = ['application/xhtml+xml', 'application/xml', 'text/html', 'text/xml'];
 
@@ -20,6 +29,12 @@ export default class CrawlerResource extends Component implements ComponentInter
 
 		this.#config = this.readConfig() as ConfigureCrawlerResource;
 		this.title = this.#config.title;
+
+		const dbFilePath = this.configCommon.sqlite.db['crawler'];
+		if (dbFilePath === undefined) {
+			throw new Error('共通設定ファイルに crawler テーブルのパスが指定されていない。');
+		}
+		this.#dao = new CrawlerResourceDao(dbFilePath);
 	}
 
 	async execute(): Promise<void> {
@@ -36,17 +51,12 @@ export default class CrawlerResource extends Component implements ComponentInter
 		const priority = Number(argsParsedValues['priority']); // 優先度
 		this.logger.info(`優先度: ${priority}`);
 
-		const dbFilePath = this.configCommon.sqlite.db['crawler'];
-		if (dbFilePath === undefined) {
-			throw new Error('共通設定ファイルに crawler テーブルのパスが指定されていない。');
-		}
-
-		const dao = new CrawlerResourceDao(dbFilePath);
-
 		let prevHost: string | undefined; // ひとつ前のループで処理したホスト名
-		for (const targetData of await dao.select(priority)) {
+
+		for (const targetData of await this.#dao.select(priority)) {
 			const targetHost = new URL(targetData.url).hostname;
 			if (targetHost === prevHost) {
+				this.logger.debug(`${this.#config.access_interval_host} 秒待機`);
 				await new Promise((resolve) => {
 					setTimeout(resolve, this.#config.access_interval_host * 1000);
 				}); // 接続間隔を空ける
@@ -55,82 +65,21 @@ export default class CrawlerResource extends Component implements ComponentInter
 
 			this.logger.info(`取得処理を実行: ${targetData.url}`);
 
-			const controller = new AbortController();
-			const { signal } = controller;
-			const timeoutId = setTimeout(() => {
-				controller.abort();
-			}, this.#config.fetch_timeout);
-
-			let responseBody: string;
-			let contentType: string;
-			let lastModified: Date | null = null;
-			try {
-				const response = await fetch(targetData.url, {
-					signal,
-				});
-				if (!response.ok) {
-					const errorCount = await CrawlerResource.#accessError(dao, targetData);
-
-					this.logger.info(`HTTP Status Code: ${response.status} ${targetData.url} 、エラー回数: ${errorCount}`);
-					if (errorCount % this.#config.report_error_count === 0) {
-						this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${response.status}\nエラー回数: ${errorCount}`);
-					}
-
-					continue;
-				}
-
-				/* レスポンスヘッダーのチェック */
-				const responseHeaders = response.headers;
-
-				const contentTypeText = responseHeaders.get('Content-Type');
-				if (contentTypeText === null) {
-					this.logger.error(`Content-Type ヘッダーが null: ${targetData.url}`);
-					continue;
-				}
-				contentType = contentTypeText;
-
-				const lastModifiedText = responseHeaders.get('Last-Modified');
-				if (lastModifiedText !== null) {
-					lastModified = new Date(lastModifiedText);
-					if (lastModified.getTime() === targetData.modified_at?.getTime()) {
-						this.logger.info('Last-Modified ヘッダが前回と同じ');
-						CrawlerResource.#accessSuccess(dao, targetData);
-						continue;
-					}
-				}
-
-				/* レスポンスボディ */
-				responseBody = await response.text();
-			} catch (e) {
-				if (e instanceof Error) {
-					switch (e.name) {
-						case 'AbortError': {
-							const errorCount = await CrawlerResource.#accessError(dao, targetData);
-
-							this.logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${errorCount}`);
-							if (errorCount % this.#config.report_error_count === 0) {
-								this.notice.push(`${targetData.title}\n${targetData.url}\nタイムアウト\nエラー回数: ${errorCount}`);
-							}
-
-							break;
-						}
-						default: {
-							throw e;
-						}
-					}
-				} else {
-					throw e;
-				}
-
+			const response = targetData.browser ? await this.#requestBrowser(targetData) : await this.#requestFetch(targetData);
+			if (response === null) {
 				continue;
-			} finally {
-				clearTimeout(timeoutId);
 			}
 
-			let contentLength = responseBody.length;
-			if (this.#HTML_MIMES.includes(new MIMETypeParser(contentType).getEssence() as DOMParserSupportedType)) {
-				/* DOM 化 */
-				const { document } = new jsdom.JSDOM(responseBody).window;
+			if (response.lastModified !== null && response.lastModified.getTime() === targetData.modified_at?.getTime()) {
+				this.logger.info('Last-Modified ヘッダが前回と同じ');
+				this.#accessSuccess(targetData);
+				continue;
+			}
+
+			let contentLength = response.body.length;
+			if (this.#HTML_MIMES.includes(new MIMETypeParser(response.contentType).getEssence() as DOMParserSupportedType)) {
+				/* HTML ページの場合は DOM 化 */
+				const { document } = new jsdom.JSDOM(response.body).window;
 
 				const narrowingSelector = targetData.selector ?? 'body';
 				const contentsElement = document.querySelector(narrowingSelector);
@@ -139,11 +88,11 @@ export default class CrawlerResource extends Component implements ComponentInter
 					continue;
 				}
 				if (contentsElement.textContent === null) {
-					this.logger.error(`セレクター (${narrowingSelector}) の結果が空です: ${targetData.url}`);
+					this.logger.error(`セレクター (${narrowingSelector}) の結果が空: ${targetData.url}`);
 					continue;
 				}
 
-				contentLength = contentsElement.textContent.length;
+				contentLength = contentsElement.innerHTML.length;
 			}
 			this.logger.debug(`コンテンツ長さ: ${contentLength}`);
 
@@ -153,10 +102,10 @@ export default class CrawlerResource extends Component implements ComponentInter
 				/* DB 書き込み */
 				this.logger.debug('更新あり');
 
-				await dao.update(targetData, contentLength, lastModified);
+				await this.#dao.update(targetData, contentLength, response.lastModified);
 
 				/* ファイル保存 */
-				const fileDir = await this.#saveFile(targetData.url, responseBody);
+				const fileDir = await this.#saveFile(targetData.url, response.body);
 
 				/* 通知 */
 				this.notice.push(
@@ -166,7 +115,164 @@ export default class CrawlerResource extends Component implements ComponentInter
 				);
 			}
 
-			await CrawlerResource.#accessSuccess(dao, targetData);
+			await this.#accessSuccess(targetData);
+		}
+	}
+
+	/**
+	 * fetch() で URL にリクエストを行い、レスポンスボディを取得する
+	 *
+	 * @param targetData - 登録データ
+	 *
+	 * @returns レスポンス
+	 */
+	async #requestFetch(targetData: CrawlerDb.Resource): Promise<Response | null> {
+		const controller = new AbortController();
+		const { signal } = controller;
+		const timeoutId = setTimeout(() => {
+			controller.abort();
+		}, this.#config.fetch_timeout);
+
+		try {
+			const response = await fetch(targetData.url, {
+				signal,
+			});
+			if (!response.ok) {
+				const errorCount = await this.#accessError(targetData);
+
+				this.logger.info(`HTTP Status Code: ${response.status} ${targetData.url} 、エラー回数: ${errorCount}`);
+				if (errorCount % this.#config.report_error_count === 0) {
+					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${response.status}\nエラー回数: ${errorCount}`);
+				}
+
+				return null;
+			}
+
+			/* レスポンスヘッダーのチェック */
+			const responseHeaders = response.headers;
+
+			const contentType = responseHeaders.get('Content-Type');
+			if (contentType === null) {
+				this.logger.error(`Content-Type ヘッダーが存在しない: ${targetData.url}`);
+				return null;
+			}
+
+			let lastModified: Date | null = null;
+			const lastModifiedText = responseHeaders.get('Last-Modified');
+			if (lastModifiedText !== null) {
+				lastModified = new Date(lastModifiedText);
+			}
+
+			/* レスポンスボディ */
+			return {
+				contentType: contentType,
+				lastModified: lastModified,
+				body: await response.text(),
+			};
+		} catch (e) {
+			if (e instanceof Error) {
+				switch (e.name) {
+					case 'AbortError': {
+						const errorCount = await this.#accessError(targetData);
+
+						this.logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${errorCount}`);
+						if (errorCount % this.#config.report_error_count === 0) {
+							this.notice.push(`${targetData.title}\n${targetData.url}\nタイムアウト\nエラー回数: ${errorCount}`);
+						}
+
+						return null;
+					}
+					default:
+				}
+
+				this.logger.error(e.message);
+			} else {
+				this.logger.error(e);
+			}
+
+			return null;
+		} finally {
+			clearTimeout(timeoutId);
+		}
+	}
+
+	/**
+	 * ブラウザで URL にリクエストを行い、レスポンスボディを取得する
+	 *
+	 * @param targetData - 登録データ
+	 *
+	 * @returns レスポンス
+	 */
+	async #requestBrowser(targetData: CrawlerDb.Resource): Promise<Response | null> {
+		const browser = await puppeteer.launch({ executablePath: this.configCommon.browser.path });
+		try {
+			const page = await browser.newPage();
+			await page.setUserAgent(this.configCommon.browser.ua);
+			await page.setRequestInterception(true);
+			page.on('request', (request: puppeteer.HTTPRequest) => {
+				switch (request.resourceType()) {
+					case 'document':
+					case 'stylesheet':
+					case 'script':
+					case 'xhr':
+					case 'fetch': {
+						request.continue();
+						break;
+					}
+					default: {
+						request.abort();
+					}
+				}
+			});
+			const response = await page.goto(targetData.url, {
+				waitUntil: 'networkidle0',
+			});
+			if (response === null || !response.ok) {
+				const errorCount = await this.#accessError(targetData);
+
+				this.logger.info(`HTTP Status Code: ${response?.status} ${targetData.url} 、エラー回数: ${errorCount}`);
+				if (errorCount % this.#config.report_error_count === 0) {
+					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${response?.status}\nエラー回数: ${errorCount}`);
+				}
+
+				return null;
+			}
+
+			/* レスポンスヘッダーのチェック */
+			const responseHeaders = response.headers();
+
+			const contentType = responseHeaders['content-type'];
+			if (contentType === undefined) {
+				this.logger.error(`Content-Type ヘッダーが存在しない: ${targetData.url}`);
+				return null;
+			}
+
+			let lastModified: Date | null = null;
+			const lastModifiedText = responseHeaders['Last-Modified'];
+			if (lastModifiedText !== undefined) {
+				lastModified = new Date(lastModifiedText);
+			}
+
+			return {
+				contentType: contentType,
+				lastModified: lastModified,
+				body: await page.evaluate(() => document.documentElement.outerHTML),
+			};
+		} catch (e) {
+			if (e instanceof Error) {
+				if (e.message.startsWith('net::ERR_TOO_MANY_REDIRECTS at https://www.threads.net')) {
+					this.logger.warn(e.message);
+					return null;
+				}
+
+				this.logger.error(e.message);
+			} else {
+				this.logger.error(e);
+			}
+
+			return null;
+		} finally {
+			await browser.close();
 		}
 	}
 
@@ -193,7 +299,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 		const fileFullPath = `${fileFullDir}/${fileName}`; // ドキュメントルート基準のパス
 
 		try {
-			await fs.promises.opendir(fileFullPath);
+			await fs.promises.access(fileFullDir);
 		} catch {
 			await fs.promises.mkdir(fileFullDir, { recursive: true });
 			this.logger.info('mkdir', fileDir);
@@ -209,28 +315,26 @@ export default class CrawlerResource extends Component implements ComponentInter
 	/**
 	 * URL へのアクセスが成功した時の処理
 	 *
-	 * @param dao - dao クラス
 	 * @param targetData - 登録データ
 	 */
-	static async #accessSuccess(dao: CrawlerResourceDao, targetData: CrawlerDb.Resource): Promise<void> {
+	async #accessSuccess(targetData: CrawlerDb.Resource): Promise<void> {
 		if (targetData.error > 0) {
 			/* 前回アクセス時がエラーだった場合 */
-			await dao.resetError(targetData.url);
+			await this.#dao.resetError(targetData.url);
 		}
 	}
 
 	/**
 	 * URL へのアクセスエラーが起こった時の処理
 	 *
-	 * @param dao - dao クラス
 	 * @param targetData - 登録データ
 	 *
 	 * @returns 連続アクセスエラー回数
 	 */
-	static async #accessError(dao: CrawlerResourceDao, targetData: CrawlerDb.Resource): Promise<number> {
+	async #accessError(targetData: CrawlerDb.Resource): Promise<number> {
 		const error = targetData.error + 1; // 連続アクセスエラー回数
 
-		await dao.updateError(targetData.url, error);
+		await this.#dao.updateError(targetData.url, error);
 
 		return error;
 	}
