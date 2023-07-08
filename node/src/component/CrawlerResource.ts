@@ -180,14 +180,14 @@ export default class CrawlerResource extends Component implements ComponentInter
 							this.notice.push(`${targetData.title}\n${targetData.url}\nタイムアウト\nエラー回数: ${errorCount}`);
 						}
 
-						break;
+						return null;
 					}
-					default: {
-						throw e;
-					}
+					default:
 				}
+
+				this.logger.error(e.message);
 			} else {
-				throw e;
+				this.logger.error(e);
 			}
 
 			return null;
@@ -258,6 +258,19 @@ export default class CrawlerResource extends Component implements ComponentInter
 				lastModified: lastModified,
 				body: await page.evaluate(() => document.documentElement.outerHTML),
 			};
+		} catch (e) {
+			if (e instanceof Error) {
+				if (e.message.startsWith('net::ERR_TOO_MANY_REDIRECTS at https://www.threads.net')) {
+					this.logger.warn(e.message);
+					return null;
+				}
+
+				this.logger.error(e.message);
+			} else {
+				this.logger.error(e);
+			}
+
+			return null;
 		} finally {
 			await browser.close();
 		}
