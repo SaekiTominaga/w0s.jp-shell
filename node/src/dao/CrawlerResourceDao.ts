@@ -60,7 +60,7 @@ export default class CrawlerResourceDao {
 				priority,
 				browser,
 				selector,
-				content_length,
+				content_hash,
 				last_modified AS modified_at,
 				error
 			FROM
@@ -83,7 +83,7 @@ export default class CrawlerResourceDao {
 				priority: row.priority,
 				browser: Boolean(row.browser),
 				selector: row.selector,
-				content_length: row.content_length,
+				content_hash: row.content_hash,
 				modified_at: DbUtil.unixToDate(row.modified_at),
 				error: row.error,
 			});
@@ -96,10 +96,10 @@ export default class CrawlerResourceDao {
 	 * 登録データを更新する
 	 *
 	 * @param data - 登録データ
-	 * @param contentLength - サイズ
+	 * @param contetnHash - コンテンツのハッシュ値
 	 * @param lastModified - 更新日時
 	 */
-	async update(data: CrawlerDb.Resource, contentLength: number, lastModified: Date | null): Promise<void> {
+	async update(data: CrawlerDb.Resource, contetnHash: string, lastModified: Date | null): Promise<void> {
 		const dbh = await this.getDbh();
 
 		await dbh.exec('BEGIN');
@@ -108,14 +108,14 @@ export default class CrawlerResourceDao {
 				UPDATE
 					d_resource
 				SET
-					last_modified = :last_modified,
-					content_length = :content_length
+					content_hash = :content_hash,
+					last_modified = :last_modified
 				WHERE
 					url = :url
 			`);
 			await sth.run({
+				':content_hash': contetnHash,
 				':last_modified': DbUtil.dateToUnix(lastModified),
-				':content_length': contentLength,
 				':url': data.url,
 			});
 			await sth.finalize();

@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
@@ -76,7 +77,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 				continue;
 			}
 
-			let contentLength = response.body.length;
+			const md5 = crypto.createHash('md5');
 			if (this.#HTML_MIMES.includes(new MIMETypeParser(response.contentType).getEssence() as DOMParserSupportedType)) {
 				/* HTML ページの場合は DOM 化 */
 				const { document } = new jsdom.JSDOM(response.body).window;
@@ -92,27 +93,26 @@ export default class CrawlerResource extends Component implements ComponentInter
 					continue;
 				}
 
-				contentLength = contentsElement.innerHTML.length;
+				md5.update(contentsElement.innerHTML);
+			} else {
+				md5.update(response.body);
 			}
-			this.logger.debug(`コンテンツ長さ: ${contentLength}`);
+			const contentHash = md5.digest('hex');
+			this.logger.debug(`コンテンツ hash: ${contentHash}`);
 
-			if (contentLength === targetData.content_length) {
-				this.logger.info(`コンテンツ長さ (${contentLength}) が DB に格納された値と同じ`);
+			if (contentHash === targetData.content_hash) {
+				this.logger.info(`コンテンツ hash (${contentHash}) が DB に格納された値と同じ`);
 			} else {
 				/* DB 書き込み */
 				this.logger.debug('更新あり');
 
-				await this.#dao.update(targetData, contentLength, response.lastModified);
+				await this.#dao.update(targetData, contentHash, response.lastModified);
 
 				/* ファイル保存 */
 				const fileDir = await this.#saveFile(targetData.url, response.body);
 
 				/* 通知 */
-				this.notice.push(
-					`${targetData.title} ${targetData.url}\n変更履歴: ${this.#config.save.url}?dir=${fileDir} 🔒\nファイルサイズ ${
-						targetData.content_length
-					} → ${contentLength}`
-				);
+				this.notice.push(`${targetData.title} ${targetData.url}\n変更履歴: ${this.#config.save.url}?dir=${fileDir} 🔒`);
 			}
 
 			await this.#accessSuccess(targetData);
