@@ -11,7 +11,6 @@ import type { NoName as ConfigureCrawlerResource } from '../../../configure/type
 
 interface Response {
 	contentType: string;
-	lastModified: Date | null;
 	body: string;
 }
 
@@ -71,12 +70,6 @@ export default class CrawlerResource extends Component implements ComponentInter
 				continue;
 			}
 
-			if (response.lastModified !== null && response.lastModified.getTime() === targetData.modified_at?.getTime()) {
-				this.logger.info('Last-Modified ヘッダが前回と同じ');
-				this.#accessSuccess(targetData);
-				continue;
-			}
-
 			const md5 = crypto.createHash('md5');
 			if (this.#HTML_MIMES.includes(new MIMETypeParser(response.contentType).getEssence() as DOMParserSupportedType)) {
 				/* HTML ページの場合は DOM 化 */
@@ -106,7 +99,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 				/* DB 書き込み */
 				this.logger.debug('更新あり');
 
-				await this.#dao.update(targetData, contentHash, response.lastModified);
+				await this.#dao.update(targetData, contentHash);
 
 				/* ファイル保存 */
 				const fileDir = await this.#saveFile(targetData.url, response.body);
@@ -157,16 +150,9 @@ export default class CrawlerResource extends Component implements ComponentInter
 				return null;
 			}
 
-			let lastModified: Date | null = null;
-			const lastModifiedText = responseHeaders.get('Last-Modified');
-			if (lastModifiedText !== null) {
-				lastModified = new Date(lastModifiedText);
-			}
-
 			/* レスポンスボディ */
 			return {
 				contentType: contentType,
-				lastModified: lastModified,
 				body: await response.text(),
 			};
 		} catch (e) {
@@ -247,15 +233,8 @@ export default class CrawlerResource extends Component implements ComponentInter
 				return null;
 			}
 
-			let lastModified: Date | null = null;
-			const lastModifiedText = responseHeaders['Last-Modified'];
-			if (lastModifiedText !== undefined) {
-				lastModified = new Date(lastModifiedText);
-			}
-
 			return {
 				contentType: contentType,
-				lastModified: lastModified,
 				body: await page.evaluate(() => document.documentElement.outerHTML),
 			};
 		} catch (e) {

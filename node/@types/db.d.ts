@@ -27,7 +27,6 @@ declare namespace CrawlerDb {
 		browser: boolean;
 		selector: string | null;
 		content_hash: string;
-		modified_at: Date | null;
 		error: number;
 	}
 }

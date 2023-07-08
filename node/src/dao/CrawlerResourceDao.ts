@@ -1,6 +1,5 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
-import DbUtil from '../util/DbUtil.js';
 
 /**
  * ウェブ巡回（リソース）
@@ -61,7 +60,6 @@ export default class CrawlerResourceDao {
 				browser,
 				selector,
 				content_hash,
-				last_modified AS modified_at,
 				error
 			FROM
 				d_resource
@@ -84,7 +82,6 @@ export default class CrawlerResourceDao {
 				browser: Boolean(row.browser),
 				selector: row.selector,
 				content_hash: row.content_hash,
-				modified_at: DbUtil.unixToDate(row.modified_at),
 				error: row.error,
 			});
 		}
@@ -97,9 +94,8 @@ export default class CrawlerResourceDao {
 	 *
 	 * @param data - 登録データ
 	 * @param contetnHash - コンテンツのハッシュ値
-	 * @param lastModified - 更新日時
 	 */
-	async update(data: CrawlerDb.Resource, contetnHash: string, lastModified: Date | null): Promise<void> {
+	async update(data: CrawlerDb.Resource, contetnHash: string): Promise<void> {
 		const dbh = await this.getDbh();
 
 		await dbh.exec('BEGIN');
@@ -108,14 +104,12 @@ export default class CrawlerResourceDao {
 				UPDATE
 					d_resource
 				SET
-					content_hash = :content_hash,
-					last_modified = :last_modified
+					content_hash = :content_hash
 				WHERE
 					url = :url
 			`);
 			await sth.run({
 				':content_hash': contetnHash,
-				':last_modified': DbUtil.dateToUnix(lastModified),
 				':url': data.url,
 			});
 			await sth.finalize();
