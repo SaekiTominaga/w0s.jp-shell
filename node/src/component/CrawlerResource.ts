@@ -51,75 +51,72 @@ export default class CrawlerResource extends Component implements ComponentInter
 		const priority = Number(argsParsedValues['priority']); // 優先度
 		this.logger.info(`優先度: ${priority}`);
 
-		const targetDatas = await this.#dao.select(priority);
-
 		let prevHost: string | undefined; // ひとつ前のループで処理したホスト名
-		await Promise.all(
-			targetDatas.map(async (targetData) => {
-				const targetHost = new URL(targetData.url).hostname;
-				if (targetHost === prevHost) {
-					this.logger.debug(`${this.#config.access_interval_host} 秒待機`);
-					await new Promise((resolve) => {
-						setTimeout(resolve, this.#config.access_interval_host * 1000);
-					}); // 接続間隔を空ける
+
+		for (const targetData of await this.#dao.select(priority)) {
+			const targetHost = new URL(targetData.url).hostname;
+			if (targetHost === prevHost) {
+				this.logger.debug(`${this.#config.access_interval_host} 秒待機`);
+				await new Promise((resolve) => {
+					setTimeout(resolve, this.#config.access_interval_host * 1000);
+				}); // 接続間隔を空ける
+			}
+			prevHost = targetHost;
+
+			this.logger.info(`取得処理を実行: ${targetData.url}`);
+
+			const response = targetData.browser ? await this.#requestBrowser(targetData) : await this.#requestFetch(targetData);
+			if (response === null) {
+				continue;
+			}
+
+			if (response.lastModified !== null && response.lastModified.getTime() === targetData.modified_at?.getTime()) {
+				this.logger.info('Last-Modified ヘッダが前回と同じ');
+				this.#accessSuccess(targetData);
+				continue;
+			}
+
+			let contentLength = response.body.length;
+			if (this.#HTML_MIMES.includes(new MIMETypeParser(response.contentType).getEssence() as DOMParserSupportedType)) {
+				/* HTML ページの場合は DOM 化 */
+				const { document } = new jsdom.JSDOM(response.body).window;
+
+				const narrowingSelector = targetData.selector ?? 'body';
+				const contentsElement = document.querySelector(narrowingSelector);
+				if (contentsElement === null) {
+					this.logger.error(`セレクター (${narrowingSelector}) に該当するノードが存在しない: ${targetData.url}`);
+					continue;
 				}
-				prevHost = targetHost;
-
-				this.logger.info(`取得処理を実行: ${targetData.url}`);
-
-				const response = targetData.browser ? await this.#requestBrowser(targetData) : await this.#requestFetch(targetData);
-				if (response === null) {
-					return;
-				}
-
-				if (response.lastModified !== null && response.lastModified.getTime() === targetData.modified_at?.getTime()) {
-					this.logger.info('Last-Modified ヘッダが前回と同じ');
-					this.#accessSuccess(targetData);
-					return;
-				}
-
-				let contentLength = response.body.length;
-				if (this.#HTML_MIMES.includes(new MIMETypeParser(response.contentType).getEssence() as DOMParserSupportedType)) {
-					/* HTML ページの場合は DOM 化 */
-					const { document } = new jsdom.JSDOM(response.body).window;
-
-					const narrowingSelector = targetData.selector ?? 'body';
-					const contentsElement = document.querySelector(narrowingSelector);
-					if (contentsElement === null) {
-						this.logger.error(`セレクター (${narrowingSelector}) に該当するノードが存在しない: ${targetData.url}`);
-						return;
-					}
-					if (contentsElement.textContent === null) {
-						this.logger.error(`セレクター (${narrowingSelector}) の結果が空: ${targetData.url}`);
-						return;
-					}
-
-					contentLength = contentsElement.innerHTML.length;
-				}
-				this.logger.debug(`コンテンツ長さ: ${contentLength}`);
-
-				if (contentLength === targetData.content_length) {
-					this.logger.info(`コンテンツ長さ (${contentLength}) が DB に格納された値と同じ`);
-				} else {
-					/* DB 書き込み */
-					this.logger.debug('更新あり');
-
-					await this.#dao.update(targetData, contentLength, response.lastModified);
-
-					/* ファイル保存 */
-					const fileDir = await this.#saveFile(targetData.url, response.body);
-
-					/* 通知 */
-					this.notice.push(
-						`${targetData.title} ${targetData.url}\n変更履歴: ${this.#config.save.url}?dir=${fileDir} 🔒\nファイルサイズ ${
-							targetData.content_length
-						} → ${contentLength}`
-					);
+				if (contentsElement.textContent === null) {
+					this.logger.error(`セレクター (${narrowingSelector}) の結果が空: ${targetData.url}`);
+					continue;
 				}
 
-				await this.#accessSuccess(targetData);
-			})
-		);
+				contentLength = contentsElement.innerHTML.length;
+			}
+			this.logger.debug(`コンテンツ長さ: ${contentLength}`);
+
+			if (contentLength === targetData.content_length) {
+				this.logger.info(`コンテンツ長さ (${contentLength}) が DB に格納された値と同じ`);
+			} else {
+				/* DB 書き込み */
+				this.logger.debug('更新あり');
+
+				await this.#dao.update(targetData, contentLength, response.lastModified);
+
+				/* ファイル保存 */
+				const fileDir = await this.#saveFile(targetData.url, response.body);
+
+				/* 通知 */
+				this.notice.push(
+					`${targetData.title} ${targetData.url}\n変更履歴: ${this.#config.save.url}?dir=${fileDir} 🔒\nファイルサイズ ${
+						targetData.content_length
+					} → ${contentLength}`
+				);
+			}
+
+			await this.#accessSuccess(targetData);
+		}
 	}
 
 	/**
