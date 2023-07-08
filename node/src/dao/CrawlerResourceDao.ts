@@ -1,6 +1,5 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
-import DbUtil from '../util/DbUtil.js';
 
 /**
  * ウェブ巡回（リソース）
@@ -56,12 +55,11 @@ export default class CrawlerResourceDao {
 			SELECT
 				url,
 				title,
-				class,
+				category,
 				priority,
 				browser,
 				selector,
-				content_length,
-				last_modified AS modified_at,
+				content_hash,
 				error
 			FROM
 				d_resource
@@ -79,12 +77,11 @@ export default class CrawlerResourceDao {
 			datas.push({
 				url: row.url,
 				title: row.title,
-				class: row.class,
+				category: row.category,
 				priority: row.priority,
 				browser: Boolean(row.browser),
 				selector: row.selector,
-				content_length: row.content_length,
-				modified_at: DbUtil.unixToDate(row.modified_at),
+				content_hash: row.content_hash,
 				error: row.error,
 			});
 		}
@@ -96,10 +93,9 @@ export default class CrawlerResourceDao {
 	 * 登録データを更新する
 	 *
 	 * @param data - 登録データ
-	 * @param contentLength - サイズ
-	 * @param lastModified - 更新日時
+	 * @param contetnHash - コンテンツのハッシュ値
 	 */
-	async update(data: CrawlerDb.Resource, contentLength: number, lastModified: Date | null): Promise<void> {
+	async update(data: CrawlerDb.Resource, contetnHash: string): Promise<void> {
 		const dbh = await this.getDbh();
 
 		await dbh.exec('BEGIN');
@@ -108,14 +104,12 @@ export default class CrawlerResourceDao {
 				UPDATE
 					d_resource
 				SET
-					last_modified = :last_modified,
-					content_length = :content_length
+					content_hash = :content_hash
 				WHERE
 					url = :url
 			`);
 			await sth.run({
-				':last_modified': DbUtil.dateToUnix(lastModified),
-				':content_length': contentLength,
+				':content_hash': contetnHash,
 				':url': data.url,
 			});
 			await sth.finalize();
