@@ -9,11 +9,18 @@ import type ComponentInterface from '../ComponentInterface.js';
 import CrawlerNewsDao from '../dao/CrawlerNewsDao.js';
 import type { NoName as ConfigureCrawlerNews } from '../../../configure/type/crawler-news.js';
 
+interface Response {
+	contentType: string;
+	body: string;
+}
+
 /**
  * ウェブページを巡回し、新着情報の差分を調べて通知する
  */
 export default class CrawlerNews extends Component implements ComponentInterface {
 	readonly #config: ConfigureCrawlerNews;
+
+	readonly #dao: CrawlerNewsDao;
 
 	readonly #HTML_MIMES: DOMParserSupportedType[] = ['application/xhtml+xml', 'application/xml', 'text/html', 'text/xml'];
 
@@ -29,6 +36,12 @@ export default class CrawlerNews extends Component implements ComponentInterface
 
 		this.#config = this.readConfig() as ConfigureCrawlerNews;
 		this.title = this.#config.title;
+
+		const dbFilePath = this.configCommon.sqlite.db['crawler'];
+		if (dbFilePath === undefined) {
+			throw new Error('共通設定ファイルに crawler テーブルのパスが指定されていない。');
+		}
+		this.#dao = new CrawlerNewsDao(dbFilePath);
 	}
 
 	async execute(): Promise<void> {
@@ -45,25 +58,23 @@ export default class CrawlerNews extends Component implements ComponentInterface
 		const priority = Number(argsParsedValues['priority']); // 優先度
 		this.logger.info(`優先度: ${priority}`);
 
-		const dbFilePath = this.configCommon.sqlite.db['crawler'];
-		if (dbFilePath === undefined) {
-			throw new Error('共通設定ファイルに crawler テーブルのパスが指定されていない。');
-		}
-
-		const dao = new CrawlerNewsDao(dbFilePath);
-
-		for (const targetData of await dao.select(priority)) {
-			const newUrl = !(await dao.selectDataCount(targetData.url)); // 新規追加された URL か
+		for (const targetData of await this.#dao.select(priority)) {
+			const newUrl = !(await this.#dao.selectDataCount(targetData.url)); // 新規追加された URL か
 
 			this.logger.info(`取得処理を実行: ${targetData.url}`);
 
-			const responseBody = targetData.browser ? await this.requestBrowser(dao, targetData) : await this.requestFetch(dao, targetData);
-			if (responseBody === null) {
+			const response = targetData.browser ? await this.#requestBrowser(targetData) : await this.#requestFetch(targetData);
+			if (response === null) {
+				continue;
+			}
+
+			if (!this.#HTML_MIMES.includes(new MIMETypeParser(response.contentType).getEssence() as DOMParserSupportedType)) {
+				this.logger.error(`HTML ページではない（${response.contentType}）: ${targetData.url}`);
 				continue;
 			}
 
 			/* DOM 化 */
-			const { document } = new jsdom.JSDOM(responseBody).window;
+			const { document } = new jsdom.JSDOM(response.body).window;
 
 			let wrapElements: NodeListOf<Element>;
 			try {
@@ -77,7 +88,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				continue;
 			}
 			if (wrapElements.length === 0) {
-				this.logger.error(`包括要素（${targetData.selector_wrap}）が存在しない: ${targetData.url}\n\n${responseBody}`);
+				this.logger.error(`包括要素（${targetData.selector_wrap}）が存在しない: ${targetData.url}\n\n${response.body}`);
 				continue;
 			}
 
@@ -97,13 +108,13 @@ export default class CrawlerNews extends Component implements ComponentInterface
 					}
 
 					if (dateElement === null) {
-						this.logger.error(`日付要素（${targetData.selector_date}）が存在しない: ${targetData.url}\n\n${responseBody}`);
+						this.logger.error(`日付要素（${targetData.selector_date}）が存在しない: ${targetData.url}\n\n${response.body}`);
 						continue;
 					}
 
 					const dateText = dateElement.textContent?.trim();
 					if (dateText === undefined) {
-						this.logger.error(`日付要素（${targetData.selector_date}）の文字列が取得できない: ${targetData.url}\n\n${responseBody}`);
+						this.logger.error(`日付要素（${targetData.selector_date}）の文字列が取得できない: ${targetData.url}\n\n${response.body}`);
 						continue;
 					}
 
@@ -131,7 +142,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 					}
 
 					if (contentElement1 === null) {
-						this.logger.error(`内容要素（${targetData.selector_content}）が存在しない: ${targetData.url}\n\n${responseBody}`);
+						this.logger.error(`内容要素（${targetData.selector_content}）が存在しない: ${targetData.url}\n\n${response.body}`);
 						continue;
 					}
 
@@ -156,12 +167,12 @@ export default class CrawlerNews extends Component implements ComponentInterface
 
 				if (contentText === undefined) {
 					this.logger.error(
-						`内容要素（${targetData.selector_content ?? targetData.selector_wrap}）の文字列が取得できない: ${targetData.url}\n\n${responseBody}`
+						`内容要素（${targetData.selector_content ?? targetData.selector_wrap}）の文字列が取得できない: ${targetData.url}\n\n${response.body}`
 					);
 					continue;
 				}
 
-				if (await dao.existData(targetData.url, contentText)) {
+				if (await this.#dao.existData(targetData.url, contentText)) {
 					// TODO: url, content で絞り込むなら UUID 要らないのでは
 					this.logger.debug(`データ登録済み: ${contentText.substring(0, 30)}...`);
 					continue;
@@ -178,7 +189,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 
 				/* DB 書き込み */
 				this.logger.debug(`データ登録実行: ${contentText.substring(0, 30)}...`);
-				await dao.insertData({
+				await this.#dao.insertData({
 					uuid: uuidV4(),
 					url: targetData.url,
 					date: date,
@@ -205,19 +216,18 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				}
 			}
 
-			await CrawlerNews.#accessSuccess(dao, targetData);
+			await this.#accessSuccess(targetData);
 		}
 	}
 
 	/**
 	 * fetch() で URL にリクエストを行い、レスポンスボディを取得する
 	 *
-	 * @param dao - dao クラス
 	 * @param targetData - 登録データ
 	 *
-	 * @returns レスポンスボディ
+	 * @returns レスポンス
 	 */
-	private async requestFetch(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<string | null> {
+	async #requestFetch(targetData: CrawlerDb.News): Promise<Response | null> {
 		const controller = new AbortController();
 		const { signal } = controller;
 		const timeoutId = setTimeout(() => {
@@ -229,7 +239,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				signal,
 			});
 			if (!response.ok) {
-				const errorCount = await CrawlerNews.#accessError(dao, targetData);
+				const errorCount = await this.#accessError(targetData);
 
 				this.logger.info(`HTTP Status Code: ${response.status} ${targetData.url} 、エラー回数: ${errorCount}`);
 				if (errorCount % this.#config.report_error_count === 0) {
@@ -247,19 +257,17 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				this.logger.error(`Content-Type ヘッダーが存在しない: ${targetData.url}`);
 				return null;
 			}
-			const contentTypeEssence = new MIMETypeParser(contentType).getEssence();
-			if (!this.#HTML_MIMES.includes(<DOMParserSupportedType>contentTypeEssence)) {
-				this.logger.error(`HTML ページではない（${contentType}）: ${targetData.url}`);
-				return null;
-			}
 
 			/* レスポンスボディ */
-			return await response.text();
+			return {
+				contentType: contentType,
+				body: await response.text(),
+			};
 		} catch (e) {
 			if (e instanceof Error) {
 				switch (e.name) {
 					case 'AbortError': {
-						const errorCount = await CrawlerNews.#accessError(dao, targetData);
+						const errorCount = await this.#accessError(targetData);
 
 						this.logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${errorCount}`);
 						if (errorCount % this.#config.report_error_count === 0) {
@@ -285,14 +293,11 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	/**
 	 * ブラウザで URL にリクエストを行い、レスポンスボディを取得する
 	 *
-	 * @param dao - dao クラス
 	 * @param targetData - 登録データ
 	 *
-	 * @returns レスポンスボディ
+	 * @returns レスポンス
 	 */
-	private async requestBrowser(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<string | null> {
-		let responseBody: string;
-
+	async #requestBrowser(targetData: CrawlerDb.News): Promise<Response | null> {
 		const browser = await puppeteer.launch({ executablePath: this.configCommon.browser.path });
 		try {
 			const page = await browser.newPage();
@@ -317,7 +322,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				waitUntil: 'networkidle0',
 			});
 			if (response === null || !response.ok) {
-				const errorCount = await CrawlerNews.#accessError(dao, targetData);
+				const errorCount = await this.#accessError(targetData);
 
 				this.logger.info(`HTTP Status Code: ${response?.status} ${targetData.url} 、エラー回数: ${errorCount}`);
 				if (errorCount % this.#config.report_error_count === 0) {
@@ -330,50 +335,44 @@ export default class CrawlerNews extends Component implements ComponentInterface
 			/* レスポンスヘッダーのチェック */
 			const responseHeaders = response.headers();
 
-			const contentType = <string | undefined>responseHeaders['content-type'];
+			const contentType = responseHeaders['content-type'];
 			if (contentType === undefined) {
 				this.logger.error(`Content-Type ヘッダーが存在しない: ${targetData.url}`);
 				return null;
 			}
-			const contentTypeEssence = new MIMETypeParser(contentType).getEssence();
-			if (!this.#HTML_MIMES.includes(<DOMParserSupportedType>contentTypeEssence)) {
-				this.logger.error(`HTML ページではない（${contentType}）: ${targetData.url}`);
-				return null;
-			}
 
-			responseBody = await page.evaluate(() => document.documentElement.outerHTML);
+			return {
+				contentType: contentType,
+				body: await page.evaluate(() => document.documentElement.outerHTML),
+			};
 		} finally {
 			await browser.close();
 		}
-
-		return responseBody;
 	}
 
 	/**
 	 * URL へのアクセスが成功した時の処理
 	 *
-	 * @param dao - dao クラス
 	 * @param targetData - 登録データ
 	 */
-	static async #accessSuccess(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<void> {
+	async #accessSuccess(targetData: CrawlerDb.News): Promise<void> {
 		if (targetData.error > 0) {
 			/* 前回アクセス時がエラーだった場合 */
-			await dao.resetError(targetData.url);
+			await this.#dao.resetError(targetData.url);
 		}
 	}
 
 	/**
 	 * URL へのアクセスエラーが起こった時の処理
 	 *
-	 * @param dao - dao クラス
 	 * @param targetData - 登録データ
 	 *
 	 * @returns 連続アクセスエラー回数
 	 */
-	static async #accessError(dao: CrawlerNewsDao, targetData: CrawlerDb.News): Promise<number> {
+	async #accessError(targetData: CrawlerDb.News): Promise<number> {
 		const error = targetData.error + 1; // 連続アクセスエラー回数
 
-		await dao.updateError(targetData.url, error);
+		await this.#dao.updateError(targetData.url, error);
 
 		return error;
 	}
