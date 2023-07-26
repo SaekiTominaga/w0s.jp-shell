@@ -30,7 +30,7 @@ export default class JrCyberStation extends Component implements ComponentInterf
 			return;
 		}
 
-		const stationList: Map<string, string> = new Map();
+		const stationList = new Map<string, string>();
 		(await response.text())
 			.split('\n')
 			.map((col) => col.trim())
@@ -126,8 +126,8 @@ export default class JrCyberStation extends Component implements ComponentInterf
 					const vacancyTrain = Array.from(vacancyTableElement.querySelectorAll('tbody > tr'))
 						.filter((trElement) =>
 							Array.from(trElement.querySelectorAll('td.uk-text-center')).some(
-								(tdElement) => tdElement.textContent !== null && ['○', '△'].includes(tdElement.textContent)
-							)
+								(tdElement) => tdElement.textContent !== null && ['○', '△'].includes(tdElement.textContent),
+							),
 						)
 						.map((trElement) => trElement.querySelector('td:first-child .table_train_name')?.textContent);
 					this.logger.debug('空席のある列車', vacancyTrain);
@@ -135,7 +135,7 @@ export default class JrCyberStation extends Component implements ComponentInterf
 					if (vacancyTrain.length >= 1) {
 						this.notice.push(`${date.format('YYYY年M月D日')}の${vacancyTrain.map((train) => `「${train}」`).join('')}に空席`);
 					}
-				})
+				}),
 			);
 		} finally {
 			this.logger.debug('browser.close()');

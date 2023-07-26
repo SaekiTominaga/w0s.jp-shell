@@ -4,9 +4,6 @@
 		"es2022": true
 	},
 	"extends": ["@w0s/eslint-config"],
-	"parserOptions": {
-		"sourceType": "module"
-	},
 	"ignorePatterns": ["node/dist/**/*.js"],
 	"overrides": [
 		{
@@ -19,6 +16,13 @@
 			"files": ["node/src/*Interface.ts"],
 			"rules": {
 				"semi": "off"
+			}
+		},
+		{
+			"files": ["node/src/component/*.ts"],
+			"rules": {
+				"@typescript-eslint/no-floating-promises": "off",
+				"@typescript-eslint/require-await": "off"
 			}
 		},
 		{

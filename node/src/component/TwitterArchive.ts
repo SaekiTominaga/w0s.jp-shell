@@ -31,7 +31,7 @@ export default class TwitterArchive extends Component implements ComponentInterf
 		const browser = await puppeteer.launch({ executablePath: this.configCommon.browser.path });
 		try {
 			const page = await browser.newPage();
-			page.setViewport({
+			await page.setViewport({
 				width: this.#config.viewport.width,
 				height: this.#config.viewport.height,
 			});

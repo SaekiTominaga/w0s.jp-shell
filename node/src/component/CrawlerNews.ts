@@ -152,9 +152,9 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				let contentText: string | undefined;
 				switch (contentElement.tagName) {
 					case 'IMG': {
-						const altText = (<HTMLImageElement>contentElement).alt.trim();
+						const altText = (contentElement as HTMLImageElement).alt.trim();
 						if (altText === '') {
-							contentText = (<HTMLImageElement>contentElement).src.trim();
+							contentText = (contentElement as HTMLImageElement).src.trim();
 						} else {
 							contentText = altText;
 						}
@@ -167,7 +167,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 
 				if (contentText === undefined) {
 					this.logger.error(
-						`内容要素（${targetData.selector_content ?? targetData.selector_wrap}）の文字列が取得できない: ${targetData.url}\n\n${response.body}`
+						`内容要素（${targetData.selector_content ?? targetData.selector_wrap}）の文字列が取得できない: ${targetData.url}\n\n${response.body}`,
 					);
 					continue;
 				}
@@ -183,7 +183,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				const newsAnchorElements = contentElement.querySelectorAll('a[href]');
 				if (newsAnchorElements.length === 1) {
 					/* メッセージ内にリンクが一つだけある場合のみ、その URL を対象ページとする */
-					referUrl = resolve((<HTMLAnchorElement>newsAnchorElements.item(0)).href.trim(), targetData.url);
+					referUrl = resolve((newsAnchorElements.item(0) as HTMLAnchorElement).href.trim(), targetData.url);
 					this.logger.debug('URL', referUrl);
 				}
 
@@ -321,12 +321,12 @@ export default class CrawlerNews extends Component implements ComponentInterface
 			const response = await page.goto(targetData.url, {
 				waitUntil: 'networkidle0',
 			});
-			if (response === null || !response.ok) {
+			if (!response?.ok) {
 				const errorCount = await this.#accessError(targetData);
 
-				this.logger.info(`HTTP Status Code: ${response?.status} ${targetData.url} 、エラー回数: ${errorCount}`);
+				this.logger.info(`HTTP Status Code: ${response?.status()} ${targetData.url} 、エラー回数: ${errorCount}`);
 				if (errorCount % this.#config.report_error_count === 0) {
-					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${response?.status}\nエラー回数: ${errorCount}`);
+					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${response?.status()}\nエラー回数: ${errorCount}`);
 				}
 
 				return null;
