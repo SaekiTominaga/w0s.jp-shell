@@ -6,7 +6,7 @@ import DbUtil from '../util/DbUtil.js';
  * ウェブ巡回（ニュース）
  */
 export default class CrawlerNewsDao {
-	#dbh: sqlite.Database<sqlite3.Database, sqlite3.Statement> | null = null;
+	#dbh: sqlite.Database | null = null;
 
 	readonly #filepath: string;
 
@@ -14,7 +14,7 @@ export default class CrawlerNewsDao {
 	 * @param filepath - DB ファイルパス
 	 * @param dbh - DB 接続情報
 	 */
-	constructor(filepath: string, dbh?: sqlite.Database<sqlite3.Database, sqlite3.Statement>) {
+	constructor(filepath: string, dbh?: sqlite.Database) {
 		this.#filepath = filepath;
 
 		if (dbh !== undefined) {
@@ -27,7 +27,7 @@ export default class CrawlerNewsDao {
 	 *
 	 * @returns DB 接続情報
 	 */
-	async getDbh(): Promise<sqlite.Database<sqlite3.Database, sqlite3.Statement>> {
+	async getDbh(): Promise<sqlite.Database> {
 		if (this.#dbh !== null) {
 			return this.#dbh;
 		}

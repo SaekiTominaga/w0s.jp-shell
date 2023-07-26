@@ -6,7 +6,7 @@ import DbUtil from '../util/DbUtil.js';
  * サムネイル画像生成
  */
 export default class ThumbImageDao {
-	#dbh: sqlite.Database<sqlite3.Database, sqlite3.Statement> | null = null;
+	#dbh: sqlite.Database | null = null;
 
 	readonly #filepath: string;
 
@@ -14,7 +14,7 @@ export default class ThumbImageDao {
 	 * @param filepath - DB ファイルパス
 	 * @param dbh - DB 接続情報
 	 */
-	constructor(filepath: string, dbh?: sqlite.Database<sqlite3.Database, sqlite3.Statement>) {
+	constructor(filepath: string, dbh?: sqlite.Database) {
 		this.#filepath = filepath;
 
 		if (dbh !== undefined) {
@@ -27,7 +27,7 @@ export default class ThumbImageDao {
 	 *
 	 * @returns DB 接続情報
 	 */
-	async getDbh(): Promise<sqlite.Database<sqlite3.Database, sqlite3.Statement>> {
+	async getDbh(): Promise<sqlite.Database> {
 		if (this.#dbh !== null) {
 			return this.#dbh;
 		}
@@ -77,7 +77,7 @@ export default class ThumbImageDao {
 			width: row.width,
 			height: row.height,
 			quality: row.quality,
-			registered_at: <Date>DbUtil.unixToDate(row.registered_at),
+			registered_at: DbUtil.unixToDate(row.registered_at)!,
 		};
 	}
 

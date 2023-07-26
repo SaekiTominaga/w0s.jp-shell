@@ -213,12 +213,12 @@ export default class CrawlerResource extends Component implements ComponentInter
 			const response = await page.goto(targetData.url, {
 				waitUntil: 'networkidle0',
 			});
-			if (response === null || !response.ok) {
+			if (!response?.ok) {
 				const errorCount = await this.#accessError(targetData);
 
-				this.logger.info(`HTTP Status Code: ${response?.status} ${targetData.url} 、エラー回数: ${errorCount}`);
+				this.logger.info(`HTTP Status Code: ${response?.status()} ${targetData.url} 、エラー回数: ${errorCount}`);
 				if (errorCount % this.#config.report_error_count === 0) {
-					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${response?.status}\nエラー回数: ${errorCount}`);
+					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${response?.status()}\nエラー回数: ${errorCount}`);
 				}
 
 				return null;
@@ -271,7 +271,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 		const fileFullDir = `${this.#config.save.dir}/${fileDir}`;
 		const fileName = `${url.pathname.split('/').at(-1)}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(
 			2,
-			'0'
+			'0',
 		)}_${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}.txt`;
 
 		const filePath = `${fileDir}/${fileName}`; // ドキュメントルート基準のパス
