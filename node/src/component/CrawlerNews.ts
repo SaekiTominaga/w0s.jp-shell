@@ -279,9 +279,9 @@ export default class CrawlerNews extends Component implements ComponentInterface
 					default:
 				}
 
-				this.logger.error(e.message);
+				this.logger.error(e.message, targetData.url);
 			} else {
-				this.logger.error(e);
+				this.logger.error(e, targetData.url);
 			}
 
 			return null;
@@ -352,9 +352,9 @@ export default class CrawlerNews extends Component implements ComponentInterface
 					return null;
 				}
 
-				this.logger.error(e.message);
+				this.logger.error(e.message, targetData.url);
 			} else {
-				this.logger.error(e);
+				this.logger.error(e, targetData.url);
 			}
 
 			return null;
