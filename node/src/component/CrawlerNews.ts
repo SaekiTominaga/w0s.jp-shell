@@ -347,11 +347,6 @@ export default class CrawlerNews extends Component implements ComponentInterface
 			};
 		} catch (e) {
 			if (e instanceof Error) {
-				if (e.message.startsWith('net::ERR_TOO_MANY_REDIRECTS at https://www.threads.net')) {
-					this.logger.warn(e.message);
-					return null;
-				}
-
 				this.logger.error(e.message, targetData.url);
 			} else {
 				this.logger.error(e, targetData.url);
