@@ -1,9 +1,9 @@
 import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
-import MIMETypeParser from '@saekitominaga/mime-parser';
-import puppeteer from 'puppeteer-core';
+import puppeteer, { HTTPRequest } from 'puppeteer-core';
 import { resolve } from 'relative-to-absolute-iri';
 import { v4 as uuidV4 } from 'uuid';
+import MIMEType from 'whatwg-mimetype';
 import Component from '../Component.js';
 import type ComponentInterface from '../ComponentInterface.js';
 import CrawlerNewsDao from '../dao/CrawlerNewsDao.js';
@@ -68,7 +68,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				continue;
 			}
 
-			if (!this.#HTML_MIMES.includes(new MIMETypeParser(response.contentType).getEssence() as DOMParserSupportedType)) {
+			if (!this.#HTML_MIMES.includes(new MIMEType(response.contentType).essence as DOMParserSupportedType)) {
 				this.logger.error(`HTML ページではない（${response.contentType}）: ${targetData.url}`);
 				continue;
 			}
@@ -303,7 +303,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 			const page = await browser.newPage();
 			await page.setUserAgent(this.configCommon.browser.ua);
 			await page.setRequestInterception(true);
-			page.on('request', (request: puppeteer.HTTPRequest) => {
+			page.on('request', (request: HTTPRequest) => {
 				switch (request.resourceType()) {
 					case 'document':
 					case 'stylesheet':

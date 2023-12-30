@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { JSDOM } from 'jsdom';
-import puppeteer from 'puppeteer-core';
+import puppeteer, { Page } from 'puppeteer-core';
 import Component from '../Component.js';
 import type ComponentInterface from '../ComponentInterface.js';
 import type { NoName as ConfigureTwitterArchive } from '../../../configure/type/twitter-archive.js';
@@ -51,7 +51,7 @@ export default class TwitterArchive extends Component implements ComponentInterf
 		}
 	}
 
-	async #login(page: puppeteer.Page): Promise<void> {
+	async #login(page: Page): Promise<void> {
 		const cookiePath = `${this.#config.file_dir}/${this.#config.login.coookie_file_path}`;
 		if (fs.existsSync(cookiePath)) {
 			const cookies = JSON.parse((await fs.promises.readFile(cookiePath)).toString());
@@ -84,7 +84,7 @@ export default class TwitterArchive extends Component implements ComponentInterf
 		}
 	}
 
-	async #account(page: puppeteer.Page): Promise<void> {
+	async #account(page: Page): Promise<void> {
 		await page.goto(`https://twitter.com/${this.#config.account.name}/with_replies`, { waitUntil: 'networkidle2' });
 		this.logger.debug('アカウントページへ移動', page.url());
 
