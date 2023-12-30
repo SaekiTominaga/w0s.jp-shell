@@ -2,8 +2,8 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
-import MIMETypeParser from '@saekitominaga/mime-parser';
-import puppeteer from 'puppeteer-core';
+import puppeteer, { HTTPRequest } from 'puppeteer-core';
+import MIMEType from 'whatwg-mimetype';
 import Component from '../Component.js';
 import type ComponentInterface from '../ComponentInterface.js';
 import CrawlerResourceDao from '../dao/CrawlerResourceDao.js';
@@ -71,7 +71,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 			}
 
 			const md5 = crypto.createHash('md5');
-			if (this.#HTML_MIMES.includes(new MIMETypeParser(response.contentType).getEssence() as DOMParserSupportedType)) {
+			if (this.#HTML_MIMES.includes(new MIMEType(response.contentType).essence as DOMParserSupportedType)) {
 				/* HTML ページの場合は DOM 化 */
 				const { document } = new jsdom.JSDOM(response.body).window;
 
@@ -195,7 +195,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 			const page = await browser.newPage();
 			await page.setUserAgent(this.configCommon.browser.ua);
 			await page.setRequestInterception(true);
-			page.on('request', (request: puppeteer.HTTPRequest) => {
+			page.on('request', (request: HTTPRequest) => {
 				switch (request.resourceType()) {
 					case 'document':
 					case 'stylesheet':
