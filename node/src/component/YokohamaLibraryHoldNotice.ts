@@ -5,7 +5,7 @@ import type ComponentInterface from '../ComponentInterface.js';
 import type { NoName as ConfigureYokohamaLibraryHoldNotice } from '../../../configure/type/yokohama-library-hold-notice.js';
 
 /**
- * 横浜市立図書館で予約した本が到着したらメールで連絡する
+ * 横浜市立図書館　予約連絡
  */
 export default class YokohamaLibraryHoldNotice extends Component implements ComponentInterface {
 	readonly #config: ConfigureYokohamaLibraryHoldNotice;
@@ -43,26 +43,26 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 			/* DOM 化 */
 			const { document } = new JSDOM(response).window;
 
-			const readyBookTitleList: string[] = [];
+			const availableBooksTitle: string[] = [];
 
-			document.querySelectorAll<HTMLElement>(this.#config.ready.wrapSelector).forEach((readyWrapElement): void => {
-				if (readyWrapElement.querySelector(this.#config.ready.availableSelector) === null) {
+			document.querySelectorAll<HTMLElement>(this.#config.reserve.wrapSelector).forEach((bookElement): void => {
+				if (bookElement.querySelector(this.#config.reserve.availableSelector) === null) {
 					/* 準備中、回送中の本は除外 */
 					return;
 				}
 
-				const bookTitle = readyWrapElement.querySelector(this.#config.ready.titleSelector)?.textContent;
+				const bookTitle = bookElement.querySelector(this.#config.reserve.titleSelector)?.textContent;
 				if (bookTitle === null || bookTitle === undefined) {
-					throw new Error(`書名の HTML 要素（${this.#config.ready.titleSelector}）が存在しない`);
+					throw new Error(`書名の HTML 要素（${this.#config.reserve.titleSelector}）が存在しない`);
 				}
 
-				readyBookTitleList.push(bookTitle.trim().replaceAll('\n', ' '));
+				availableBooksTitle.push(bookTitle.trim().replaceAll('\n', ' '));
 			});
 
-			if (readyBookTitleList.length === 0) {
+			if (availableBooksTitle.length === 0) {
 				this.logger.info('新着予約なし');
 			} else {
-				this.notice.push(`${this.#config.notice.messagePrefix}${readyBookTitleList.join('\n')}\n\n${this.#config.url}${this.#config.notice.messageSuffix}`);
+				this.notice.push(`${this.#config.notice.messagePrefix}${availableBooksTitle.join('\n')}\n\n${this.#config.url}${this.#config.notice.messageSuffix}`);
 			}
 		} finally {
 			this.logger.debug('browser.close()');
