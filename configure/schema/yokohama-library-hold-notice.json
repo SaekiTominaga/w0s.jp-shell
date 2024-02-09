@@ -3,7 +3,7 @@
 	"$id": "https://schema.w0s.jp/yokohama-library-hold-notice.json",
 	"type": "object",
 	"title": "横浜市立図書館　予約連絡",
-	"required": ["title", "card", "password", "url", "login", "ready", "notice"],
+	"required": ["title", "card", "password", "url", "login", "reserve", "notice"],
 	"properties": {
 		"title": {
 			"type": "string",
@@ -25,7 +25,7 @@
 		"login": {
 			"type": "object",
 			"title": "ログインフォーム",
-			"required": ["url", "cardSelector", "passwordSelector", "submitSelector", "errorSelector"],
+			"required": ["url", "cardSelector", "passwordSelector", "submitSelector"],
 			"properties": {
 				"url": {
 					"type": "string",
@@ -46,14 +46,18 @@
 			},
 			"additionalProperties": false
 		},
-		"ready": {
+		"reserve": {
 			"type": "object",
-			"title": "新着予約があった場合にのみ表示される通知ページの情報",
-			"required": ["wrapSelector", "titleSelector", "availableSelector"],
+			"title": "予約中ページの情報",
+			"required": ["wrapSelector", "typeSelector", "titleSelector", "availableSelector"],
 			"properties": {
 				"wrapSelector": {
 					"type": "string",
 					"title": "包括要素のセレクター"
+				},
+				"typeSelector": {
+					"type": "string",
+					"title": "資料区分のセレクター"
 				},
 				"titleSelector": {
 					"type": "string",
