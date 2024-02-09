@@ -29,7 +29,8 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 
 			/* ログイン */
 			await page.goto(this.#config.url, { waitUntil: 'domcontentloaded' });
-			await page.type(this.#config.login.idSelector, this.#config.id);
+			await page.goto(this.#config.login.url, { waitUntil: 'domcontentloaded' });
+			await page.type(this.#config.login.cardSelector, this.#config.card);
 			await page.type(this.#config.login.passwordSelector, this.#config.password);
 			await Promise.all([page.click(this.#config.login.submitSelector), page.waitForNavigation()]);
 			this.logger.debug(`ログインボタン（${this.#config.login.submitSelector}）押下`);
@@ -42,41 +43,26 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 			/* DOM 化 */
 			const { document } = new JSDOM(response).window;
 
-			const errorElement = document.querySelector(this.#config.login.errorSelector);
-			if (errorElement !== null) {
-				/* エラーメッセージがある場合 */
-				this.logger.warn(errorElement.textContent?.trim());
-			} else {
-				const readyBookWrapElements = document.querySelectorAll(this.#config.ready.wrapSelector);
-				if (readyBookWrapElements.length === 0) {
-					this.logger.info('新着予約なし');
-				} else {
-					const readyBookTitleList: string[] = [];
+			const readyBookTitleList: string[] = [];
 
-					for (const readyWrapElement of readyBookWrapElements) {
-						const readyBookTitleElement = readyWrapElement.querySelector(this.#config.ready.titleSelector);
-						if (readyBookTitleElement === null) {
-							throw new Error(`書名の HTML 要素（${this.#config.ready.titleSelector}）が存在しない。`);
-						}
-
-						const readyBookTitle = readyBookTitleElement.textContent;
-						if (readyBookTitle === null) {
-							throw new Error(`書名の HTML 要素（${this.#config.ready.titleSelector}）の内容が空。`);
-						}
-
-						readyBookTitleList.push(readyBookTitle.replace(/^　+|　+$/, ''));
-					}
-
-					this.notice.push(`${this.#config.notice.messagePrefix}${readyBookTitleList.join('\n')}\n\n${this.#config.url}${this.#config.notice.messageSuffix}`);
-
-					const confirmButton = await page.$(this.#config.ready.confirmButtonSelector);
-					if (confirmButton === null) {
-						throw new Error(`確認ボタン（${this.#config.ready.confirmButtonSelector}）が存在しない。`);
-					}
-
-					await Promise.all([confirmButton.click(), page.waitForNavigation()]);
-					this.logger.debug(`確認ボタン（${this.#config.ready.confirmButtonSelector}）押下`);
+			document.querySelectorAll<HTMLElement>(this.#config.ready.wrapSelector).forEach((readyWrapElement): void => {
+				if (readyWrapElement.querySelector(this.#config.ready.availableSelector) === null) {
+					/* 準備中、回送中の本は除外 */
+					return;
 				}
+
+				const bookTitle = readyWrapElement.querySelector(this.#config.ready.titleSelector)?.textContent;
+				if (bookTitle === null || bookTitle === undefined) {
+					throw new Error(`書名の HTML 要素（${this.#config.ready.titleSelector}）が存在しない`);
+				}
+
+				readyBookTitleList.push(bookTitle.trim().replaceAll('\n', ' '));
+			});
+
+			if (readyBookTitleList.length === 0) {
+				this.logger.info('新着予約なし');
+			} else {
+				this.notice.push(`${this.#config.notice.messagePrefix}${readyBookTitleList.join('\n')}\n\n${this.#config.url}${this.#config.notice.messageSuffix}`);
 			}
 		} finally {
 			this.logger.debug('browser.close()');

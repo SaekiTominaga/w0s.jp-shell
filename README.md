@@ -1,6 +1,6 @@
 # w0s.jp-shell
 
-w0s.jp サーバーで稼働しているシェルスクリプト
+`w0s.jp` サーバーで稼働しているシェルスクリプト
 
 ## おことわり
 
@@ -10,11 +10,11 @@ w0s.jp サーバーで稼働しているシェルスクリプト
 
 | 名称 | 機能名 | 使用データベース | 概要 |
 |-|-|-|-|
-| [テスト](node/src/component/Test.ts) | Test | ― | 動作確認用。環境整備する際は、まずはこれが動くことを目指す。 |
-| [ウェブ巡回（新着）](node/src/component/CrawlerNews.ts) | CrawlerNews | crawler | ウェブページを巡回し（HTML ページのみ）、新着情報の差分を調べて通知する。 |
-| [ウェブ巡回（リソース）](node/src/component/CrawlerResource.ts) | CrawlerResource | crawler | ウェブページを巡回し（HTML リソースに限らない）、レスポンスボディの差分を調べて通知する。 |
+| [テスト](node/src/component/Test.ts) | Test | ― | 動作確認用。環境整備の際はまずはこれが動くことを目指す |
+| [ウェブ巡回（新着）](node/src/component/CrawlerNews.ts) | CrawlerNews | crawler | ウェブページを巡回し（HTML ページのみ）、新着情報の差分を調べて通知する |
+| [ウェブ巡回（リソース）](node/src/component/CrawlerResource.ts) | CrawlerResource | crawler | ウェブページを巡回し（HTML リソースに限らない）、レスポンスボディの差分を調べて通知する |
 | [JR 空席確認](node/src/component/JrCyberStation.ts) | JrCyberStation | ― | JR CYBER STATION で空席があれば通知する |
-| [横浜市立図書館　予約連絡](node/src/component/YokohamaLibraryHoldNotice.ts) | YokohamaLibraryHoldNotice | ― | [横浜市立図書館蔵書検索](https://opac.lib.city.yokohama.lg.jp/opac/)で予約した本は受取可能になっても予約連絡メールが送信されるのは翌朝なので、到着日に受け取れるようログインページをスクレイピングして独自に通知メールを送る。（受け取り可能になる時間帯は各館によって概ね決まっているため、その時間帯に実行すれば良い） |
+| [横浜市立図書館　予約連絡](node/src/component/YokohamaLibraryHoldNotice.ts) | YokohamaLibraryHoldNotice | ― | [横浜市立図書館蔵書検索](https://opac.lib.city.yokohama.lg.jp/winj/opac/top.do?lang=ja)で予約した本は受取可能になっても連絡メールは翌朝配信なため、到着日に受け取れるようログインページをスクレイピングして独自に通知メールを送る（受取可能になる時間帯は各館によって概ね決まっているため、その時間帯に実行する） |
 
 ## 動作手順
 
