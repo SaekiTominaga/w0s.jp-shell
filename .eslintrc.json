@@ -38,6 +38,12 @@
 				"no-await-in-loop": "off",
 				"no-loop-func": "off"
 			}
+		},
+		{
+			"files": ["node/src/component/YokohamaLibraryHoldNotice.ts"],
+			"rules": {
+				"no-await-in-loop": "off"
+			}
 		}
 	]
 }
