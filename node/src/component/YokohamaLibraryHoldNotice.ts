@@ -1,5 +1,6 @@
 import puppeteer from 'puppeteer-core';
 import { JSDOM } from 'jsdom';
+import StringConvert from '@w0s/string-convert';
 import Component from '../Component.js';
 import type ComponentInterface from '../ComponentInterface.js';
 import YokohamaLibraryDao from '../dao/YokohamaLibraryDao.js';
@@ -72,7 +73,12 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 
 				availableBooks.push({
 					type: type,
-					title: title.trim().replaceAll('\n', ' '),
+					title: StringConvert.convert(title, {
+						trim: true,
+						toHankakuEisu: true,
+						toHankakuSpace: true,
+						table: { '\n': ' ' },
+					}),
 				});
 			});
 		} finally {
