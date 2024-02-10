@@ -60,9 +60,9 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 					return;
 				}
 
-				const type = bookElement.querySelector(this.#config.reserve.titleSelector)?.textContent;
+				const type = bookElement.querySelector(this.#config.reserve.typeSelector)?.textContent;
 				if (type === null || type === undefined) {
-					throw new Error(`資料区分の HTML 要素（${this.#config.reserve.titleSelector}）が存在しない`);
+					throw new Error(`資料区分の HTML 要素（${this.#config.reserve.typeSelector}）が存在しない`);
 				}
 
 				const title = bookElement.querySelector(this.#config.reserve.titleSelector)?.textContent;
