@@ -49,13 +49,13 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 
 			this.logger.info('ログイン後ページ', page.url());
 
-			const response = await page.content();
-			this.logger.debug(response);
+			const reserveListPageResponse = await page.content();
+			this.logger.debug(reserveListPageResponse);
 
 			/* DOM 化 */
-			const { document } = new JSDOM(response).window;
+			const reserveListPageDocument = new JSDOM(reserveListPageResponse).window.document;
 
-			document.querySelectorAll<HTMLElement>(this.#config.reserve.wrapSelector).forEach((bookElement): void => {
+			reserveListPageDocument.querySelectorAll<HTMLElement>(this.#config.reserve.wrapSelector).forEach((bookElement): void => {
 				if (bookElement.querySelector(this.#config.reserve.availableSelector) === null) {
 					/* 準備中、回送中の本は除外 */
 					return;
@@ -81,40 +81,62 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 					}),
 				});
 			});
+
+			this.logger.info(`受取可能資料 ${availableBooks.length} 件`);
+
+			/* DB に登録済みで Web ページに未記載のデータを削除 */
+			for (const registedBook of await this.#dao.selectAvailables()) {
+				if (!availableBooks.some((availableBook) => availableBook.type === registedBook.type && availableBook.title === registedBook.title)) {
+					this.logger.debug('データ削除', registedBook);
+					await this.#dao.deleteAvailable(registedBook.type, registedBook.title);
+				}
+			}
+
+			/* Web ページに記載されていて DB に未登録のデータを削除 */
+			const noticeBooks: { type: string; title: string }[] = [];
+
+			for (const availableBook of availableBooks) {
+				const registedBook = await this.#dao.selectAvailable(availableBook.type, availableBook.title);
+				if (registedBook === null) {
+					this.logger.debug('データ追加', availableBook);
+					await this.#dao.insertAvailable(availableBook.type, availableBook.title);
+
+					noticeBooks.push(availableBook);
+				}
+			}
+
+			if (noticeBooks.length >= 1) {
+				/* 開館日カレンダー */
+				await page.goto(this.#config.calendar.url, {
+					waitUntil: 'domcontentloaded',
+				});
+				const calendarPageResponse = await page.content();
+
+				/* DOM 化 */
+				const calendarPageDocument = new JSDOM(calendarPageResponse).window.document;
+
+				let closedReason = ''; // 休館理由
+
+				calendarPageDocument.querySelectorAll<HTMLElement>(this.#config.calendar.cellSelector).forEach((tdElement): void => {
+					const matchGroup = tdElement.textContent?.trim()?.match(/(?<day>[1-9][0-9]{0,1})(?<reason>.*)/)?.groups;
+					if (matchGroup !== undefined) {
+						const day = Number(matchGroup['day']);
+						const result = matchGroup['reason'];
+						if (day === new Date().getDate() && result !== undefined) {
+							closedReason = result;
+						}
+					}
+				});
+
+				this.notice.push(
+					`${this.#config.notice.messagePrefix}${noticeBooks.map((book) => `${book.type}${book.title}`).join('\n')}\n\n${this.#config.url}\n\n${closedReason}${
+						this.#config.notice.messageSuffix
+					}`,
+				);
+			}
 		} finally {
 			this.logger.debug('browser.close()');
 			await browser.close();
-		}
-
-		this.logger.info(`受取可能資料 ${availableBooks.length} 件`);
-
-		/* DB に登録済みで Web ページに未記載のデータを削除 */
-		for (const registedBook of await this.#dao.selectAvailables()) {
-			if (!availableBooks.some((availableBook) => availableBook.type === registedBook.type && availableBook.title === registedBook.title)) {
-				this.logger.debug('データ削除', registedBook);
-				await this.#dao.deleteAvailable(registedBook.type, registedBook.title);
-			}
-		}
-
-		/* Web ページに記載されていて DB に未登録のデータを削除 */
-		const noticeBooks: { type: string; title: string }[] = [];
-
-		for (const availableBook of availableBooks) {
-			const registedBook = await this.#dao.selectAvailable(availableBook.type, availableBook.title);
-			if (registedBook === null) {
-				this.logger.debug('データ追加', availableBook);
-				await this.#dao.insertAvailable(availableBook.type, availableBook.title);
-
-				noticeBooks.push(availableBook);
-			}
-		}
-
-		if (noticeBooks.length >= 1) {
-			this.notice.push(
-				`${this.#config.notice.messagePrefix}${noticeBooks.map((book) => `${book.type}${book.title}`).join('\n')}\n\n${this.#config.url}${
-					this.#config.notice.messageSuffix
-				}`,
-			);
 		}
 	}
 }
