@@ -8,6 +8,7 @@
 		"lint": "eslint node/src/**/*.ts node/__tests__/*.test.js node/@types/*.d.ts",
 		"test": "npm run _config:convert && npm run build && cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
 		"config": "run-p _config:*",
+		"format": "prettier -w .",
 		"github-actions-lint": "yamllint .github/workflows/*.yml",
 		"shell-Test": "node node/dist/shell.js -c Test -t 0",
 		"shell-CrawlerNews": "node node/dist/shell.js -c CrawlerNews -t 10",
