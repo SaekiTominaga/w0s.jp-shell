@@ -41,7 +41,10 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 
 			/* ログイン */
 			await page.goto(this.#config.url);
-			await page.goto(this.#config.login.url, { waitUntil: 'domcontentloaded' });
+			await page.goto(this.#config.login.url, {
+				timeout: this.#config.login.timeout * 1000,
+				waitUntil: 'domcontentloaded',
+			});
 			await page.type(this.#config.login.cardSelector, this.#config.card);
 			await page.type(this.#config.login.passwordSelector, this.#config.password);
 			await Promise.all([page.click(this.#config.login.submitSelector), page.waitForNavigation()]);
@@ -108,6 +111,7 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 			if (noticeBooks.length >= 1) {
 				/* 開館日カレンダー */
 				await page.goto(this.#config.calendar.url, {
+					timeout: this.#config.calendar.timeout * 1000,
 					waitUntil: 'domcontentloaded',
 				});
 				const calendarPageResponse = await page.content();

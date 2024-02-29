@@ -25,11 +25,16 @@
 		"login": {
 			"type": "object",
 			"title": "ログインフォーム",
-			"required": ["url", "cardSelector", "passwordSelector", "submitSelector"],
+			"required": ["url", "timeout", "cardSelector", "passwordSelector", "submitSelector"],
 			"properties": {
 				"url": {
 					"type": "string",
 					"title": "ログイン URL"
+				},
+				"timeout": {
+					"type": "integer",
+					"minimum": 0,
+					"title": "タイムアウト（秒）"
 				},
 				"cardSelector": {
 					"type": "string",
@@ -73,11 +78,16 @@
 		"calendar": {
 			"type": "object",
 			"title": "カレンダーページの情報",
-			"required": ["url", "cellSelector"],
+			"required": ["url", "timeout", "cellSelector"],
 			"properties": {
 				"url": {
 					"type": "string",
 					"title": "URL"
+				},
+				"timeout": {
+					"type": "integer",
+					"minimum": 0,
+					"title": "タイムアウト（秒）"
 				},
 				"cellSelector": {
 					"type": "string",
