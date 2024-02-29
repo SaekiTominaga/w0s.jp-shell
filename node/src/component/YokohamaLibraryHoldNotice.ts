@@ -40,7 +40,7 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 			});
 
 			/* ログイン */
-			await page.goto(this.#config.url, { waitUntil: 'domcontentloaded' });
+			await page.goto(this.#config.url);
 			await page.goto(this.#config.login.url, { waitUntil: 'domcontentloaded' });
 			await page.type(this.#config.login.cardSelector, this.#config.card);
 			await page.type(this.#config.login.passwordSelector, this.#config.password);
