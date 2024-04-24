@@ -85,7 +85,7 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 				});
 			});
 
-			this.logger.info(`受取可能資料 ${availableBooks.length} 件`);
+			this.logger.info(`受取可能資料 ${String(availableBooks.length)} 件`);
 
 			/* DB に登録済みで Web ページに未記載のデータを削除 */
 			for (const registedBook of await this.#dao.selectAvailables()) {
@@ -122,7 +122,7 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 				let closedReason = ''; // 休館理由
 
 				calendarPageDocument.querySelectorAll<HTMLElement>(this.#config.calendar.cellSelector).forEach((tdElement): void => {
-					const matchGroup = tdElement.textContent?.trim()?.match(/(?<day>[1-9][0-9]{0,1})(?<reason>.*)/)?.groups;
+					const matchGroup = tdElement.textContent?.trim().match(/(?<day>[1-9][0-9]{0,1})(?<reason>.*)/)?.groups;
 					if (matchGroup !== undefined) {
 						const day = Number(matchGroup['day']);
 						const result = matchGroup['reason'];

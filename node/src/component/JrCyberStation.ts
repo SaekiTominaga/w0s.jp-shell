@@ -26,7 +26,7 @@ export default class JrCyberStation extends Component implements ComponentInterf
 		/* 駅名リストを取得 */
 		const response = await fetch(this.#config.station_url);
 		if (!response.ok) {
-			this.notice.push(`HTTP Status Code: ${response.status} <${this.#config.station_url}>`);
+			this.notice.push(`HTTP Status Code: ${String(response.status)} <${this.#config.station_url}>`);
 			return;
 		}
 
@@ -133,7 +133,7 @@ export default class JrCyberStation extends Component implements ComponentInterf
 					this.logger.debug('空席のある列車', vacancyTrain);
 
 					if (vacancyTrain.length >= 1) {
-						this.notice.push(`${date.format('YYYY年M月D日')}の${vacancyTrain.map((train) => `「${train}」`).join('')}に空席`);
+						this.notice.push(`${date.format('YYYY年M月D日')}の${vacancyTrain.map((train) => `「${String(train)}」`).join('')}に空席`);
 					}
 				}),
 			);

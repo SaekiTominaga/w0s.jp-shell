@@ -56,7 +56,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 		}).values;
 
 		const priority = Number(argsParsedValues['priority']); // 優先度
-		this.logger.info(`優先度: ${priority}`);
+		this.logger.info(`優先度: ${String(priority)}`);
 
 		for (const targetData of await this.#dao.select(priority)) {
 			const newUrl = !(await this.#dao.selectDataCount(targetData.url)); // 新規追加された URL か
@@ -241,9 +241,9 @@ export default class CrawlerNews extends Component implements ComponentInterface
 			if (!response.ok) {
 				const errorCount = await this.#accessError(targetData);
 
-				this.logger.info(`HTTP Status Code: ${response.status} ${targetData.url} 、エラー回数: ${errorCount}`);
+				this.logger.info(`HTTP Status Code: ${String(response.status)} ${targetData.url} 、エラー回数: ${String(errorCount)}`);
 				if (errorCount % this.#config.report_error_count === 0) {
-					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${response.status}\nエラー回数: ${errorCount}`);
+					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${String(response.status)}\nエラー回数: ${String(errorCount)}`);
 				}
 
 				return null;
@@ -269,9 +269,9 @@ export default class CrawlerNews extends Component implements ComponentInterface
 					case 'AbortError': {
 						const errorCount = await this.#accessError(targetData);
 
-						this.logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${errorCount}`);
+						this.logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${String(errorCount)}`);
 						if (errorCount % this.#config.report_error_count === 0) {
-							this.notice.push(`${targetData.title}\n${targetData.url}\nタイムアウト\nエラー回数: ${errorCount}`);
+							this.notice.push(`${targetData.title}\n${targetData.url}\nタイムアウト\nエラー回数: ${String(errorCount)}`);
 						}
 
 						return null;
@@ -324,9 +324,9 @@ export default class CrawlerNews extends Component implements ComponentInterface
 			if (!response?.ok) {
 				const errorCount = await this.#accessError(targetData);
 
-				this.logger.info(`HTTP Status Code: ${response?.status()} ${targetData.url} 、エラー回数: ${errorCount}`);
+				this.logger.info(`HTTP Status Code: ${String(response?.status())} ${targetData.url} 、エラー回数: ${String(errorCount)}`);
 				if (errorCount % this.#config.report_error_count === 0) {
-					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${response?.status()}\nエラー回数: ${errorCount}`);
+					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${String(response?.status())}\nエラー回数: ${String(errorCount)}`);
 				}
 
 				return null;
