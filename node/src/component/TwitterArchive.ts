@@ -106,10 +106,10 @@ export default class TwitterArchive extends Component implements ComponentInterf
 					repeatCount: 1,
 					repeatDelayMs: 0,
 				});
-				this.logger.debug(`スクロール ${index} 回目`);
+				this.logger.debug(`スクロール ${String(index)} 回目`);
 			}
 
-			const screennshotFile = `${this.#config.file_dir}/${this.#config.account.file.screenshot_prefix}${index + 1}.png`;
+			const screennshotFile = `${this.#config.file_dir}/${this.#config.account.file.screenshot_prefix}${String(index + 1)}.png`;
 			await page.screenshot({ path: screennshotFile });
 			this.logger.debug(`スクリーンショット: ${screennshotFile}`);
 			const response = await page.content();

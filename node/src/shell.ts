@@ -38,9 +38,9 @@ try {
 	/* タイムアウト判定 */
 	const processingTime = (Date.now() - startTime) / 1000;
 	if (timeout > 0 && processingTime > timeout) {
-		logger.error(`End of process (excessive processing time): ${Math.round(processingTime)}s -----`);
+		logger.error(`End of process (excessive processing time): ${String(Math.round(processingTime))}s -----`);
 	} else {
-		logger.info(`End of process: ${Math.round(processingTime)}s -----`);
+		logger.info(`End of process: ${String(Math.round(processingTime))}s -----`);
 	}
 } catch (e) {
 	logger.fatal(e);
