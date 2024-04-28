@@ -1,9 +1,8 @@
+/.coverage/
 /.tweet/
 
 /configure/type/
 /configure/*.json
-
-/coverage/
 
 /log/
 

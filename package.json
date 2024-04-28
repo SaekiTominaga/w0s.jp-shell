@@ -8,7 +8,7 @@
 		"prelint": "npm run _config-convert",
 		"lint": "eslint node/src/**/*.ts node/__tests__/*.test.js node/@types/*.d.ts",
 		"pretest": "run-s _config-convert build",
-		"test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+		"test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest -c jest.config.mjs",
 		"config": "run-p _config-convert _config-validate:*",
 		"format": "prettier -w .",
 		"github-actions-lint": "yamllint .github/workflows/*.yml",
