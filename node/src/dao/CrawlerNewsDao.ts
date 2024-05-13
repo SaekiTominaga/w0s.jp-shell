@@ -164,10 +164,10 @@ export default class CrawlerNewsDao {
 					d_news_data
 					(uuid, url, date, content, refer_url)
 				VALUES
-					(:uuid, :url, :date, :content, :refer_url)
+					(:id, :url, :date, :content, :refer_url)
 			`);
 			await sth.run({
-				':uuid': data.uuid,
+				':id': data.id,
 				':url': data.url,
 				':date': DbUtil.dateToUnix(data.date),
 				':content': data.content,

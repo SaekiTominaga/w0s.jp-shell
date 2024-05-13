@@ -1,8 +1,8 @@
+import crypto from 'node:crypto';
 import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
 import puppeteer, { HTTPRequest } from 'puppeteer-core';
 import { resolve } from 'relative-to-absolute-iri';
-import { v4 as uuidV4 } from 'uuid';
 import MIMEType from 'whatwg-mimetype';
 import Component from '../Component.js';
 import type ComponentInterface from '../ComponentInterface.js';
@@ -173,7 +173,6 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				}
 
 				if (await this.#dao.existData(targetData.url, contentText)) {
-					// TODO: url, content で絞り込むなら UUID 要らないのでは
 					this.logger.debug(`データ登録済み: ${contentText.substring(0, 30)}...`);
 					continue;
 				}
@@ -190,7 +189,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				/* DB 書き込み */
 				this.logger.debug(`データ登録実行: ${contentText.substring(0, 30)}...`);
 				await this.#dao.insertData({
-					uuid: uuidV4(),
+					id: crypto.randomUUID(),
 					url: targetData.url,
 					date: date,
 					content: contentText,

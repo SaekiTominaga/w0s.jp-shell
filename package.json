@@ -42,13 +42,11 @@
 		"relative-to-absolute-iri": "^1.0.7",
 		"sqlite": "^5.1.1",
 		"sqlite3": "^5.1.6",
-		"uuid": "^9.0.1",
 		"whatwg-mimetype": "^4.0.0"
 	},
 	"devDependencies": {
 		"@types/jsdom": "^21.1.6",
 		"@types/nodemailer": "^6.4.14",
-		"@types/uuid": "^9.0.7",
 		"@types/whatwg-mimetype": "^3.0.2",
 		"@w0s/eslint-config": "^5.2.0",
 		"@w0s/tsconfig": "^1.4.0",
