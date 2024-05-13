@@ -12,7 +12,7 @@ declare namespace CrawlerDb {
 	}
 
 	export interface NewsData {
-		uuid: string;
+		id: string;
 		url: string;
 		date: Date | null;
 		content: string;
