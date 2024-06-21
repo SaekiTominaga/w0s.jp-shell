@@ -37,11 +37,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 		this.#config = this.readConfig() as ConfigureCrawlerNews;
 		this.title = this.#config.title;
 
-		const dbFilePath = this.configCommon.sqlite.db['crawler'];
-		if (dbFilePath === undefined) {
-			throw new Error('共通設定ファイルに crawler テーブルのパスが指定されていない。');
-		}
-		this.#dao = new CrawlerNewsDao(dbFilePath);
+		this.#dao = new CrawlerNewsDao(process.env['SQLITE_CRAWLER']!);
 	}
 
 	async execute(): Promise<void> {
@@ -297,10 +293,10 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	 * @returns レスポンス
 	 */
 	async #requestBrowser(targetData: CrawlerDb.News): Promise<Response | null> {
-		const browser = await puppeteer.launch({ executablePath: this.configCommon.browser.path });
+		const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH']! });
 		try {
 			const page = await browser.newPage();
-			await page.setUserAgent(this.configCommon.browser.ua);
+			await page.setUserAgent(process.env['BROWSER_UA']!);
 			await page.setRequestInterception(true);
 			page.on('request', (request: HTTPRequest) => {
 				switch (request.resourceType()) {
