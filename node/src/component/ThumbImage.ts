@@ -34,7 +34,7 @@ export default class ThumbImage extends Component implements ComponentInterface 
 			this.logger.debug('[[ --- Development Mode --- ]]');
 		}
 
-		const dbFilePath = this.configCommon.sqlite.db['thumb_image'];
+		const dbFilePath = process.env['SQLITE_THUMB_IMAGE'];
 		if (dbFilePath === undefined) {
 			throw new Error('共通設定ファイルに thumb_image テーブルのパスが指定されていない。');
 		}

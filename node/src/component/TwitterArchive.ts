@@ -28,7 +28,7 @@ export default class TwitterArchive extends Component implements ComponentInterf
 
 	async execute(): Promise<void> {
 		/* ブラウザで対象ページにアクセス */
-		const browser = await puppeteer.launch({ executablePath: this.configCommon.browser.path });
+		const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH']! });
 		try {
 			const page = await browser.newPage();
 			await page.setViewport({

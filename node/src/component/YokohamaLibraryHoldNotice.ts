@@ -20,7 +20,7 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 		this.#config = this.readConfig() as ConfigureYokohamaLibraryHoldNotice;
 		this.title = this.#config.title;
 
-		const dbFilePath = this.configCommon.sqlite.db['yokohama_lib'];
+		const dbFilePath = process.env['SQLITE_YOKOHAMA_LIB'];
 		if (dbFilePath === undefined) {
 			throw new Error('共通設定ファイルに yokohamalib テーブルのパスが指定されていない。');
 		}
@@ -31,9 +31,10 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 		const availableBooks: { type: string; title: string }[] = [];
 
 		/* ブラウザで対象ページにアクセス */
-		const browser = await puppeteer.launch({ executablePath: this.configCommon.browser.path });
+		const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH']! });
 		try {
 			const page = await browser.newPage();
+			await page.setUserAgent(process.env['BROWSER_UA']!);
 			await page.setRequestInterception(true);
 			page.on('request', (request) => {
 				request.continue();

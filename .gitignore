@@ -1,4 +1,5 @@
-/.coverage/
+*.env
+
 /.tweet/
 
 /configure/type/
