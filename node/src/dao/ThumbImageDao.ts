@@ -48,6 +48,15 @@ export default class ThumbImageDao {
 	 * @returns キューに登録された画像情報
 	 */
 	async selectQueue(): Promise<ThumbImageDb.Queue | null> {
+		interface Select {
+			file_path: string;
+			file_type: string;
+			width: number;
+			height: number;
+			quality: number | null;
+			registered_at: number;
+		}
+
 		const dbh = await this.getDbh();
 
 		const sth = await dbh.prepare(`
@@ -64,7 +73,7 @@ export default class ThumbImageDao {
 				registered_at
 			LIMIT 1
 		`);
-		const row = await sth.get();
+		const row: Select | undefined = await sth.get();
 		await sth.finalize();
 
 		if (row === undefined) {

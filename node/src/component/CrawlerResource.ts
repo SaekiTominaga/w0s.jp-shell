@@ -30,7 +30,11 @@ export default class CrawlerResource extends Component implements ComponentInter
 		this.#config = this.readConfig() as ConfigureCrawlerResource;
 		this.title = this.#config.title;
 
-		this.#dao = new CrawlerResourceDao(process.env['SQLITE_CRAWLER']!);
+		const dbFilePath = process.env['SQLITE_CRAWLER'];
+		if (dbFilePath === undefined) {
+			throw new Error('env ファイルに SQLITE_CRAWLER が指定されていない。');
+		}
+		this.#dao = new CrawlerResourceDao(dbFilePath);
 	}
 
 	async execute(): Promise<void> {
@@ -44,7 +48,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 			strict: false,
 		}).values;
 
-		const priority = Number(argsParsedValues['priority']); // 優先度
+		const priority = Number(argsParsedValues.priority); // 優先度
 		this.logger.info(`優先度: ${String(priority)}`);
 
 		let prevHost: string | undefined; // ひとつ前のループで処理したホスト名
@@ -186,10 +190,16 @@ export default class CrawlerResource extends Component implements ComponentInter
 	 * @returns レスポンス
 	 */
 	async #requestBrowser(targetData: CrawlerDb.Resource): Promise<Response | null> {
-		const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH']! });
+		if (process.env['BROWSER_PATH'] === undefined) {
+			throw new Error('env ファイルに BROWSER_PATH が指定されていない。');
+		}
+
+		const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH'] });
 		try {
 			const page = await browser.newPage();
-			await page.setUserAgent(process.env['BROWSER_UA']!);
+			if (process.env['BROWSER_UA'] !== undefined) {
+				await page.setUserAgent(process.env['BROWSER_UA']);
+			}
 			await page.setRequestInterception(true);
 			page.on('request', (request: HTTPRequest) => {
 				switch (request.resourceType()) {
@@ -260,10 +270,12 @@ export default class CrawlerResource extends Component implements ComponentInter
 
 		const fileDir = url.pathname === '/' ? url.hostname : `${url.hostname}${url.pathname.replace(/\/[^/]*$/g, '')}`;
 		const fileFullDir = `${this.#config.save.dir}/${fileDir}`;
-		const fileName = `${String(url.pathname.split('/').at(-1))}_${String(date.getFullYear())}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(
+		const fileName = `${String(url.pathname.split('/').at(-1))}_${String(date.getFullYear())}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+			date.getDate(),
+		).padStart(2, '0')}_${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(
 			2,
 			'0',
-		)}_${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}.txt`;
+		)}.txt`;
 
 		const filePath = `${fileDir}/${fileName}`; // ドキュメントルート基準のパス
 		const fileFullPath = `${fileFullDir}/${fileName}`; // ドキュメントルート基準のパス

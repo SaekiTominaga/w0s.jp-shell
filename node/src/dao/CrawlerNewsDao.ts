@@ -50,6 +50,18 @@ export default class CrawlerNewsDao {
 	 * @returns 登録データ
 	 */
 	async select(priority: number): Promise<CrawlerDb.News[]> {
+		interface Select {
+			url: string;
+			title: string;
+			class: number;
+			priority: number;
+			browser: number;
+			selector_wrap: string;
+			selector_date: string | null;
+			selector_content: string | null;
+			error: number;
+		}
+
 		const dbh = await this.getDbh();
 
 		const sth = await dbh.prepare(`
@@ -71,7 +83,7 @@ export default class CrawlerNewsDao {
 		await sth.bind({
 			':priority': priority,
 		});
-		const rows = await sth.all();
+		const rows: Select[] = await sth.all();
 		await sth.finalize();
 
 		const datas: CrawlerDb.News[] = [];
@@ -100,6 +112,10 @@ export default class CrawlerNewsDao {
 	 * @returns 登録件数
 	 */
 	async selectDataCount(url: string): Promise<number> {
+		interface Select {
+			count: number;
+		}
+
 		const dbh = await this.getDbh();
 
 		const sth = await dbh.prepare(`
@@ -113,10 +129,10 @@ export default class CrawlerNewsDao {
 		await sth.bind({
 			':url': url,
 		});
-		const row = await sth.get();
+		const row: Select | undefined = await sth.get();
 		await sth.finalize();
 
-		return row.count;
+		return row?.count ?? 0;
 	}
 
 	/**
@@ -128,6 +144,10 @@ export default class CrawlerNewsDao {
 	 * @returns 登録件数
 	 */
 	async existData(url: string, content: string): Promise<boolean> {
+		interface Select {
+			count: number;
+		}
+
 		const dbh = await this.getDbh();
 
 		const sth = await dbh.prepare(`
@@ -143,10 +163,10 @@ export default class CrawlerNewsDao {
 			':url': url,
 			':content': content,
 		});
-		const row = await sth.get();
+		const row: Select | undefined = await sth.get();
 		await sth.finalize();
 
-		return row.count > 0;
+		return row !== undefined && row.count > 0;
 	}
 
 	/**

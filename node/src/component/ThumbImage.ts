@@ -28,7 +28,7 @@ export default class ThumbImage extends Component implements ComponentInterface 
 			strict: false,
 		}).values;
 
-		const dev = Boolean(argsParsedValues['dev']); // 開発モード
+		const dev = Boolean(argsParsedValues.dev); // 開発モード
 
 		if (dev) {
 			this.logger.debug('[[ --- Development Mode --- ]]');
@@ -36,7 +36,7 @@ export default class ThumbImage extends Component implements ComponentInterface 
 
 		const dbFilePath = process.env['SQLITE_THUMB_IMAGE'];
 		if (dbFilePath === undefined) {
-			throw new Error('共通設定ファイルに thumb_image テーブルのパスが指定されていない。');
+			throw new Error('env ファイルに SQLITE_THUMB_IMAGE が指定されていない。');
 		}
 
 		const dao = new ThumbImageDao(dbFilePath);
