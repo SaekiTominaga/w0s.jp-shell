@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { JSDOM } from 'jsdom';
-import puppeteer, { Page } from 'puppeteer-core';
+import puppeteer, { Page, type CookieParam } from 'puppeteer-core';
 import Component from '../Component.js';
 import type ComponentInterface from '../ComponentInterface.js';
 import type { NoName as ConfigureTwitterArchive } from '../../../configure/type/twitter-archive.js';
@@ -28,7 +28,11 @@ export default class TwitterArchive extends Component implements ComponentInterf
 
 	async execute(): Promise<void> {
 		/* ブラウザで対象ページにアクセス */
-		const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH']! });
+		if (process.env['BROWSER_PATH'] === undefined) {
+			throw new Error('env ファイルに BROWSER_PATH が指定されていない。');
+		}
+
+		const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH'] });
 		try {
 			const page = await browser.newPage();
 			await page.setViewport({
@@ -54,7 +58,7 @@ export default class TwitterArchive extends Component implements ComponentInterf
 	async #login(page: Page): Promise<void> {
 		const cookiePath = `${this.#config.file_dir}/${this.#config.login.coookie_file_path}`;
 		if (fs.existsSync(cookiePath)) {
-			const cookies = JSON.parse((await fs.promises.readFile(cookiePath)).toString());
+			const cookies = JSON.parse((await fs.promises.readFile(cookiePath)).toString()) as CookieParam[];
 
 			await Promise.all([...cookies].map((cookie) => page.setCookie(cookie)));
 

@@ -46,7 +46,11 @@ export default class JrCyberStation extends Component implements ComponentInterf
 		this.logger.debug(stationList);
 
 		/* 空席検索 */
-		const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH']! });
+		if (process.env['BROWSER_PATH'] === undefined) {
+			throw new Error('env ファイルに BROWSER_PATH が指定されていない。');
+		}
+
+		const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH'] });
 
 		let requestCount = 0;
 		try {

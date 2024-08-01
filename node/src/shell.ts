@@ -20,8 +20,8 @@ const argsParsedValues = parseArgs({
 	strict: false,
 }).values;
 
-const componentName = String(argsParsedValues['component']); // 機能名
-const timeout = Number(argsParsedValues['timeout']); // タイムアウト秒数（この値を超えたら警告する、0以下は∞）
+const componentName = String(argsParsedValues.component); // 機能名
+const timeout = Number(argsParsedValues.timeout); // タイムアウト秒数（この値を超えたら警告する、0以下は∞）
 
 /* Logger 設定 */
 Log4js.configure('node/log4js.json');
@@ -31,6 +31,7 @@ try {
 	/* コンポーネントの読み込みと実行 */
 	logger.info('----- Start processing');
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 	const component = new (await import(`./component/${componentName}.js`)).default() as Component;
 	await component.execute();
 	await component.destructor();

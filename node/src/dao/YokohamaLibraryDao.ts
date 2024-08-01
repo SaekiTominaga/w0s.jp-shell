@@ -50,6 +50,11 @@ export default class YokohamaLibraryDao {
 	 * @returns 登録データ
 	 */
 	async selectAvailable(type: string, title: string): Promise<YokohamaLibraryDb.Available | null> {
+		interface Select {
+			type: string;
+			title: string;
+		}
+
 		const dbh = await this.getDbh();
 
 		const sth = await dbh.prepare(`
@@ -66,7 +71,7 @@ export default class YokohamaLibraryDao {
 			':type': type,
 			':title': title,
 		});
-		const row = await sth.get();
+		const row: Select | undefined = await sth.get();
 		await sth.finalize();
 
 		if (row === undefined) {
@@ -85,6 +90,11 @@ export default class YokohamaLibraryDao {
 	 * @returns 登録データ
 	 */
 	async selectAvailables(): Promise<YokohamaLibraryDb.Available[]> {
+		interface Select {
+			type: string;
+			title: string;
+		}
+
 		const dbh = await this.getDbh();
 
 		const sth = await dbh.prepare(`
@@ -94,7 +104,7 @@ export default class YokohamaLibraryDao {
 			FROM
 				d_available
 		`);
-		const rows = await sth.all();
+		const rows: Select[] = await sth.all();
 		await sth.finalize();
 
 		const datas: YokohamaLibraryDb.Available[] = [];

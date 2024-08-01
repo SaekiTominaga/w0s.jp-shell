@@ -37,7 +37,11 @@ export default class CrawlerNews extends Component implements ComponentInterface
 		this.#config = this.readConfig() as ConfigureCrawlerNews;
 		this.title = this.#config.title;
 
-		this.#dao = new CrawlerNewsDao(process.env['SQLITE_CRAWLER']!);
+		const dbFilePath = process.env['SQLITE_CRAWLER'];
+		if (dbFilePath === undefined) {
+			throw new Error('env ファイルに SQLITE_CRAWLER が指定されていない。');
+		}
+		this.#dao = new CrawlerNewsDao(dbFilePath);
 	}
 
 	async execute(): Promise<void> {
@@ -51,7 +55,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 			strict: false,
 		}).values;
 
-		const priority = Number(argsParsedValues['priority']); // 優先度
+		const priority = Number(argsParsedValues.priority); // 優先度
 		this.logger.info(`優先度: ${String(priority)}`);
 
 		for (const targetData of await this.#dao.select(priority)) {
@@ -293,10 +297,16 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	 * @returns レスポンス
 	 */
 	async #requestBrowser(targetData: CrawlerDb.News): Promise<Response | null> {
-		const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH']! });
+		if (process.env['BROWSER_PATH'] === undefined) {
+			throw new Error('env ファイルに BROWSER_PATH が指定されていない。');
+		}
+
+		const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH'] });
 		try {
 			const page = await browser.newPage();
-			await page.setUserAgent(process.env['BROWSER_UA']!);
+			if (process.env['BROWSER_UA'] !== undefined) {
+				await page.setUserAgent(process.env['BROWSER_UA']);
+			}
 			await page.setRequestInterception(true);
 			page.on('request', (request: HTTPRequest) => {
 				switch (request.resourceType()) {

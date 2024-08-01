@@ -49,6 +49,17 @@ export default class CrawlerResourceDao {
 	 * @returns 登録データ
 	 */
 	async select(priority: number): Promise<CrawlerDb.Resource[]> {
+		interface Select {
+			url: string;
+			title: string;
+			category: number;
+			priority: number;
+			browser: number;
+			selector: string | null;
+			content_hash: string | null;
+			error: number;
+		}
+
 		const dbh = await this.getDbh();
 
 		const sth = await dbh.prepare(`
@@ -69,7 +80,7 @@ export default class CrawlerResourceDao {
 		await sth.bind({
 			':priority': priority,
 		});
-		const rows = await sth.all();
+		const rows: Select[] = await sth.all();
 		await sth.finalize();
 
 		const datas: CrawlerDb.Resource[] = [];

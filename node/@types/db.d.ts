@@ -26,7 +26,7 @@ declare namespace CrawlerDb {
 		priority: number;
 		browser: boolean;
 		selector: string | null;
-		content_hash: string;
+		content_hash: string | null;
 		error: number;
 	}
 }
