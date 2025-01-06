@@ -47,23 +47,23 @@ export default class ThumbImage extends Component implements ComponentInterface 
 
 		const endpoint = dev ? this.#config.endpoint.dev : this.#config.endpoint.production;
 
-		const urlSearchParams = new URLSearchParams();
-		urlSearchParams.append('file_path', queue.file_path);
-		urlSearchParams.append('type', queue.type);
-		urlSearchParams.append('width', String(queue.width));
-		urlSearchParams.append('height', String(queue.height));
-		if (queue.quality !== null) {
-			urlSearchParams.append('quality', String(queue.quality));
-		}
+		const bodyObject: Readonly<Record<string, string | number | undefined>> = {
+			path: queue.file_path,
+			type: queue.type,
+			width: queue.width,
+			height: queue.height,
+			quality: queue.quality ?? undefined,
+		};
 
-		this.logger.info('Fetch', endpoint, urlSearchParams);
+		this.logger.info('Fetch', endpoint, bodyObject);
 
 		const response = await fetch(endpoint, {
 			method: 'POST',
 			headers: {
 				Authorization: `Basic ${Buffer.from(`${this.#config.endpoint.auth.username}:${this.#config.endpoint.auth.password}`).toString('base64')}`,
+				'Content-Type': 'application/json',
 			},
-			body: urlSearchParams,
+			body: JSON.stringify(bodyObject),
 		});
 		if (!response.ok) {
 			this.logger.error('Fetch error', endpoint);
