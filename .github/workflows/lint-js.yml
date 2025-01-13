@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - 'node/src/**/*.ts'
-      - 'node/__tests__/*.test.js'
       - 'node/@types/*.d.ts'
       - 'eslint.config.js'
   workflow_dispatch:

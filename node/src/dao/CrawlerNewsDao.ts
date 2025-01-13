@@ -1,6 +1,6 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
-import DbUtil from '../util/DbUtil.js';
+import { dateToUnix } from '../util/db.js';
 
 /**
  * ウェブ巡回（ニュース）
@@ -189,7 +189,7 @@ export default class CrawlerNewsDao {
 			await sth.run({
 				':id': data.id,
 				':url': data.url,
-				':date': DbUtil.dateToUnix(data.date),
+				':date': dateToUnix(data.date),
 				':content': data.content,
 				':refer_url': data.refer_url,
 			});
