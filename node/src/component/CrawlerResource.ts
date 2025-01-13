@@ -7,7 +7,7 @@ import MIMEType from 'whatwg-mimetype';
 import Component from '../Component.js';
 import type ComponentInterface from '../ComponentInterface.js';
 import CrawlerResourceDao from '../dao/CrawlerResourceDao.js';
-import type { NoName as ConfigureCrawlerResource } from '../../../configure/type/crawler-resource.js';
+import config from '../config/crawlerResource.js';
 
 interface Response {
 	contentType: string;
@@ -18,8 +18,6 @@ interface Response {
  * ウェブページを巡回し、レスポンスボディの差分を調べて通知する
  */
 export default class CrawlerResource extends Component implements ComponentInterface {
-	readonly #config: ConfigureCrawlerResource;
-
 	readonly #dao: CrawlerResourceDao;
 
 	readonly #HTML_MIMES: DOMParserSupportedType[] = ['application/xhtml+xml', 'application/xml', 'text/html', 'text/xml'];
@@ -27,12 +25,11 @@ export default class CrawlerResource extends Component implements ComponentInter
 	constructor() {
 		super();
 
-		this.#config = this.readConfig() as ConfigureCrawlerResource;
-		this.title = this.#config.title;
+		this.title = config.title;
 
 		const dbFilePath = process.env['SQLITE_CRAWLER'];
 		if (dbFilePath === undefined) {
-			throw new Error('env ファイルに SQLITE_CRAWLER が指定されていない。');
+			throw new Error('SQLite file path not defined');
 		}
 		this.#dao = new CrawlerResourceDao(dbFilePath);
 	}
@@ -56,9 +53,9 @@ export default class CrawlerResource extends Component implements ComponentInter
 		for (const targetData of await this.#dao.select(priority)) {
 			const targetHost = new URL(targetData.url).hostname;
 			if (targetHost === prevHost) {
-				this.logger.debug(`${String(this.#config.access_interval_host)} 秒待機`);
+				this.logger.debug(`${String(config.accessIntervalHost)} 秒待機`);
 				await new Promise((resolve) => {
-					setTimeout(resolve, this.#config.access_interval_host * 1000);
+					setTimeout(resolve, config.accessIntervalHost * 1000);
 				}); // 接続間隔を空ける
 			}
 			prevHost = targetHost;
@@ -105,7 +102,12 @@ export default class CrawlerResource extends Component implements ComponentInter
 				const fileDir = await this.#saveFile(targetData.url, response.body);
 
 				/* 通知 */
-				this.notice.push(`${targetData.title} ${targetData.url}\n変更履歴: ${this.#config.save.url}?dir=${fileDir} 🔒`);
+				const saveUrl = process.env['CRAWLER_RESOURCE_SAVE_URL'];
+				if (saveUrl === undefined) {
+					throw new Error('Save url not defined');
+				}
+
+				this.notice.push(`${targetData.title} ${targetData.url}\n変更履歴: ${saveUrl}?dir=${fileDir} 🔒`);
 			}
 
 			await this.#accessSuccess(targetData);
@@ -124,7 +126,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 		const { signal } = controller;
 		const timeoutId = setTimeout(() => {
 			controller.abort();
-		}, this.#config.fetch_timeout);
+		}, config.fetchTimeout);
 
 		try {
 			const response = await fetch(targetData.url, {
@@ -134,7 +136,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 				const errorCount = await this.#accessError(targetData);
 
 				this.logger.info(`HTTP Status Code: ${String(response.status)} ${targetData.url} 、エラー回数: ${String(errorCount)}`);
-				if (errorCount % this.#config.report_error_count === 0) {
+				if (errorCount % config.reportRrrorCount === 0) {
 					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${String(response.status)}\nエラー回数: ${String(errorCount)}`);
 				}
 
@@ -162,7 +164,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 						const errorCount = await this.#accessError(targetData);
 
 						this.logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${String(errorCount)}`);
-						if (errorCount % this.#config.report_error_count === 0) {
+						if (errorCount % config.reportRrrorCount === 0) {
 							this.notice.push(`${targetData.title}\n${targetData.url}\nタイムアウト\nエラー回数: ${String(errorCount)}`);
 						}
 
@@ -191,7 +193,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 	 */
 	async #requestBrowser(targetData: CrawlerDb.Resource): Promise<Response | null> {
 		if (process.env['BROWSER_PATH'] === undefined) {
-			throw new Error('env ファイルに BROWSER_PATH が指定されていない。');
+			throw new Error('Browser path not defined');
 		}
 
 		const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH'] });
@@ -223,7 +225,7 @@ export default class CrawlerResource extends Component implements ComponentInter
 				const errorCount = await this.#accessError(targetData);
 
 				this.logger.info(`HTTP Status Code: ${String(response?.status())} ${targetData.url} 、エラー回数: ${String(errorCount)}`);
-				if (errorCount % this.#config.report_error_count === 0) {
+				if (errorCount % config.reportRrrorCount === 0) {
 					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${String(response?.status())}\nエラー回数: ${String(errorCount)}`);
 				}
 
@@ -268,8 +270,13 @@ export default class CrawlerResource extends Component implements ComponentInter
 		const url = new URL(urlText);
 		const date = new Date();
 
+		const saveDir = process.env['CRAWLER_RESOURCE_SAVE_DIRECTORY'];
+		if (saveDir === undefined) {
+			throw new Error('Save directory not defined');
+		}
+
 		const fileDir = url.pathname === '/' ? url.hostname : `${url.hostname}${url.pathname.replace(/\/[^/]*$/g, '')}`;
-		const fileFullDir = `${this.#config.save.dir}/${fileDir}`;
+		const fileFullDir = `${saveDir}/${fileDir}`;
 		const fileName = `${String(url.pathname.split('/').at(-1))}_${String(date.getFullYear())}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
 			date.getDate(),
 		).padStart(2, '0')}_${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(

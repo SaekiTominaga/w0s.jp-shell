@@ -1,23 +1,20 @@
 import { parseArgs } from 'node:util';
 import Component from '../Component.js';
 import type ComponentInterface from '../ComponentInterface.js';
-import type { NoName as ConfigureTest } from '../../../configure/type/test.js';
+import config from '../config/test.js';
 
 /**
  * シェル機能のテスト用
  */
 export default class Test extends Component implements ComponentInterface {
-	readonly #config: ConfigureTest;
-
 	constructor() {
 		super();
 
-		this.#config = this.readConfig() as ConfigureTest;
-		this.title = this.#config.title;
+		this.title = config.title;
 	}
 
 	async execute(): Promise<void> {
 		this.logger.info('args', parseArgs({ strict: false }).values);
-		this.logger.info('config', this.#config);
+		this.logger.info('config', config);
 	}
 }

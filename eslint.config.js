@@ -9,14 +9,9 @@ export default [
 		ignores: ['node/dist/**/*.js'],
 	},
 	{
-		files: ['node/__tests__/**/*.test.js'],
-		rules: {
-			'import/no-unresolved': 'off', // Github Actions 環境では /dist/ ファイルが存在しないためテスト不可
-		},
-	},
-	{
 		files: ['node/src/component/*.ts'],
 		rules: {
+			'class-methods-use-this': 'off',
 			'@typescript-eslint/no-floating-promises': 'off',
 			'@typescript-eslint/require-await': 'off',
 		},
@@ -29,13 +24,6 @@ export default [
 		},
 	},
 	{
-		files: ['node/src/component/TwitterArchive.ts'],
-		rules: {
-			'no-await-in-loop': 'off',
-			'no-loop-func': 'off',
-		},
-	},
-	{
 		files: ['node/src/component/YokohamaLibraryHoldNotice.ts'],
 		rules: {
 			'no-await-in-loop': 'off',
@@ -45,12 +33,6 @@ export default [
 		files: ['node/src/dao/**/*.ts'],
 		rules: {
 			'@typescript-eslint/no-non-null-assertion': 'off',
-		},
-	},
-	{
-		files: ['node/src/*Interface.ts'],
-		rules: {
-			semi: 'off',
 		},
 	},
 	{

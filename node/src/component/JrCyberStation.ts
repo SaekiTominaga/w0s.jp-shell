@@ -1,53 +1,43 @@
+import fs from 'node:fs';
 import dayjs from 'dayjs';
 import puppeteer from 'puppeteer-core';
 import { JSDOM } from 'jsdom';
 import Component from '../Component.js';
 import type ComponentInterface from '../ComponentInterface.js';
-import type { JR as ConfigureJrCyberStation } from '../../../configure/type/jr-cyber-station.js';
+import config from '../config/jrCyberStation.js';
+
+interface Search {
+	depature: string; // e.g. 東京
+	arrival: string; // e.g. 熱海
+	date: string; // YYYY-MM-DD
+	time?: string; // HH:mm
+}
 
 /**
  * JR CYBER STATION で空席があれば通知する
  */
 export default class JrCyberStation extends Component implements ComponentInterface {
-	readonly #config: ConfigureJrCyberStation;
-
 	constructor() {
 		super();
 
-		this.#config = this.readConfig() as ConfigureJrCyberStation;
-		this.title = this.#config.title;
+		this.title = config.title;
 	}
 
 	async execute(): Promise<void> {
-		if (this.#config.search.length === 0) {
+		/* 検索列車リストを取得 */
+		const searchTrainList = await this.#getSearchTrain();
+		if (searchTrainList.length === 0) {
+			this.logger.info('列車が指定されていないので検索を行わない');
 			return;
 		}
 
 		/* 駅名リストを取得 */
-		const response = await fetch(this.#config.station_url);
-		if (!response.ok) {
-			this.notice.push(`HTTP Status Code: ${String(response.status)} <${this.#config.station_url}>`);
-			return;
-		}
-
-		const stationList = new Map<string, string>();
-		(await response.text())
-			.split('\n')
-			.map((col) => col.trim())
-			.forEach((col) => {
-				const patternMatchGroups = col.match(/\["(?<shinkansen>[0-9]{10})","(?<id>[0-9]{4})","(?<yomi>.+?)","(?<name>.+?)"\],?/)?.groups;
-				if (patternMatchGroups !== undefined) {
-					const { name, id } = patternMatchGroups;
-					if (name !== undefined && id !== undefined) {
-						stationList.set(name, id);
-					}
-				}
-			});
+		const stationList = await this.#getStationList();
 		this.logger.debug(stationList);
 
 		/* 空席検索 */
 		if (process.env['BROWSER_PATH'] === undefined) {
-			throw new Error('env ファイルに BROWSER_PATH が指定されていない。');
+			throw new Error('Browser path not defined');
 		}
 
 		const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH'] });
@@ -55,7 +45,7 @@ export default class JrCyberStation extends Component implements ComponentInterf
 		let requestCount = 0;
 		try {
 			await Promise.all(
-				this.#config.search.map(async (search) => {
+				searchTrainList.map(async (search) => {
 					const depatureStationId = stationList.get(search.depature);
 					if (depatureStationId === undefined) {
 						this.notice.push(`出発駅が存在しない: ${search.depature}`);
@@ -69,7 +59,7 @@ export default class JrCyberStation extends Component implements ComponentInterf
 
 					const date = dayjs(`${search.date}T${search.time ?? '04:00'}:00+09:00`);
 
-					const url = new URL(this.#config.search_url);
+					const url = new URL(config.searchUrl);
 
 					const urlSearchParams = new URLSearchParams();
 					urlSearchParams.append('lang', 'ja');
@@ -86,7 +76,7 @@ export default class JrCyberStation extends Component implements ComponentInterf
 					requestCount += 1;
 					if (requestCount > 1) {
 						await new Promise((resolve) => {
-							setTimeout(resolve, this.#config.search_interval * 1000);
+							setTimeout(resolve, config.searchInterval * 1000);
 						}); // 接続間隔を空ける
 					}
 
@@ -145,5 +135,48 @@ export default class JrCyberStation extends Component implements ComponentInterf
 			this.logger.debug('browser.close()');
 			await browser.close();
 		}
+	}
+
+	/**
+	 * 検索列車リストを取得
+	 *
+	 * @returns 駅名リスト
+	 */
+	async #getSearchTrain(): Promise<Search[]> {
+		const targetPath = process.env['JR_SEARCH_TRAIN_FILE'];
+		if (targetPath === undefined) {
+			throw new Error('Train data file path not defined');
+		}
+
+		return JSON.parse((await fs.promises.readFile(targetPath)).toString()) as Search[];
+	}
+
+	/**
+	 * 駅名リストを取得
+	 *
+	 * @returns 駅名リスト
+	 */
+	async #getStationList(): Promise<Map<string, string>> {
+		const stationList = new Map<string, string>();
+
+		const response = await fetch(config.stationUrl);
+		if (!response.ok) {
+			throw new Error(`HTTP Status Code: ${String(response.status)} <${config.stationUrl}>`);
+		}
+
+		(await response.text())
+			.split('\n')
+			.map((col) => col.trim())
+			.forEach((col) => {
+				const patternMatchGroups = col.match(/\["(?<shinkansen>[0-9]{10})","(?<id>[0-9]{4})","(?<yomi>.+?)","(?<name>.+?)"\],?/)?.groups;
+				if (patternMatchGroups !== undefined) {
+					const { name, id } = patternMatchGroups;
+					if (name !== undefined && id !== undefined) {
+						stationList.set(name, id);
+					}
+				}
+			});
+
+		return stationList;
 	}
 }
