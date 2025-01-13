@@ -9,7 +9,7 @@
 		"prelint": "npm run build",
 		"lint": "eslint node/src/**/*.ts node/__tests__/*.test.js node/@types/*.d.ts",
 		"pretest": "npm run build",
-		"test": "node --experimental-test-coverage --test **/*.test.js",
+		"test": "node --experimental-test-coverage --test",
 		"format": "prettier -w .",
 		"github-actions-lint": "yamllint .github/workflows/*.yml",
 		"shell-Test": "node --env-file=.env.development node/dist/shell.js -c Test -t 0",
