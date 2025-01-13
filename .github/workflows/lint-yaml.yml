@@ -17,4 +17,4 @@ jobs:
         with:
           node-version: '22'
       - run: npm ci
-      - run: npm run github-actions-lint
+      - run: npm run yaml-lint

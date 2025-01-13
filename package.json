@@ -11,7 +11,7 @@
 		"pretest": "npm run build",
 		"test": "node --experimental-test-coverage --test",
 		"format": "prettier -w .",
-		"github-actions-lint": "yamllint .github/workflows/*.yml",
+		"yaml-lint": "yamllint .github/workflows/*.yml",
 		"shell-Test": "node --env-file=.env.development node/dist/shell.js -c Test -t 0",
 		"shell-CrawlerNews": "node --env-file=.env.development node/dist/shell.js -c CrawlerNews -t 10",
 		"shell-CrawlerResource": "node --env-file=.env.development node/dist/shell.js -c CrawlerResource -t 10",
