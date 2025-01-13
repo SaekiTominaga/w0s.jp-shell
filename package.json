@@ -6,6 +6,7 @@
 		"watch": "tsc --project node/tsconfig.json -w",
 		"prebuild": "rimraf node/dist/* -g",
 		"build": "tsc --project node/tsconfig.json",
+		"prelint": "npm run build",
 		"lint": "eslint node/src/**/*.ts node/__tests__/*.test.js node/@types/*.d.ts",
 		"pretest": "npm run build",
 		"test": "node --experimental-test-coverage --test **/*.test.js",
