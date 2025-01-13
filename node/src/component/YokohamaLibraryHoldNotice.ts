@@ -4,25 +4,22 @@ import StringConvert from '@w0s/string-convert';
 import Component from '../Component.js';
 import type ComponentInterface from '../ComponentInterface.js';
 import YokohamaLibraryDao from '../dao/YokohamaLibraryDao.js';
-import type { NoName as ConfigureYokohamaLibraryHoldNotice } from '../../../configure/type/yokohama-library-hold-notice.js';
+import config from '../config/yokohamaLibraryHoldNotice.js';
 
 /**
  * 横浜市立図書館　予約連絡
  */
 export default class YokohamaLibraryHoldNotice extends Component implements ComponentInterface {
-	readonly #config: ConfigureYokohamaLibraryHoldNotice;
-
 	readonly #dao: YokohamaLibraryDao;
 
 	constructor() {
 		super();
 
-		this.#config = this.readConfig() as ConfigureYokohamaLibraryHoldNotice;
-		this.title = this.#config.title;
+		this.title = config.title;
 
-		const dbFilePath = process.env['SQLITE_YOKOHAMA_LIB'];
+		const dbFilePath = process.env['SQLITE_YOKOHAMA_LIBRARY'];
 		if (dbFilePath === undefined) {
-			throw new Error('env ファイルに SQLITE_YOKOHAMA_LIB が指定されていない。');
+			throw new Error('SQLite file path not defined');
 		}
 		this.#dao = new YokohamaLibraryDao(dbFilePath);
 	}
@@ -32,7 +29,7 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 
 		/* ブラウザで対象ページにアクセス */
 		if (process.env['BROWSER_PATH'] === undefined) {
-			throw new Error('env ファイルに BROWSER_PATH が指定されていない。');
+			throw new Error('Browser path not defined');
 		}
 
 		const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH'] });
@@ -47,15 +44,22 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 			});
 
 			/* ログイン */
-			await page.goto(this.#config.url);
-			await page.goto(this.#config.login.url, {
-				timeout: this.#config.login.timeout * 1000,
+			if (process.env['YOKOHAMA_CARD'] === undefined) {
+				throw new Error('Library card number not defined');
+			}
+			if (process.env['YOKOHAMA_PASSWORD'] === undefined) {
+				throw new Error('Login password not defined');
+			}
+
+			await page.goto(config.url);
+			await page.goto(config.login.url, {
+				timeout: config.login.timeout * 1000,
 				waitUntil: 'domcontentloaded',
 			});
-			await page.type(this.#config.login.cardSelector, this.#config.card);
-			await page.type(this.#config.login.passwordSelector, this.#config.password);
-			await Promise.all([page.click(this.#config.login.submitSelector), page.waitForNavigation()]);
-			this.logger.debug(`ログインボタン（${this.#config.login.submitSelector}）押下`);
+			await page.type(config.login.cardSelector, process.env['YOKOHAMA_CARD']);
+			await page.type(config.login.passwordSelector, process.env['YOKOHAMA_PASSWORD']);
+			await Promise.all([page.click(config.login.submitSelector), page.waitForNavigation()]);
+			this.logger.debug(`ログインボタン（${config.login.submitSelector}）押下`);
 
 			this.logger.info('ログイン後ページ', page.url());
 
@@ -65,20 +69,20 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 			/* DOM 化 */
 			const reserveListPageDocument = new JSDOM(reserveListPageResponse).window.document;
 
-			reserveListPageDocument.querySelectorAll<HTMLElement>(this.#config.reserve.wrapSelector).forEach((bookElement): void => {
-				if (bookElement.querySelector(this.#config.reserve.availableSelector) === null) {
+			reserveListPageDocument.querySelectorAll<HTMLElement>(config.reserve.wrapSelector).forEach((bookElement): void => {
+				if (bookElement.querySelector(config.reserve.availableSelector) === null) {
 					/* 準備中、回送中の本は除外 */
 					return;
 				}
 
-				const type = bookElement.querySelector(this.#config.reserve.typeSelector)?.textContent;
+				const type = bookElement.querySelector(config.reserve.typeSelector)?.textContent;
 				if (type === null || type === undefined) {
-					throw new Error(`資料区分の HTML 要素（${this.#config.reserve.typeSelector}）が存在しない`);
+					throw new Error(`資料区分の HTML 要素（${config.reserve.typeSelector}）が存在しない`);
 				}
 
-				const title = bookElement.querySelector(this.#config.reserve.titleSelector)?.textContent;
+				const title = bookElement.querySelector(config.reserve.titleSelector)?.textContent;
 				if (title === null || title === undefined) {
-					throw new Error(`資料名の HTML 要素（${this.#config.reserve.titleSelector}）が存在しない`);
+					throw new Error(`資料名の HTML 要素（${config.reserve.titleSelector}）が存在しない`);
 				}
 
 				availableBooks.push({
@@ -117,8 +121,8 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 
 			if (noticeBooks.length >= 1) {
 				/* 開館日カレンダー */
-				await page.goto(this.#config.calendar.url, {
-					timeout: this.#config.calendar.timeout * 1000,
+				await page.goto(config.calendar.url, {
+					timeout: config.calendar.timeout * 1000,
 					waitUntil: 'domcontentloaded',
 				});
 				const calendarPageResponse = await page.content();
@@ -128,7 +132,7 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 
 				let closedReason = ''; // 休館理由
 
-				calendarPageDocument.querySelectorAll<HTMLElement>(this.#config.calendar.cellSelector).forEach((tdElement): void => {
+				calendarPageDocument.querySelectorAll<HTMLElement>(config.calendar.cellSelector).forEach((tdElement): void => {
 					const matchGroup = tdElement.textContent?.trim().match(/(?<day>[1-9][0-9]{0,1})(?<reason>.*)/)?.groups;
 					if (matchGroup !== undefined) {
 						const day = Number(matchGroup['day']);
@@ -139,11 +143,7 @@ export default class YokohamaLibraryHoldNotice extends Component implements Comp
 					}
 				});
 
-				this.notice.push(
-					`${this.#config.notice.messagePrefix}${noticeBooks.map((book) => `${book.type}${book.title}`).join('\n')}\n\n${this.#config.url}\n\n${closedReason}${
-						this.#config.notice.messageSuffix
-					}`,
-				);
+				this.notice.push(`${noticeBooks.map((book) => `${book.type}${book.title}`).join('\n')}\n\n${config.url}\n\n${closedReason}`);
 			}
 		} finally {
 			this.logger.debug('browser.close()');

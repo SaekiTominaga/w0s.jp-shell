@@ -24,7 +24,11 @@ const componentName = String(argsParsedValues.component); // 機能名
 const timeout = Number(argsParsedValues.timeout); // タイムアウト秒数（この値を超えたら警告する、0以下は∞）
 
 /* Logger 設定 */
-Log4js.configure('node/log4js.json');
+const loggerFilePath = process.env['LOGGER'];
+if (loggerFilePath === undefined) {
+	throw new Error('Logger file path not defined');
+}
+Log4js.configure(loggerFilePath);
 const logger = Log4js.getLogger(componentName);
 
 try {

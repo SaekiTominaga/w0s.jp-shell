@@ -1,13 +1,10 @@
-*.env
+.env
+.env.*
 
-/.tweet/
-
-/configure/type/
-/configure/*.json
-
+/data/
 /log/
 
 /node/dist/
-/node/log4js*.json
+/node/log4js.*.json
 
 /node_modules/

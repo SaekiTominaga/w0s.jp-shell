@@ -7,7 +7,7 @@ import MIMEType from 'whatwg-mimetype';
 import Component from '../Component.js';
 import type ComponentInterface from '../ComponentInterface.js';
 import CrawlerNewsDao from '../dao/CrawlerNewsDao.js';
-import type { NoName as ConfigureCrawlerNews } from '../../../configure/type/crawler-news.js';
+import config from '../config/crawlerNews.js';
 
 interface Response {
 	contentType: string;
@@ -18,8 +18,6 @@ interface Response {
  * ウェブページを巡回し、新着情報の差分を調べて通知する
  */
 export default class CrawlerNews extends Component implements ComponentInterface {
-	readonly #config: ConfigureCrawlerNews;
-
 	readonly #dao: CrawlerNewsDao;
 
 	readonly #HTML_MIMES: DOMParserSupportedType[] = ['application/xhtml+xml', 'application/xml', 'text/html', 'text/xml'];
@@ -34,12 +32,11 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	constructor() {
 		super();
 
-		this.#config = this.readConfig() as ConfigureCrawlerNews;
-		this.title = this.#config.title;
+		this.title = config.title;
 
 		const dbFilePath = process.env['SQLITE_CRAWLER'];
 		if (dbFilePath === undefined) {
-			throw new Error('env ファイルに SQLITE_CRAWLER が指定されていない。');
+			throw new Error('SQLite file path not defined');
 		}
 		this.#dao = new CrawlerNewsDao(dbFilePath);
 	}
@@ -231,7 +228,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 		const { signal } = controller;
 		const timeoutId = setTimeout(() => {
 			controller.abort();
-		}, this.#config.fetch_timeout);
+		}, config.fetchTimeout);
 
 		try {
 			const response = await fetch(targetData.url, {
@@ -241,7 +238,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				const errorCount = await this.#accessError(targetData);
 
 				this.logger.info(`HTTP Status Code: ${String(response.status)} ${targetData.url} 、エラー回数: ${String(errorCount)}`);
-				if (errorCount % this.#config.report_error_count === 0) {
+				if (errorCount % config.reportErrorCount === 0) {
 					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${String(response.status)}\nエラー回数: ${String(errorCount)}`);
 				}
 
@@ -269,7 +266,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 						const errorCount = await this.#accessError(targetData);
 
 						this.logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${String(errorCount)}`);
-						if (errorCount % this.#config.report_error_count === 0) {
+						if (errorCount % config.reportErrorCount === 0) {
 							this.notice.push(`${targetData.title}\n${targetData.url}\nタイムアウト\nエラー回数: ${String(errorCount)}`);
 						}
 
@@ -298,7 +295,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 	 */
 	async #requestBrowser(targetData: CrawlerDb.News): Promise<Response | null> {
 		if (process.env['BROWSER_PATH'] === undefined) {
-			throw new Error('env ファイルに BROWSER_PATH が指定されていない。');
+			throw new Error('Browser path not defined');
 		}
 
 		const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH'] });
@@ -330,7 +327,7 @@ export default class CrawlerNews extends Component implements ComponentInterface
 				const errorCount = await this.#accessError(targetData);
 
 				this.logger.info(`HTTP Status Code: ${String(response?.status())} ${targetData.url} 、エラー回数: ${String(errorCount)}`);
-				if (errorCount % this.#config.report_error_count === 0) {
+				if (errorCount % config.reportErrorCount === 0) {
 					this.notice.push(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${String(response?.status())}\nエラー回数: ${String(errorCount)}`);
 				}
 

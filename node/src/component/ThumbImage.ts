@@ -1,42 +1,22 @@
-import { parseArgs } from 'node:util';
 import Component from '../Component.js';
 import type ComponentInterface from '../ComponentInterface.js';
 import ThumbImageDao from '../dao/ThumbImageDao.js';
-import type { NoName as ConfigureTest } from '../../../configure/type/thumb-image.js';
+import config from '../config/thumbImage.js';
 
 /**
  * サムネイル画像生成
  */
 export default class ThumbImage extends Component implements ComponentInterface {
-	readonly #config: ConfigureTest;
-
 	constructor() {
 		super();
 
-		this.#config = this.readConfig() as ConfigureTest;
-		this.title = this.#config.title;
+		this.title = config.title;
 	}
 
 	async execute(): Promise<void> {
-		const argsParsedValues = parseArgs({
-			options: {
-				dev: {
-					type: 'boolean',
-					default: false,
-				},
-			},
-			strict: false,
-		}).values;
-
-		const dev = Boolean(argsParsedValues.dev); // 開発モード
-
-		if (dev) {
-			this.logger.debug('[[ --- Development Mode --- ]]');
-		}
-
 		const dbFilePath = process.env['SQLITE_THUMB_IMAGE'];
 		if (dbFilePath === undefined) {
-			throw new Error('env ファイルに SQLITE_THUMB_IMAGE が指定されていない。');
+			throw new Error('SQLite file path not defined');
 		}
 
 		const dao = new ThumbImageDao(dbFilePath);
@@ -45,7 +25,18 @@ export default class ThumbImage extends Component implements ComponentInterface 
 			return;
 		}
 
-		const endpoint = dev ? this.#config.endpoint.dev : this.#config.endpoint.production;
+		const endpoint = process.env['THUMBIMAGE_ENDPOINT'];
+		if (endpoint === undefined) {
+			throw new Error('Endpoint not defined');
+		}
+		const username = process.env['AUTH_USER'];
+		if (username === undefined) {
+			throw new Error('User name not defined');
+		}
+		const password = process.env['AUTH_PASSWORD'];
+		if (password === undefined) {
+			throw new Error('Password not defined');
+		}
 
 		const bodyObject: Readonly<Record<string, string | number | undefined>> = {
 			path: queue.file_path,
@@ -60,7 +51,7 @@ export default class ThumbImage extends Component implements ComponentInterface 
 		const response = await fetch(endpoint, {
 			method: 'POST',
 			headers: {
-				Authorization: `Basic ${Buffer.from(`${this.#config.endpoint.auth.username}:${this.#config.endpoint.auth.password}`).toString('base64')}`,
+				Authorization: `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`,
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify(bodyObject),
