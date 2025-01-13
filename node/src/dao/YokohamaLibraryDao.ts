@@ -71,7 +71,7 @@ export default class YokohamaLibraryDao {
 			':type': type,
 			':title': title,
 		});
-		const row: Select | undefined = await sth.get();
+		const row = await sth.get<Select>();
 		await sth.finalize();
 
 		if (row === undefined) {
@@ -104,7 +104,7 @@ export default class YokohamaLibraryDao {
 			FROM
 				d_available
 		`);
-		const rows: Select[] = await sth.all();
+		const rows = await sth.all<Select[]>();
 		await sth.finalize();
 
 		const datas: YokohamaLibraryDb.Available[] = [];

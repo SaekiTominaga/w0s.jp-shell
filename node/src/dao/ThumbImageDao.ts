@@ -73,7 +73,7 @@ export default class ThumbImageDao {
 				registered_at
 			LIMIT 1
 		`);
-		const row: Select | undefined = await sth.get();
+		const row = await sth.get<Select>();
 		await sth.finalize();
 
 		if (row === undefined) {

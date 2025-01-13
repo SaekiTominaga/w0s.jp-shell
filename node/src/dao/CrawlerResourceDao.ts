@@ -80,7 +80,7 @@ export default class CrawlerResourceDao {
 		await sth.bind({
 			':priority': priority,
 		});
-		const rows: Select[] = await sth.all();
+		const rows = await sth.all<Select[]>();
 		await sth.finalize();
 
 		const datas: CrawlerDb.Resource[] = [];

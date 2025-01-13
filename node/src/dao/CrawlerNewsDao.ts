@@ -83,7 +83,7 @@ export default class CrawlerNewsDao {
 		await sth.bind({
 			':priority': priority,
 		});
-		const rows: Select[] = await sth.all();
+		const rows = await sth.all<Select[]>();
 		await sth.finalize();
 
 		const datas: CrawlerDb.News[] = [];
@@ -129,7 +129,7 @@ export default class CrawlerNewsDao {
 		await sth.bind({
 			':url': url,
 		});
-		const row: Select | undefined = await sth.get();
+		const row = await sth.get<Select>();
 		await sth.finalize();
 
 		return row?.count ?? 0;
@@ -163,7 +163,7 @@ export default class CrawlerNewsDao {
 			':url': url,
 			':content': content,
 		});
-		const row: Select | undefined = await sth.get();
+		const row = await sth.get<Select>();
 		await sth.finalize();
 
 		return row !== undefined && row.count > 0;
