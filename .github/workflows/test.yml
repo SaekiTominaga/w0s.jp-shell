@@ -1,13 +1,7 @@
 name: test
+
 on:
   pull_request:
-    branches:
-      - main
-    paths:
-      - 'node/src/**/*.ts'
-      - 'node/__tests__/*.test.js'
-      - 'node/@types/*.d.ts'
-  push:
     branches:
       - main
     paths:
@@ -17,7 +11,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

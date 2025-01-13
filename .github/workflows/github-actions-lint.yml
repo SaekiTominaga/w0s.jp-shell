@@ -1,11 +1,7 @@
-name: github-actions-lint
+name: Linting YAML files
+
 on:
   pull_request:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/*.yml'
-  push:
     branches:
       - main
     paths:
