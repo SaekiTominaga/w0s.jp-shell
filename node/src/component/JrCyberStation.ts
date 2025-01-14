@@ -50,7 +50,7 @@ const getStationList = async (): Promise<Map<string, string>> => {
 		.split('\n')
 		.map((col) => col.trim())
 		.forEach((col) => {
-			const patternMatchGroups = col.match(/\["(?<shinkansen>[0-9]{10})","(?<id>[0-9]{4})","(?<yomi>.+?)","(?<name>.+?)"\],?/)?.groups;
+			const patternMatchGroups = /\["(?<shinkansen>[0-9]{10})","(?<id>[0-9]{4})","(?<yomi>.+?)","(?<name>.+?)"\],?/.exec(col)?.groups;
 			if (patternMatchGroups !== undefined) {
 				const { name, id } = patternMatchGroups;
 				if (name !== undefined && id !== undefined) {
