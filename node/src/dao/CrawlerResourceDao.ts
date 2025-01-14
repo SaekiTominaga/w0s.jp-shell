@@ -86,7 +86,7 @@ export default class CrawlerResourceDao {
 		const datas: CrawlerDb.Resource[] = [];
 		for (const row of rows) {
 			datas.push({
-				url: row.url,
+				url: new URL(row.url),
 				title: row.title,
 				category: row.category,
 				priority: row.priority,
@@ -121,7 +121,7 @@ export default class CrawlerResourceDao {
 			`);
 			await sth.run({
 				':content_hash': contetnHash,
-				':url': data.url,
+				':url': data.url.toString(),
 			});
 			await sth.finalize();
 
@@ -138,7 +138,7 @@ export default class CrawlerResourceDao {
 	 * @param url - 対象 URL
 	 * @param errorCount - 累積アクセスエラー回数
 	 */
-	async updateError(url: string, errorCount: number): Promise<void> {
+	async updateError(url: URL, errorCount: number): Promise<void> {
 		const dbh = await this.getDbh();
 
 		await dbh.exec('BEGIN');
@@ -153,7 +153,7 @@ export default class CrawlerResourceDao {
 			`);
 			await sth.run({
 				':error': errorCount,
-				':url': url,
+				':url': url.toString(),
 			});
 			await sth.finalize();
 
@@ -169,7 +169,7 @@ export default class CrawlerResourceDao {
 	 *
 	 * @param url - 対象 URL
 	 */
-	async resetError(url: string): Promise<void> {
+	async resetError(url: URL): Promise<void> {
 		await this.updateError(url, 0);
 	}
 }

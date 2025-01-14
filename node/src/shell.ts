@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util';
 import Log4js from 'log4js';
-import type Component from './ComponentInterface.js';
+import Notice from './Notice.js';
 
 /* タイムアウト判定用計測 */
 const startTime = Date.now();
@@ -15,6 +15,11 @@ const argsParsedValues = parseArgs({
 		timeout: {
 			type: 'string',
 			short: 't',
+			default: '0',
+		},
+		notice: {
+			type: 'string',
+			short: 'n',
 		},
 	},
 	strict: false,
@@ -22,6 +27,7 @@ const argsParsedValues = parseArgs({
 
 const componentName = String(argsParsedValues.component); // 機能名
 const timeout = Number(argsParsedValues.timeout); // タイムアウト秒数（この値を超えたら警告する、0以下は∞）
+const noticeTitle = String(argsParsedValues.notice); // 通知タイトル
 
 /* Logger 設定 */
 const loggerFilePath = process.env['LOGGER'];
@@ -31,14 +37,19 @@ if (loggerFilePath === undefined) {
 Log4js.configure(loggerFilePath);
 const logger = Log4js.getLogger(componentName);
 
+logger.info('----- Start processing');
+
+const notice = new Notice(noticeTitle);
+
 try {
 	/* コンポーネントの読み込みと実行 */
-	logger.info('----- Start processing');
-
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-	const component = new (await import(`./component/${componentName}.js`)).default() as Component;
-	await component.execute();
-	await component.destructor();
+	await (await import(`./component/${componentName}.js`)).default(notice);
+} catch (e) {
+	logger.fatal(e);
+} finally {
+	/* 通知送信 */
+	await notice.send();
 
 	/* タイムアウト判定 */
 	const processingTime = (Date.now() - startTime) / 1000;
@@ -47,6 +58,4 @@ try {
 	} else {
 		logger.info(`End of process: ${String(Math.round(processingTime))}s -----`);
 	}
-} catch (e) {
-	logger.fatal(e);
 }

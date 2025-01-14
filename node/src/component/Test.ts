@@ -1,20 +1,17 @@
 import { parseArgs } from 'node:util';
-import Component from '../Component.js';
-import type ComponentInterface from '../ComponentInterface.js';
-import config from '../config/test.js';
+import Log4js from 'log4js';
+import type Notice from '../Notice.js';
 
 /**
  * シェル機能のテスト用
  */
-export default class Test extends Component implements ComponentInterface {
-	constructor() {
-		super();
+const logger = Log4js.getLogger('test');
 
-		this.title = config.title;
-	}
+const exec = (notice: Notice): void => {
+	logger.info('args', parseArgs({ strict: false }).values);
 
-	async execute(): Promise<void> {
-		this.logger.info('args', parseArgs({ strict: false }).values);
-		this.logger.info('config', config);
-	}
-}
+	notice.add('test1');
+	notice.add('test2');
+};
+
+export default exec;

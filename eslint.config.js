@@ -9,24 +9,10 @@ export default [
 		ignores: ['node/dist/**/*.js'],
 	},
 	{
-		files: ['node/src/component/*.ts'],
-		rules: {
-			'class-methods-use-this': 'off',
-			'@typescript-eslint/no-floating-promises': 'off',
-			'@typescript-eslint/require-await': 'off',
-		},
-	},
-	{
-		files: ['node/src/component/CrawlerNews.ts', 'node/src/component/CrawlerResource.ts'],
+		files: ['node/src/component/**/*.ts'],
 		rules: {
 			'no-await-in-loop': 'off',
 			'no-continue': 'off',
-		},
-	},
-	{
-		files: ['node/src/component/YokohamaLibraryHoldNotice.ts'],
-		rules: {
-			'no-await-in-loop': 'off',
 		},
 	},
 	{
@@ -36,9 +22,9 @@ export default [
 		},
 	},
 	{
-		files: ['node/src/shell.ts'],
+		files: ['node/src/util/**/*.ts'],
 		rules: {
-			'new-cap': 'off',
+			'import/prefer-default-export': 'off',
 		},
 	},
 ];
