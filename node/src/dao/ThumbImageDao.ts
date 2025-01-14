@@ -1,6 +1,6 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
-import DbUtil from '../util/DbUtil.js';
+import { unixToDate } from '../util/db.js';
 
 /**
  * サムネイル画像生成
@@ -73,7 +73,7 @@ export default class ThumbImageDao {
 				registered_at
 			LIMIT 1
 		`);
-		const row: Select | undefined = await sth.get();
+		const row = await sth.get<Select>();
 		await sth.finalize();
 
 		if (row === undefined) {
@@ -86,7 +86,7 @@ export default class ThumbImageDao {
 			width: row.width,
 			height: row.height,
 			quality: row.quality,
-			registered_at: DbUtil.unixToDate(row.registered_at)!,
+			registered_at: unixToDate(row.registered_at)!,
 		};
 	}
 

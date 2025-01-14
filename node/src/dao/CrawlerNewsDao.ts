@@ -1,6 +1,6 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
-import DbUtil from '../util/DbUtil.js';
+import { dateToUnix } from '../util/db.js';
 
 /**
  * ウェブ巡回（ニュース）
@@ -83,13 +83,13 @@ export default class CrawlerNewsDao {
 		await sth.bind({
 			':priority': priority,
 		});
-		const rows: Select[] = await sth.all();
+		const rows = await sth.all<Select[]>();
 		await sth.finalize();
 
 		const datas: CrawlerDb.News[] = [];
 		for (const row of rows) {
 			datas.push({
-				url: row.url,
+				url: new URL(row.url),
 				title: row.title,
 				class: row.class,
 				priority: row.priority,
@@ -111,7 +111,7 @@ export default class CrawlerNewsDao {
 	 *
 	 * @returns 登録件数
 	 */
-	async selectDataCount(url: string): Promise<number> {
+	async selectDataCount(url: URL): Promise<number> {
 		interface Select {
 			count: number;
 		}
@@ -127,9 +127,9 @@ export default class CrawlerNewsDao {
 				url = :url
 			`);
 		await sth.bind({
-			':url': url,
+			':url': url.toString(),
 		});
-		const row: Select | undefined = await sth.get();
+		const row = await sth.get<Select>();
 		await sth.finalize();
 
 		return row?.count ?? 0;
@@ -143,7 +143,7 @@ export default class CrawlerNewsDao {
 	 *
 	 * @returns 登録件数
 	 */
-	async existData(url: string, content: string): Promise<boolean> {
+	async existData(url: URL, content: string): Promise<boolean> {
 		interface Select {
 			count: number;
 		}
@@ -160,10 +160,10 @@ export default class CrawlerNewsDao {
 				content = :content
 			`);
 		await sth.bind({
-			':url': url,
+			':url': url.toString(),
 			':content': content,
 		});
-		const row: Select | undefined = await sth.get();
+		const row = await sth.get<Select>();
 		await sth.finalize();
 
 		return row !== undefined && row.count > 0;
@@ -188,8 +188,8 @@ export default class CrawlerNewsDao {
 			`);
 			await sth.run({
 				':id': data.id,
-				':url': data.url,
-				':date': DbUtil.dateToUnix(data.date),
+				':url': data.url.toString(),
+				':date': dateToUnix(data.date),
 				':content': data.content,
 				':refer_url': data.refer_url,
 			});
@@ -208,7 +208,7 @@ export default class CrawlerNewsDao {
 	 * @param url - 対象 URL
 	 * @param errorCount - 累積アクセスエラー回数
 	 */
-	async updateError(url: string, errorCount: number): Promise<void> {
+	async updateError(url: URL, errorCount: number): Promise<void> {
 		const dbh = await this.getDbh();
 
 		await dbh.exec('BEGIN');
@@ -223,7 +223,7 @@ export default class CrawlerNewsDao {
 			`);
 			await sth.run({
 				':error': errorCount,
-				':url': url,
+				':url': url.toString(),
 			});
 			await sth.finalize();
 
@@ -239,7 +239,7 @@ export default class CrawlerNewsDao {
 	 *
 	 * @param url - 対象 URL
 	 */
-	async resetError(url: string): Promise<void> {
+	async resetError(url: URL): Promise<void> {
 		await this.updateError(url, 0);
 	}
 }

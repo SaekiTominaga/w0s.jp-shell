@@ -1,6 +1,6 @@
 declare namespace CrawlerDb {
 	export interface News {
-		url: string;
+		url: URL;
 		title: string;
 		class: number;
 		priority: number;
@@ -13,14 +13,14 @@ declare namespace CrawlerDb {
 
 	export interface NewsData {
 		id: string;
-		url: string;
+		url: URL;
 		date: Date | null;
 		content: string;
 		refer_url: string | null;
 	}
 
 	export interface Resource {
-		url: string;
+		url: URL;
 		title: string;
 		category: number;
 		priority: number;
