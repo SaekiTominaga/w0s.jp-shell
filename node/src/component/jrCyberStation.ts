@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import dayjs from 'dayjs';
 import Log4js from 'log4js';
 import puppeteer from 'puppeteer-core';
@@ -17,7 +18,7 @@ interface Search {
 /**
  * JR CYBER STATION で空席があれば通知する
  */
-const logger = Log4js.getLogger('JR cyber station');
+const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
 
 /**
  * 検索列車リストを取得

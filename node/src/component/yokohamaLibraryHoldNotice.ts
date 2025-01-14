@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { JSDOM } from 'jsdom';
 import Log4js from 'log4js';
 import puppeteer from 'puppeteer-core';
@@ -9,7 +10,7 @@ import type Notice from '../Notice.js';
 /**
  * 横浜市立図書館　予約連絡
  */
-const logger = Log4js.getLogger('yokohama library hold notice');
+const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
 
 const dbFilePath = process.env['SQLITE_YOKOHAMA_LIBRARY'];
 if (dbFilePath === undefined) {

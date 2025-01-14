@@ -1,10 +1,11 @@
+import path from 'node:path';
 import Log4js from 'log4js';
 import ThumbImageDao from '../dao/ThumbImageDao.js';
 
 /**
  * サムネイル画像生成
  */
-const logger = Log4js.getLogger('thumb image');
+const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
 
 const dbFilePath = process.env['SQLITE_THUMB_IMAGE'];
 if (dbFilePath === undefined) {
