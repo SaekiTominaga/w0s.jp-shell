@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import path from 'node:path';
 import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
@@ -12,7 +13,7 @@ import { sleep } from '../util/sleep.js';
 /**
  * ウェブページを巡回し、レスポンスボディの差分を調べて通知する
  */
-const logger = Log4js.getLogger('crawler resource');
+const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
 
 const dbFilePath = process.env['SQLITE_CRAWLER'];
 if (dbFilePath === undefined) {

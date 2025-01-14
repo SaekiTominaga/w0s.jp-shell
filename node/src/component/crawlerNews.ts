@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import path from 'node:path';
 import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
 import Log4js from 'log4js';
@@ -18,7 +19,7 @@ const DATE_FORMAT_LIST = [
 /**
  * ウェブページを巡回し、新着情報の差分を調べて通知する
  */
-const logger = Log4js.getLogger('crawler news');
+const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
 
 const dbFilePath = process.env['SQLITE_CRAWLER'];
 if (dbFilePath === undefined) {
