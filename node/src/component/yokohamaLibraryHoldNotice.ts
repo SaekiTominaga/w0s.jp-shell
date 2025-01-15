@@ -3,7 +3,7 @@ import { JSDOM } from 'jsdom';
 import Log4js from 'log4js';
 import puppeteer from 'puppeteer-core';
 import StringConvert from '@w0s/string-convert';
-import YokohamaLibraryDao from '../dao/YokohamaLibraryDao.js';
+import YokohamaLibraryDao, { type Book } from '../dao/YokohamaLibraryDao.js';
 import config from '../config/yokohamaLibraryHoldNotice.js';
 import type Notice from '../Notice.js';
 
@@ -19,7 +19,7 @@ if (dbFilePath === undefined) {
 const dao = new YokohamaLibraryDao(dbFilePath);
 
 const exec = async (notice: Notice): Promise<void> => {
-	const availableBooks: YokohamaLibraryDb.Available[] = [];
+	const availableBooks: Book[] = [];
 
 	/* ブラウザで対象ページにアクセス */
 	if (process.env['BROWSER_PATH'] === undefined) {
@@ -93,28 +93,26 @@ const exec = async (notice: Notice): Promise<void> => {
 
 		logger.info(`受取可能資料 ${String(availableBooks.length)} 件`);
 
-		/* DB に登録済みで Web ページに未記載のデータを削除 */
+		/* DB に登録済みで Web ページに未記載のデータ（受取済み）を削除 */
+		const receivedBooks = (await dao.selectAvailables()).filter(
+			(registed) => !availableBooks.some((available) => available.type === registed.type && available.title === registed.title),
+		);
+		logger.debug('データ削除', receivedBooks);
+		await dao.deleteAvailable(receivedBooks);
+
+		/* Web ページに記載されていて DB に未登録のデータ（受取可能になったデータ）を削除 */
+		const noticeBooks: Book[] = [];
+
 		await Promise.all(
-			(await dao.selectAvailables()).map(async (registedBook) => {
-				if (!availableBooks.some((availableBook) => availableBook.type === registedBook.type && availableBook.title === registedBook.title)) {
-					logger.debug('データ削除', registedBook);
-					await dao.deleteAvailable(registedBook);
+			availableBooks.map(async (available) => {
+				if (!(await dao.isRegisted(available))) {
+					noticeBooks.push(available);
 				}
 			}),
 		);
 
-		/* Web ページに記載されていて DB に未登録のデータを削除 */
-		const noticeBooks: YokohamaLibraryDb.Available[] = [];
-
-		for (const availableBook of availableBooks) {
-			const registedBook = await dao.selectAvailable(availableBook);
-			if (registedBook === null) {
-				logger.debug('データ追加', availableBook);
-				await dao.insertAvailable(availableBook);
-
-				noticeBooks.push(availableBook);
-			}
-		}
+		logger.debug('データ追加', noticeBooks);
+		await dao.insertAvailable(noticeBooks);
 
 		if (noticeBooks.length >= 1) {
 			/* 開館日カレンダー */
