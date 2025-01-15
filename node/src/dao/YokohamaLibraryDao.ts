@@ -44,17 +44,11 @@ export default class YokohamaLibraryDao {
 	/**
 	 * 受取可データを取得する
 	 *
-	 * @param type - 資料区分
-	 * @param title - 資料名
+	 * @param data - 検索データ
 	 *
 	 * @returns 登録データ
 	 */
-	async selectAvailable(type: string, title: string): Promise<YokohamaLibraryDb.Available | null> {
-		interface Select {
-			type: string;
-			title: string;
-		}
-
+	async selectAvailable(data: YokohamaLibraryDb.Available): Promise<YokohamaLibraryDb.Available | null> {
 		const dbh = await this.getDbh();
 
 		const sth = await dbh.prepare(`
@@ -68,10 +62,10 @@ export default class YokohamaLibraryDao {
 				title = :title
 		`);
 		await sth.bind({
-			':type': type,
-			':title': title,
+			':type': data.type,
+			':title': data.title,
 		});
-		const row = await sth.get<Select>();
+		const row = await sth.get<YokohamaLibraryDb.Available>();
 		await sth.finalize();
 
 		if (row === undefined) {
@@ -90,11 +84,6 @@ export default class YokohamaLibraryDao {
 	 * @returns 登録データ
 	 */
 	async selectAvailables(): Promise<YokohamaLibraryDb.Available[]> {
-		interface Select {
-			type: string;
-			title: string;
-		}
-
 		const dbh = await this.getDbh();
 
 		const sth = await dbh.prepare(`
@@ -104,27 +93,26 @@ export default class YokohamaLibraryDao {
 			FROM
 				d_available
 		`);
-		const rows = await sth.all<Select[]>();
+		const rows = await sth.all<YokohamaLibraryDb.Available[]>();
 		await sth.finalize();
 
-		const datas: YokohamaLibraryDb.Available[] = [];
+		const data: YokohamaLibraryDb.Available[] = [];
 		for (const row of rows) {
-			datas.push({
+			data.push({
 				type: row.type,
 				title: row.title,
 			});
 		}
 
-		return datas;
+		return data;
 	}
 
 	/**
 	 * 受取可データを登録する
 	 *
-	 * @param type - 資料区分
-	 * @param title - 資料名
+	 * @param data - 登録データ
 	 */
-	async insertAvailable(type: string, title: string): Promise<void> {
+	async insertAvailable(data: YokohamaLibraryDb.Available): Promise<void> {
 		const dbh = await this.getDbh();
 
 		await dbh.exec('BEGIN');
@@ -137,8 +125,8 @@ export default class YokohamaLibraryDao {
 					(:type, :title)
 			`);
 			await sth.run({
-				':type': type,
-				':title': title,
+				':type': data.type,
+				':title': data.title,
 			});
 			await sth.finalize();
 
@@ -152,10 +140,9 @@ export default class YokohamaLibraryDao {
 	/**
 	 * 受取可データを削除する
 	 *
-	 * @param type - 資料区分
-	 * @param title - 資料名
+	 * @param data - 削除データ
 	 */
-	async deleteAvailable(type: string, title: string): Promise<void> {
+	async deleteAvailable(data: YokohamaLibraryDb.Available): Promise<void> {
 		const dbh = await this.getDbh();
 
 		await dbh.exec('BEGIN');
@@ -168,8 +155,8 @@ export default class YokohamaLibraryDao {
 					title = :title
 			`);
 			await sth.run({
-				':type': type,
-				':title': title,
+				':type': data.type,
+				':title': data.title,
 			});
 			await sth.finalize();
 

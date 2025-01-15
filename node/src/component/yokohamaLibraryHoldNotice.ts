@@ -19,7 +19,7 @@ if (dbFilePath === undefined) {
 const dao = new YokohamaLibraryDao(dbFilePath);
 
 const exec = async (notice: Notice): Promise<void> => {
-	const availableBooks: { type: string; title: string }[] = [];
+	const availableBooks: YokohamaLibraryDb.Available[] = [];
 
 	/* ブラウザで対象ページにアクセス */
 	if (process.env['BROWSER_PATH'] === undefined) {
@@ -98,19 +98,19 @@ const exec = async (notice: Notice): Promise<void> => {
 			(await dao.selectAvailables()).map(async (registedBook) => {
 				if (!availableBooks.some((availableBook) => availableBook.type === registedBook.type && availableBook.title === registedBook.title)) {
 					logger.debug('データ削除', registedBook);
-					await dao.deleteAvailable(registedBook.type, registedBook.title);
+					await dao.deleteAvailable(registedBook);
 				}
 			}),
 		);
 
 		/* Web ページに記載されていて DB に未登録のデータを削除 */
-		const noticeBooks: { type: string; title: string }[] = [];
+		const noticeBooks: YokohamaLibraryDb.Available[] = [];
 
 		for (const availableBook of availableBooks) {
-			const registedBook = await dao.selectAvailable(availableBook.type, availableBook.title);
+			const registedBook = await dao.selectAvailable(availableBook);
 			if (registedBook === null) {
 				logger.debug('データ追加', availableBook);
-				await dao.insertAvailable(availableBook.type, availableBook.title);
+				await dao.insertAvailable(availableBook);
 
 				noticeBooks.push(availableBook);
 			}
