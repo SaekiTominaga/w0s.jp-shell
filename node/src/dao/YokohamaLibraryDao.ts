@@ -1,6 +1,11 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
 
+export interface Book {
+	type: string;
+	title: string;
+}
+
 /**
  * 横浜市立図書館
  */
@@ -26,7 +31,7 @@ export default class YokohamaLibraryDao {
 	 *
 	 * @returns DB 接続情報
 	 */
-	async getDbh(): Promise<sqlite.Database> {
+	async #getDbh(): Promise<sqlite.Database> {
 		if (this.#dbh !== null) {
 			return this.#dbh;
 		}
@@ -42,60 +47,12 @@ export default class YokohamaLibraryDao {
 	}
 
 	/**
-	 * 受取可データを取得する
+	 * すべての受取可能データを取得する
 	 *
-	 * @param type - 資料区分
-	 * @param title - 資料名
-	 *
-	 * @returns 登録データ
+	 * @returns 受取可能データ
 	 */
-	async selectAvailable(type: string, title: string): Promise<YokohamaLibraryDb.Available | null> {
-		interface Select {
-			type: string;
-			title: string;
-		}
-
-		const dbh = await this.getDbh();
-
-		const sth = await dbh.prepare(`
-			SELECT
-				type,
-				title
-			FROM
-				d_available
-			WHERE
-				type = :type AND
-				title = :title
-		`);
-		await sth.bind({
-			':type': type,
-			':title': title,
-		});
-		const row = await sth.get<Select>();
-		await sth.finalize();
-
-		if (row === undefined) {
-			return null;
-		}
-
-		return {
-			type: row.type,
-			title: row.title,
-		};
-	}
-
-	/**
-	 * 受取可データを全取得する
-	 *
-	 * @returns 登録データ
-	 */
-	async selectAvailables(): Promise<YokohamaLibraryDb.Available[]> {
-		interface Select {
-			type: string;
-			title: string;
-		}
-
-		const dbh = await this.getDbh();
+	async selectAvailables(): Promise<Book[]> {
+		const dbh = await this.#getDbh();
 
 		const sth = await dbh.prepare(`
 			SELECT
@@ -104,10 +61,10 @@ export default class YokohamaLibraryDao {
 			FROM
 				d_available
 		`);
-		const rows = await sth.all<Select[]>();
+		const rows = await sth.all<YokohamaLibraryDb.Available[]>();
 		await sth.finalize();
 
-		const datas: YokohamaLibraryDb.Available[] = [];
+		const datas: Book[] = [];
 		for (const row of rows) {
 			datas.push({
 				type: row.type,
@@ -119,28 +76,72 @@ export default class YokohamaLibraryDao {
 	}
 
 	/**
-	 * 受取可データを登録する
+	 * 指定されたデータが登録済みかどうかチェックする
 	 *
-	 * @param type - 資料区分
-	 * @param title - 資料名
+	 * @param data - 書籍データ
+	 *
+	 * @returns 登録済みなら true
 	 */
-	async insertAvailable(type: string, title: string): Promise<void> {
-		const dbh = await this.getDbh();
+	async isRegisted(data: Book): Promise<boolean> {
+		interface Select {
+			count: number;
+		}
+
+		const dbh = await this.#getDbh();
+
+		const sth = await dbh.prepare(`
+			SELECT
+				COUNT(title) AS count
+			FROM
+				d_available
+			WHERE
+				type = :type AND
+				title = :title
+		`);
+		await sth.bind({
+			':type': data.type,
+			':title': data.title,
+		});
+		const row = await sth.get<Select>();
+		await sth.finalize();
+
+		if (row === undefined) {
+			return false;
+		}
+
+		return row.count > 0;
+	}
+
+	/**
+	 * 受取可能データを登録する
+	 *
+	 * @param datas - 登録するデータ
+	 */
+	async insertAvailable(datas: Book[]): Promise<void> {
+		if (datas.length === 0) {
+			return;
+		}
+
+		const dbh = await this.#getDbh();
 
 		await dbh.exec('BEGIN');
 		try {
-			const sth = await dbh.prepare(`
-				INSERT INTO
-					d_available
-					(type, title)
-				VALUES
-					(:type, :title)
-			`);
-			await sth.run({
-				':type': type,
-				':title': title,
-			});
-			await sth.finalize();
+			await Promise.all(
+				datas.map(async (data) => {
+					const sth = await dbh.prepare(`
+						INSERT INTO
+							d_available
+							(type, title)
+						VALUES
+							(:type, :title)
+					`);
+					await sth.run({
+						':type': data.type,
+						':title': data.title,
+					});
+					await sth.finalize();
+				}),
+			);
 
 			await dbh.exec('COMMIT');
 		} catch (e) {
@@ -150,28 +151,35 @@ export default class YokohamaLibraryDao {
 	}
 
 	/**
-	 * 受取可データを削除する
+	 * 受取可能データを削除する
 	 *
-	 * @param type - 資料区分
-	 * @param title - 資料名
+	 * @param datas - 削除するデータ
 	 */
-	async deleteAvailable(type: string, title: string): Promise<void> {
-		const dbh = await this.getDbh();
+	async deleteAvailable(datas: Book[]): Promise<void> {
+		if (datas.length === 0) {
+			return;
+		}
+
+		const dbh = await this.#getDbh();
 
 		await dbh.exec('BEGIN');
 		try {
-			const sth = await dbh.prepare(`
-				DELETE FROM
-					d_available
-				WHERE
-					type = :type AND
-					title = :title
-			`);
-			await sth.run({
-				':type': type,
-				':title': title,
-			});
-			await sth.finalize();
+			await Promise.all(
+				datas.map(async (data) => {
+					const sth = await dbh.prepare(`
+						DELETE FROM
+							d_available
+						WHERE
+							type = :type AND
+							title = :title
+					`);
+					await sth.run({
+						':type': data.type,
+						':title': data.title,
+					});
+					await sth.finalize();
+				}),
+			);
 
 			await dbh.exec('COMMIT');
 		} catch (e) {
