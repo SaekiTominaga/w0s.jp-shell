@@ -31,7 +31,7 @@ export default class YokohamaLibraryDao {
 	 *
 	 * @returns DB 接続情報
 	 */
-	async getDbh(): Promise<sqlite.Database> {
+	async #getDbh(): Promise<sqlite.Database> {
 		if (this.#dbh !== null) {
 			return this.#dbh;
 		}
@@ -52,7 +52,7 @@ export default class YokohamaLibraryDao {
 	 * @returns 受取可能データ
 	 */
 	async selectAvailables(): Promise<Book[]> {
-		const dbh = await this.getDbh();
+		const dbh = await this.#getDbh();
 
 		const sth = await dbh.prepare(`
 			SELECT
@@ -87,7 +87,7 @@ export default class YokohamaLibraryDao {
 			count: number;
 		}
 
-		const dbh = await this.getDbh();
+		const dbh = await this.#getDbh();
 
 		const sth = await dbh.prepare(`
 			SELECT
@@ -122,7 +122,7 @@ export default class YokohamaLibraryDao {
 			return;
 		}
 
-		const dbh = await this.getDbh();
+		const dbh = await this.#getDbh();
 
 		await dbh.exec('BEGIN');
 		try {
@@ -160,7 +160,7 @@ export default class YokohamaLibraryDao {
 			return;
 		}
 
-		const dbh = await this.getDbh();
+		const dbh = await this.#getDbh();
 
 		await dbh.exec('BEGIN');
 		try {
