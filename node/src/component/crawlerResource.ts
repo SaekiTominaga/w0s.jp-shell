@@ -8,6 +8,7 @@ import CrawlerResourceDao from '../dao/CrawlerResourceDao.js';
 import config from '../config/crawlerResource.js';
 import { requestFetch, requestBrowser, type HTTPResponse, HTTPResponseError } from '../util/httpAccess.js';
 import type Notice from '../Notice.js';
+import { env } from '../util/env.js';
 import { sleep } from '../util/sleep.js';
 
 /**
@@ -15,11 +16,7 @@ import { sleep } from '../util/sleep.js';
  */
 const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
 
-const dbFilePath = process.env['SQLITE_CRAWLER'];
-if (dbFilePath === undefined) {
-	throw new Error('SQLite file path not defined');
-}
-const dao = new CrawlerResourceDao(dbFilePath);
+const dao = new CrawlerResourceDao(env('SQLITE_CRAWLER'));
 
 /**
  * URL へのアクセスが成功した時の処理
@@ -61,13 +58,8 @@ const accessError = async (url: URL, error: number): Promise<number> => {
 const saveFile = async (url: URL, responseBody: string): Promise<string> => {
 	const date = new Date();
 
-	const saveDir = process.env['CRAWLER_RESOURCE_SAVE_DIRECTORY'];
-	if (saveDir === undefined) {
-		throw new Error('Save directory not defined');
-	}
-
 	const fileDir = url.pathname === '/' ? url.hostname : `${url.hostname}${url.pathname.replace(/\/[^/]*$/g, '')}`;
-	const fileFullDir = `${saveDir}/${fileDir}`;
+	const fileFullDir = `${env('CRAWLER_RESOURCE_SAVE_DIRECTORY')}/${fileDir}`;
 	const fileName = `${String(url.pathname.split('/').at(-1))}_${String(date.getFullYear())}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
 		date.getDate(),
 	).padStart(2, '0')}_${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(
@@ -187,12 +179,7 @@ const exec = async (notice: Notice): Promise<void> => {
 			const fileDir = await saveFile(targetData.url, response.body);
 
 			/* 通知 */
-			const saveUrl = process.env['CRAWLER_RESOURCE_SAVE_URL'];
-			if (saveUrl === undefined) {
-				throw new Error('Save url not defined');
-			}
-
-			notice.add(`${targetData.title} ${targetData.url.toString()}\n変更履歴: ${saveUrl}?dir=${fileDir} 🔒`);
+			notice.add(`${targetData.title} ${targetData.url.toString()}\n変更履歴: ${env('CRAWLER_RESOURCE_SAVE_URL')}?dir=${fileDir} 🔒`);
 		}
 
 		await accessSuccess(targetData.url, targetData.error);

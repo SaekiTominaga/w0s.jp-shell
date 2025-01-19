@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { env } from './util/env.js';
 
 export default class Notice {
 	readonly #title: string;
@@ -30,17 +31,17 @@ export default class Notice {
 		}
 
 		const transporter = nodemailer.createTransport({
-			port: Number(process.env['MAIL_PORT']),
-			host: process.env['MAIL_SMTP'],
+			port: Number(env('MAIL_PORT')),
+			host: env('MAIL_SMTP'),
 			auth: {
-				user: process.env['MAIL_USER'],
-				pass: process.env['MAIL_PASSWORD'],
+				user: env('MAIL_USER'),
+				pass: env('MAIL_PASSWORD'),
 			},
 		});
 
 		await transporter.sendMail({
-			from: process.env['MAIL_FROM'],
-			to: process.env['MAIL_TO'],
+			from: env('MAIL_FROM'),
+			to: env('MAIL_TO'),
 			subject: this.#title,
 			text: this.#data.join('\n\n'),
 		});

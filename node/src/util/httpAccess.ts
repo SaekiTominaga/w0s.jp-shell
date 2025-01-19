@@ -1,5 +1,6 @@
 import puppeteer from 'puppeteer-core';
 import MIMEType from 'whatwg-mimetype';
+import { env } from './env.js';
 
 export class HTTPResponseError extends Error {
 	readonly #status: number;
@@ -74,18 +75,10 @@ export const requestFetch = async (url: URL, option: { timeout: number }): Promi
  * @returns レスポンス
  */
 export const requestBrowser = async (url: URL): Promise<HTTPResponse> => {
-	const browserPath = process.env['BROWSER_PATH'];
-	const browserUa = process.env['BROWSER_UA'];
-	if (browserPath === undefined) {
-		throw new Error('Browser path not defined');
-	}
-
-	const browser = await puppeteer.launch({ executablePath: browserPath });
+	const browser = await puppeteer.launch({ executablePath: env('BROWSER_PATH') });
 	try {
 		const page = await browser.newPage();
-		if (browserUa !== undefined) {
-			await page.setUserAgent(browserUa);
-		}
+		await page.setUserAgent(env('BROWSER_UA'));
 		await page.setRequestInterception(true);
 		page.on('request', (request) => {
 			switch (request.resourceType()) {
