@@ -2,7 +2,8 @@
 	"extends": "@w0s/tsconfig",
 	"include": ["src/**/*.ts", "@types/*.d.ts"],
 	"compilerOptions": {
-		/* Project Options */
-		"outDir": "dist"
+		/* Emit */
+		"outDir": "dist",
+		"sourceMap": true
 	}
 }

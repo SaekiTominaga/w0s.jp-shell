@@ -1,0 +1,71 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "test",
+			"type": "node",
+			"request": "launch",
+			"preLaunchTask": "npm: build",
+			"skipFiles": ["<node_internals>/**"],
+			"program": "${workspaceFolder}/node/src/shell.ts",
+			"args": ["-c", "test", "-n", "シェル　テスト"],
+			"envFile": "${workspaceFolder}/.env.development",
+			"outputCapture": "std"
+		},
+		{
+			"name": "crawlerNews",
+			"type": "node",
+			"request": "launch",
+			"preLaunchTask": "npm: build",
+			"skipFiles": ["<node_internals>/**"],
+			"program": "${workspaceFolder}/node/src/shell.ts",
+			"args": ["-c", "crawlerNews", "-n", "ウェブ巡回（新着）"],
+			"envFile": "${workspaceFolder}/.env.development",
+			"outputCapture": "std"
+		},
+		{
+			"name": "crawlerResource",
+			"type": "node",
+			"request": "launch",
+			"preLaunchTask": "npm: build",
+			"skipFiles": ["<node_internals>/**"],
+			"program": "${workspaceFolder}/node/src/shell.ts",
+			"args": ["-c", "crawlerResource", "-n", "ウェブ巡回（リソース）"],
+			"envFile": "${workspaceFolder}/.env.development",
+			"outputCapture": "std"
+		},
+		{
+			"name": "jrCyberStation",
+			"type": "node",
+			"request": "launch",
+			"preLaunchTask": "npm: build",
+			"skipFiles": ["<node_internals>/**"],
+			"program": "${workspaceFolder}/node/src/shell.ts",
+			"args": ["-c", "jrCyberStation", "-n", "JR 空席確認"],
+			"envFile": "${workspaceFolder}/.env.development",
+			"outputCapture": "std"
+		},
+		{
+			"name": "thumbImage",
+			"type": "node",
+			"request": "launch",
+			"preLaunchTask": "npm: build",
+			"skipFiles": ["<node_internals>/**"],
+			"program": "${workspaceFolder}/node/src/shell.ts",
+			"args": ["-c", "thumbImage", "-n", "サムネイル画像生成"],
+			"envFile": "${workspaceFolder}/.env.development",
+			"outputCapture": "std"
+		},
+		{
+			"name": "yokohamaLibraryHoldNotice",
+			"type": "node",
+			"request": "launch",
+			"preLaunchTask": "npm: build",
+			"skipFiles": ["<node_internals>/**"],
+			"program": "${workspaceFolder}/node/src/shell.ts",
+			"args": ["-c", "yokohamaLibraryHoldNotice", "-n", "横浜市立図書館　予約連絡"],
+			"envFile": "${workspaceFolder}/.env.development",
+			"outputCapture": "std"
+		}
+	]
+}

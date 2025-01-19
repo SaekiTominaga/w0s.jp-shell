@@ -10,13 +10,7 @@
 		"pretest": "npm run build",
 		"test": "node --experimental-test-coverage --env-file=.env.development --test **/*.test.js",
 		"format": "prettier -w .",
-		"yaml-lint": "yamllint .github/workflows/*.yml",
-		"shell-test": "node --env-file=.env.development node/dist/shell.js -c test -n \"シェル　テスト\"",
-		"shell-crawlerNews": "node --env-file=.env.development node/dist/shell.js -c crawlerNews -n \"ウェブ巡回（新着）\"",
-		"shell-crawlerResource": "node --env-file=.env.development node/dist/shell.js -c crawlerResource -n \"ウェブ巡回（リソース）\"",
-		"shell-jrCyberStation": "node --env-file=.env.development node/dist/shell.js -c jrCyberStation -n \"JR 空席確認\"",
-		"shell-thumbImage": "node --env-file=.env.development node/dist/shell.js -c thumbImage -n \"サムネイル画像生成\"",
-		"shell-yokohamaLibraryHoldNotice": "node --env-file=.env.development node/dist/shell.js -c yokohamaLibraryHoldNotice -n \"横浜市立図書館　予約連絡\""
+		"yaml-lint": "yamllint .github/workflows/*.yml"
 	},
 	"dependencies": {
 		"@log4js-node/smtp": "^2.0.8",
