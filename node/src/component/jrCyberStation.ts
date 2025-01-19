@@ -6,6 +6,7 @@ import puppeteer from 'puppeteer-core';
 import { JSDOM } from 'jsdom';
 import config from '../config/jrCyberStation.js';
 import type Notice from '../Notice.js';
+import { env } from '../util/env.js';
 import { sleep } from '../util/sleep.js';
 
 interface Search {
@@ -26,10 +27,7 @@ const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
  * @returns 駅名リスト
  */
 const getSearchTrain = async (): Promise<Search[]> => {
-	const targetPath = process.env['JR_SEARCH_TRAIN_FILE'];
-	if (targetPath === undefined) {
-		throw new Error('Train data file path not defined');
-	}
+	const targetPath = env('JR_SEARCH_TRAIN_FILE');
 
 	return JSON.parse((await fs.promises.readFile(targetPath)).toString()) as Search[];
 };
@@ -76,11 +74,7 @@ const exec = async (notice: Notice): Promise<void> => {
 	logger.debug(stationList);
 
 	/* 空席検索 */
-	if (process.env['BROWSER_PATH'] === undefined) {
-		throw new Error('Browser path not defined');
-	}
-
-	const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH'] });
+	const browser = await puppeteer.launch({ executablePath: env('BROWSER_PATH') });
 
 	let requestCount = 0;
 	try {

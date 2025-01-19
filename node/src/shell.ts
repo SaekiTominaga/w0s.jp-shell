@@ -1,6 +1,7 @@
 import { parseArgs } from 'node:util';
 import Log4js from 'log4js';
 import Notice from './Notice.js';
+import { env } from './util/env.js';
 
 /* タイムアウト判定用計測 */
 const startTime = Date.now();
@@ -30,11 +31,7 @@ const timeout = Number(argsParsedValues.timeout); // タイムアウト秒数（
 const noticeTitle = String(argsParsedValues.notice); // 通知タイトル
 
 /* Logger 設定 */
-const loggerFilePath = process.env['LOGGER'];
-if (loggerFilePath === undefined) {
-	throw new Error('Logger file path not defined');
-}
-Log4js.configure(loggerFilePath);
+Log4js.configure(env('LOGGER'));
 const logger = Log4js.getLogger(componentName);
 
 logger.info('----- Start processing');

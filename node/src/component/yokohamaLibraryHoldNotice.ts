@@ -6,32 +6,23 @@ import StringConvert from '@w0s/string-convert';
 import YokohamaLibraryDao, { type Book } from '../dao/YokohamaLibraryDao.js';
 import config from '../config/yokohamaLibraryHoldNotice.js';
 import type Notice from '../Notice.js';
+import { env } from '../util/env.js';
 
 /**
  * 横浜市立図書館　予約連絡
  */
 const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
 
-const dbFilePath = process.env['SQLITE_YOKOHAMA_LIBRARY'];
-if (dbFilePath === undefined) {
-	throw new Error('SQLite file path not defined');
-}
-const dao = new YokohamaLibraryDao(dbFilePath);
+const dao = new YokohamaLibraryDao(env('SQLITE_YOKOHAMA_LIBRARY'));
 
 const exec = async (notice: Notice): Promise<void> => {
 	const availableBooks: Book[] = [];
 
 	/* ブラウザで対象ページにアクセス */
-	if (process.env['BROWSER_PATH'] === undefined) {
-		throw new Error('Browser path not defined');
-	}
-
-	const browser = await puppeteer.launch({ executablePath: process.env['BROWSER_PATH'] });
+	const browser = await puppeteer.launch({ executablePath: env('BROWSER_PATH') });
 	try {
 		const page = await browser.newPage();
-		if (process.env['BROWSER_UA'] !== undefined) {
-			await page.setUserAgent(process.env['BROWSER_UA']);
-		}
+		await page.setUserAgent(env('BROWSER_UA'));
 		await page.setRequestInterception(true);
 		page.on('request', (request) => {
 			// eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -39,13 +30,6 @@ const exec = async (notice: Notice): Promise<void> => {
 		});
 
 		/* ログイン */
-		if (process.env['YOKOHAMA_CARD'] === undefined) {
-			throw new Error('Library card number not defined');
-		}
-		if (process.env['YOKOHAMA_PASSWORD'] === undefined) {
-			throw new Error('Login password not defined');
-		}
-
 		await page.goto(config.url, {
 			waitUntil: 'domcontentloaded',
 		});
@@ -54,10 +38,7 @@ const exec = async (notice: Notice): Promise<void> => {
 			timeout: config.login.timeout * 1000,
 			waitUntil: 'domcontentloaded',
 		});
-		await Promise.all([
-			page.type(config.login.cardSelector, process.env['YOKOHAMA_CARD']),
-			page.type(config.login.passwordSelector, process.env['YOKOHAMA_PASSWORD']),
-		]);
+		await Promise.all([page.type(config.login.cardSelector, env('YOKOHAMA_CARD')), page.type(config.login.passwordSelector, env('YOKOHAMA_PASSWORD'))]);
 		await Promise.all([
 			page.click(config.login.submitSelector),
 			page.waitForNavigation({

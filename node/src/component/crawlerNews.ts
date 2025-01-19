@@ -8,6 +8,7 @@ import CrawlerNewsDao from '../dao/CrawlerNewsDao.js';
 import config from '../config/crawlerNews.js';
 import { requestFetch, requestBrowser, HTTPResponseError, type HTTPResponse } from '../util/httpAccess.js';
 import type Notice from '../Notice.js';
+import { env } from '../util/env.js';
 
 const DATE_FORMAT_LIST = [
 	/^([0-9]{4})-(0[1-9]|[1-9][0-9]?)-(0[1-9]|[1-9][0-9]?)/ /* YYYY-MM-DD */,
@@ -21,11 +22,7 @@ const DATE_FORMAT_LIST = [
  */
 const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
 
-const dbFilePath = process.env['SQLITE_CRAWLER'];
-if (dbFilePath === undefined) {
-	throw new Error('SQLite file path not defined');
-}
-const dao = new CrawlerNewsDao(dbFilePath);
+const dao = new CrawlerNewsDao(env('SQLITE_CRAWLER'));
 
 /**
  * URL へのアクセスが成功した時の処理
