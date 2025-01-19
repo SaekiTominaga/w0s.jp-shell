@@ -46,16 +46,26 @@ const exec = async (notice: Notice): Promise<void> => {
 			throw new Error('Login password not defined');
 		}
 
-		await page.goto(config.url);
+		await page.goto(config.url, {
+			waitUntil: 'domcontentloaded',
+		});
+
 		await page.goto(config.login.url, {
 			timeout: config.login.timeout * 1000,
 			waitUntil: 'domcontentloaded',
 		});
-		await page.type(config.login.cardSelector, process.env['YOKOHAMA_CARD']);
-		await page.type(config.login.passwordSelector, process.env['YOKOHAMA_PASSWORD']);
-		await Promise.all([page.click(config.login.submitSelector), page.waitForNavigation()]);
+		await Promise.all([
+			page.type(config.login.cardSelector, process.env['YOKOHAMA_CARD']),
+			page.type(config.login.passwordSelector, process.env['YOKOHAMA_PASSWORD']),
+		]);
+		await Promise.all([
+			page.click(config.login.submitSelector),
+			page.waitForNavigation({
+				timeout: config.login.timeout * 1000,
+				waitUntil: 'domcontentloaded',
+			}),
+		]);
 		logger.debug(`ログインボタン（${config.login.submitSelector}）押下`);
-
 		logger.info('ログイン後ページ', page.url());
 
 		const reserveListPageResponse = await page.content();
