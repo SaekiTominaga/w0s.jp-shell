@@ -24,6 +24,15 @@ export default [
 	{
 		files: ['node/src/util/**/*.ts'],
 		rules: {
+			'func-style': [
+				'error',
+				'expression',
+				{
+					overrides: {
+						namedExports: 'ignore',
+					},
+				},
+			],
 			'import/prefer-default-export': 'off',
 		},
 	},
