@@ -31,7 +31,7 @@ export default class Notice {
 		}
 
 		const transporter = nodemailer.createTransport({
-			port: Number(env('MAIL_PORT')),
+			port: env('MAIL_PORT', 'number'),
 			host: env('MAIL_SMTP'),
 			auth: {
 				user: env('MAIL_USER'),
