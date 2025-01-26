@@ -2,7 +2,7 @@ import path from 'node:path';
 import { JSDOM } from 'jsdom';
 import Log4js from 'log4js';
 import puppeteer from 'puppeteer-core';
-import StringConvert from '@w0s/string-convert';
+import { convert as stringConvert } from '@w0s/string-convert';
 import YokohamaLibraryDao, { type Book } from '../dao/YokohamaLibraryDao.js';
 import config from '../config/yokohamaLibraryHoldNotice.js';
 import type Notice from '../Notice.js';
@@ -73,7 +73,7 @@ const exec = async (notice: Notice): Promise<void> => {
 
 			availableBooks.push({
 				type: type,
-				title: StringConvert.convert(title, {
+				title: stringConvert(title, {
 					trim: true,
 					toHankakuEisu: true,
 					toHankakuSpace: true,
