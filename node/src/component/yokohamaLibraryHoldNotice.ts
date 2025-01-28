@@ -25,35 +25,48 @@ const exec = async (notice: Notice): Promise<void> => {
 		await page.setUserAgent(env('BROWSER_UA'));
 		await page.setRequestInterception(true);
 		page.on('request', (request) => {
-			// eslint-disable-next-line @typescript-eslint/no-floating-promises
-			request.continue();
+			request.continue().catch((e: unknown) => {
+				throw e;
+			});
 		});
 
 		/* ログイン */
 		await page.goto(config.url, {
 			waitUntil: 'domcontentloaded',
-		});
+		}); // Cookie を取得するためにいったん適当なページにアクセス
+		logger.debug(await browser.cookies());
 
 		await page.goto(config.login.url, {
 			timeout: config.login.timeout * 1000,
 			waitUntil: 'domcontentloaded',
 		});
+
 		await Promise.all([page.type(config.login.cardSelector, env('YOKOHAMA_CARD')), page.type(config.login.passwordSelector, env('YOKOHAMA_PASSWORD'))]);
-		await Promise.all([
-			page.click(config.login.submitSelector),
+
+		const [response] = await Promise.all([
 			page.waitForNavigation({
 				timeout: config.login.timeout * 1000,
 				waitUntil: 'domcontentloaded',
 			}),
+			page.click(config.login.submitSelector),
 		]);
-		logger.debug(`ログインボタン（${config.login.submitSelector}）押下`);
-		logger.info('ログイン後ページ', page.url());
+		logger.debug(`ログインボタン \`${config.login.submitSelector}\` 押下`);
 
-		const reserveListPageResponse = await page.content();
-		logger.debug(reserveListPageResponse);
+		if (response === null) {
+			logger.warn('ログイン後のレスポンスが存在しない');
+			return;
+		}
+
+		if (page.url() !== config.login.postUrl) {
+			logger.warn('ログイン後に想定と異なるページにリダイレクト', page.url());
+			return;
+		}
+
+		const reserveListPageContent = await response.text();
+		logger.debug(reserveListPageContent);
 
 		/* DOM 化 */
-		const reserveListPageDocument = new JSDOM(reserveListPageResponse).window.document;
+		const reserveListPageDocument = new JSDOM(reserveListPageContent).window.document;
 
 		reserveListPageDocument.querySelectorAll<HTMLElement>(config.reserve.wrapSelector).forEach((bookElement): void => {
 			if (bookElement.querySelector(config.reserve.availableSelector) === null) {
@@ -63,12 +76,12 @@ const exec = async (notice: Notice): Promise<void> => {
 
 			const type = bookElement.querySelector(config.reserve.typeSelector)?.textContent;
 			if (type === null || type === undefined) {
-				throw new Error(`資料区分の HTML 要素（${config.reserve.typeSelector}）が存在しない`);
+				throw new Error(`資料区分の HTML 要素 \`${config.reserve.typeSelector}\` が存在しない`);
 			}
 
 			const title = bookElement.querySelector(config.reserve.titleSelector)?.textContent;
 			if (title === null || title === undefined) {
-				throw new Error(`資料名の HTML 要素（${config.reserve.titleSelector}）が存在しない`);
+				throw new Error(`資料名の HTML 要素 \`${config.reserve.titleSelector}\` が存在しない`);
 			}
 
 			availableBooks.push({
