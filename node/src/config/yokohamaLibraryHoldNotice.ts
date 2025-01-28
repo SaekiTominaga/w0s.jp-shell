@@ -2,6 +2,7 @@ export default {
 	url: 'https://opac.lib.city.yokohama.lg.jp/winj/opac/top.do',
 	login: {
 		url: 'https://opac.lib.city.yokohama.lg.jp/winj/opac/login.do?dispatch=/opac/reserve-list.do',
+		postUrl: 'https://opac.lib.city.yokohama.lg.jp/winj/opac/reserve-list.do',
 		timeout: 45,
 		cardSelector: '#usercd',
 		passwordSelector: '#password',
