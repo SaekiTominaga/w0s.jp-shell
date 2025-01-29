@@ -58,7 +58,7 @@ const exec = async (notice: Notice): Promise<void> => {
 		}
 
 		if (page.url() !== config.login.postUrl) {
-			logger.warn('ログイン後に想定と異なるページにリダイレクト', page.url());
+			logger.info('ログイン後に想定と異なるページにリダイレクト', page.url());
 			return;
 		}
 
