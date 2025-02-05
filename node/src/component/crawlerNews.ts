@@ -116,7 +116,7 @@ const exec = async (notice: Notice): Promise<void> => {
 
 		let wrapElements: NodeListOf<Element>;
 		try {
-			wrapElements = document.querySelectorAll(targetData.selector_wrap);
+			wrapElements = document.querySelectorAll(targetData.selectorWrap);
 		} catch (e) {
 			if (e instanceof SyntaxError) {
 				logger.error(e.message);
@@ -126,16 +126,16 @@ const exec = async (notice: Notice): Promise<void> => {
 			continue;
 		}
 		if (wrapElements.length === 0) {
-			logger.error(`包括要素（${targetData.selector_wrap}）が存在しない: ${targetData.url.toString()}\n\n${response.body}`);
+			logger.error(`包括要素（${targetData.selectorWrap}）が存在しない: ${targetData.url.toString()}\n\n${response.body}`);
 			continue;
 		}
 
 		for (const wrapElement of wrapElements) {
-			let date: Date | null = null;
-			if (targetData.selector_date !== null) {
+			let date: Date | undefined;
+			if (targetData.selectorDate !== undefined) {
 				let dateElement: Element | null;
 				try {
-					dateElement = wrapElement.querySelector(targetData.selector_date);
+					dateElement = wrapElement.querySelector(targetData.selectorDate);
 				} catch (e) {
 					if (e instanceof SyntaxError) {
 						logger.error(e.message);
@@ -146,13 +146,13 @@ const exec = async (notice: Notice): Promise<void> => {
 				}
 
 				if (dateElement === null) {
-					logger.error(`日付要素（${targetData.selector_date}）が存在しない: ${targetData.url.toString()}\n\n${response.body}`);
+					logger.error(`日付要素（${targetData.selectorDate}）が存在しない: ${targetData.url.toString()}\n\n${response.body}`);
 					continue;
 				}
 
 				const dateText = dateElement.textContent?.trim();
 				if (dateText === undefined) {
-					logger.error(`日付要素（${targetData.selector_date}）の文字列が取得できない: ${targetData.url.toString()}\n\n${response.body}`);
+					logger.error(`日付要素（${targetData.selectorDate}）の文字列が取得できない: ${targetData.url.toString()}\n\n${response.body}`);
 					continue;
 				}
 
@@ -166,10 +166,10 @@ const exec = async (notice: Notice): Promise<void> => {
 			}
 
 			let contentElement = wrapElement;
-			if (targetData.selector_content !== null && targetData.selector_content !== '') {
+			if (targetData.selectorContent !== undefined && targetData.selectorContent !== '') {
 				let contentElement1: Element | null;
 				try {
-					contentElement1 = wrapElement.querySelector(targetData.selector_content);
+					contentElement1 = wrapElement.querySelector(targetData.selectorContent);
 				} catch (e) {
 					if (e instanceof SyntaxError) {
 						logger.error(e.message);
@@ -180,7 +180,7 @@ const exec = async (notice: Notice): Promise<void> => {
 				}
 
 				if (contentElement1 === null) {
-					logger.error(`内容要素（${targetData.selector_content}）が存在しない: ${targetData.url.toString()}\n\n${response.body}`);
+					logger.error(`内容要素（${targetData.selectorContent}）が存在しない: ${targetData.url.toString()}\n\n${response.body}`);
 					continue;
 				}
 
@@ -205,7 +205,7 @@ const exec = async (notice: Notice): Promise<void> => {
 
 			if (contentText === undefined) {
 				logger.error(
-					`内容要素（${targetData.selector_content ?? targetData.selector_wrap}）の文字列が取得できない: ${targetData.url.toString()}\n\n${response.body}`,
+					`内容要素（${targetData.selectorContent ?? targetData.selectorWrap}）の文字列が取得できない: ${targetData.url.toString()}\n\n${response.body}`,
 				);
 				continue;
 			}
@@ -216,7 +216,7 @@ const exec = async (notice: Notice): Promise<void> => {
 			}
 
 			/* アンカーリンク抽出 */
-			let referUrl: string | null = null;
+			let referUrl: string | undefined;
 			const newsAnchorElements = contentElement.querySelectorAll<HTMLAnchorElement>('a[href]');
 			if (newsAnchorElements.length === 1) {
 				/* メッセージ内にリンクが一つだけある場合のみ、その URL を対象ページとする */
@@ -231,12 +231,12 @@ const exec = async (notice: Notice): Promise<void> => {
 				url: targetData.url,
 				date: date,
 				content: contentText,
-				refer_url: referUrl,
+				referUrl: referUrl,
 			});
 
 			/* 通知 */
 			if (!newUrl) {
-				if (date === null) {
+				if (date === undefined) {
 					notice.add(`「${targetData.title}」\n${contentText}\n${referUrl ?? targetData.url.toString()}`);
 				} else {
 					const dateFormat = date.toLocaleDateString('ja-JP', { weekday: 'narrow', year: 'numeric', month: 'long', day: 'numeric' });

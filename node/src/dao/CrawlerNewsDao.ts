@@ -1,6 +1,6 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
-import { dateToUnix } from '../util/db.js';
+import { sqliteToJS, prepareSelect, prepareInsert, prepareUpdate } from '../util/sql.js';
 
 /**
  * ウェブ巡回（ニュース）
@@ -86,22 +86,17 @@ export default class CrawlerNewsDao {
 		const rows = await sth.all<Select[]>();
 		await sth.finalize();
 
-		const datas: CrawlerDb.News[] = [];
-		for (const row of rows) {
-			datas.push({
-				url: new URL(row.url),
-				title: row.title,
-				class: row.class,
-				priority: row.priority,
-				browser: Boolean(row.browser),
-				selector_wrap: row.selector_wrap,
-				selector_date: row.selector_date,
-				selector_content: row.selector_content,
-				error: row.error,
-			});
-		}
-
-		return datas;
+		return rows.map((row) => ({
+			url: sqliteToJS(row.url, 'url'),
+			title: sqliteToJS(row.title),
+			class: sqliteToJS(row.class),
+			priority: sqliteToJS(row.priority),
+			browser: sqliteToJS(row.browser, 'boolean'),
+			selectorWrap: sqliteToJS(row.selector_wrap),
+			selectorDate: sqliteToJS(row.selector_date),
+			selectorContent: sqliteToJS(row.selector_content),
+			error: sqliteToJS(row.error),
+		}));
 	}
 
 	/**
@@ -118,17 +113,19 @@ export default class CrawlerNewsDao {
 
 		const dbh = await this.getDbh();
 
+		const { sqlWhere, bindParams } = prepareSelect({
+			url: url,
+		});
+
 		const sth = await dbh.prepare(`
 			SELECT
 				COUNT(uuid) AS count
 			FROM
 				d_news_data
 			WHERE
-				url = :url
+				${sqlWhere}
 			`);
-		await sth.bind({
-			':url': url.toString(),
-		});
+		await sth.bind(bindParams);
 		const row = await sth.get<Select>();
 		await sth.finalize();
 
@@ -150,19 +147,20 @@ export default class CrawlerNewsDao {
 
 		const dbh = await this.getDbh();
 
+		const { sqlWhere, bindParams } = prepareSelect({
+			url: url,
+			content: content,
+		});
+
 		const sth = await dbh.prepare(`
 			SELECT
 				COUNT(uuid) AS count
 			FROM
 				d_news_data
 			WHERE
-				url = :url AND
-				content = :content
-			`);
-		await sth.bind({
-			':url': url.toString(),
-			':content': content,
-		});
+				${sqlWhere}
+		`);
+		await sth.bind(bindParams);
 		const row = await sth.get<Select>();
 		await sth.finalize();
 
@@ -179,20 +177,22 @@ export default class CrawlerNewsDao {
 
 		await dbh.exec('BEGIN');
 		try {
+			const { sqlInto, sqlValues, bindParams } = prepareInsert({
+				uuid: data.id,
+				url: data.url,
+				date: data.date,
+				content: data.content,
+				refer_url: data.referUrl,
+			});
+
 			const sth = await dbh.prepare(`
 				INSERT INTO
 					d_news_data
-					(uuid, url, date, content, refer_url)
+					${sqlInto}
 				VALUES
-					(:id, :url, :date, :content, :refer_url)
+					${sqlValues}
 			`);
-			await sth.run({
-				':id': data.id,
-				':url': data.url.toString(),
-				':date': dateToUnix(data.date),
-				':content': data.content,
-				':refer_url': data.refer_url,
-			});
+			await sth.run(bindParams);
 			await sth.finalize();
 
 			await dbh.exec('COMMIT');
@@ -213,18 +213,24 @@ export default class CrawlerNewsDao {
 
 		await dbh.exec('BEGIN');
 		try {
+			const { sqlSet, sqlWhere, bindParams } = prepareUpdate(
+				{
+					error: errorCount,
+				},
+				{
+					url: url,
+				},
+			);
+
 			const sth = await dbh.prepare(`
 				UPDATE
 					d_news
 				SET
-					error = :error
+					${sqlSet}
 				WHERE
-					url = :url
+					${sqlWhere}
 			`);
-			await sth.run({
-				':error': errorCount,
-				':url': url.toString(),
-			});
+			await sth.run(bindParams);
 			await sth.finalize();
 
 			await dbh.exec('COMMIT');

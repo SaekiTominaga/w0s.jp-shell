@@ -1,5 +1,6 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
+import { sqliteToJS, prepareSelect, prepareInsert, prepareDelete } from '../util/sql.js';
 
 export interface Book {
 	type: string;
@@ -64,15 +65,10 @@ export default class YokohamaLibraryDao {
 		const rows = await sth.all<YokohamaLibraryDb.Available[]>();
 		await sth.finalize();
 
-		const datas: Book[] = [];
-		for (const row of rows) {
-			datas.push({
-				type: row.type,
-				title: row.title,
-			});
-		}
-
-		return datas;
+		return rows.map((row) => ({
+			type: sqliteToJS(row.type),
+			title: sqliteToJS(row.title),
+		}));
 	}
 
 	/**
@@ -89,19 +85,20 @@ export default class YokohamaLibraryDao {
 
 		const dbh = await this.#getDbh();
 
+		const { sqlWhere, bindParams } = prepareSelect({
+			type: data.type,
+			title: data.title,
+		});
+
 		const sth = await dbh.prepare(`
 			SELECT
 				COUNT(title) AS count
 			FROM
 				d_available
 			WHERE
-				type = :type AND
-				title = :title
+				${sqlWhere}
 		`);
-		await sth.bind({
-			':type': data.type,
-			':title': data.title,
-		});
+		await sth.bind(bindParams);
 		const row = await sth.get<Select>();
 		await sth.finalize();
 
@@ -128,17 +125,19 @@ export default class YokohamaLibraryDao {
 		try {
 			await Promise.all(
 				datas.map(async (data) => {
+					const { sqlInto, sqlValues, bindParams } = prepareInsert({
+						type: data.type,
+						title: data.title,
+					});
+
 					const sth = await dbh.prepare(`
 						INSERT INTO
 							d_available
-							(type, title)
+							${sqlInto}
 						VALUES
-							(:type, :title)
+							${sqlValues}
 					`);
-					await sth.run({
-						':type': data.type,
-						':title': data.title,
-					});
+					await sth.run(bindParams);
 					await sth.finalize();
 				}),
 			);
@@ -166,17 +165,18 @@ export default class YokohamaLibraryDao {
 		try {
 			await Promise.all(
 				datas.map(async (data) => {
+					const { sqlWhere, bindParams } = prepareDelete({
+						type: data.type,
+						title: data.title,
+					});
+
 					const sth = await dbh.prepare(`
 						DELETE FROM
 							d_available
 						WHERE
-							type = :type AND
-							title = :title
+							${sqlWhere}
 					`);
-					await sth.run({
-						':type': data.type,
-						':title': data.title,
-					});
+					await sth.run(bindParams);
 					await sth.finalize();
 				}),
 			);

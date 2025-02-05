@@ -5,18 +5,18 @@ declare namespace CrawlerDb {
 		class: number;
 		priority: number;
 		browser: boolean;
-		selector_wrap: string;
-		selector_date: string | null;
-		selector_content: string | null;
+		selectorWrap: string;
+		selectorDate: string | undefined;
+		selectorContent: string | undefined;
 		error: number;
 	}
 
 	export interface NewsData {
 		id: string;
 		url: URL;
-		date: Date | null;
+		date: Date | undefined;
 		content: string;
-		refer_url: string | null;
+		referUrl: string | undefined;
 	}
 
 	export interface Resource {
@@ -25,20 +25,20 @@ declare namespace CrawlerDb {
 		category: number;
 		priority: number;
 		browser: boolean;
-		selector: string | null;
-		content_hash: string | null;
+		selector: string | undefined;
+		contentHash: string | undefined;
 		error: number;
 	}
 }
 
 declare namespace ThumbImageDb {
 	export interface Queue {
-		file_path: string;
+		filePath: string;
 		type: string;
 		width: number;
 		height: number;
-		quality: number | null;
-		registered_at: Date;
+		quality: number | undefined;
+		registeredAt: Date;
 	}
 }
 
