@@ -1,5 +1,6 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
+import { sqliteToJS, prepareUpdate } from '../util/sql.js';
 
 /**
  * ウェブ巡回（リソース）
@@ -83,21 +84,16 @@ export default class CrawlerResourceDao {
 		const rows = await sth.all<Select[]>();
 		await sth.finalize();
 
-		const datas: CrawlerDb.Resource[] = [];
-		for (const row of rows) {
-			datas.push({
-				url: new URL(row.url),
-				title: row.title,
-				category: row.category,
-				priority: row.priority,
-				browser: Boolean(row.browser),
-				selector: row.selector,
-				content_hash: row.content_hash,
-				error: row.error,
-			});
-		}
-
-		return datas;
+		return rows.map((row) => ({
+			url: sqliteToJS(row.url, 'url'),
+			title: sqliteToJS(row.title),
+			category: sqliteToJS(row.category),
+			priority: sqliteToJS(row.priority),
+			browser: sqliteToJS(row.browser, 'boolean'),
+			selector: sqliteToJS(row.selector),
+			contentHash: sqliteToJS(row.content_hash),
+			error: sqliteToJS(row.error),
+		}));
 	}
 
 	/**
@@ -111,18 +107,24 @@ export default class CrawlerResourceDao {
 
 		await dbh.exec('BEGIN');
 		try {
+			const { sqlSet, sqlWhere, bindParams } = prepareUpdate(
+				{
+					content_hash: contetnHash,
+				},
+				{
+					url: data.url,
+				},
+			);
+
 			const sth = await dbh.prepare(`
 				UPDATE
 					d_resource
 				SET
-					content_hash = :content_hash
+					${sqlSet}
 				WHERE
-					url = :url
+					${sqlWhere}
 			`);
-			await sth.run({
-				':content_hash': contetnHash,
-				':url': data.url.toString(),
-			});
+			await sth.run(bindParams);
 			await sth.finalize();
 
 			await dbh.exec('COMMIT');
@@ -143,18 +145,24 @@ export default class CrawlerResourceDao {
 
 		await dbh.exec('BEGIN');
 		try {
+			const { sqlSet, sqlWhere, bindParams } = prepareUpdate(
+				{
+					error: errorCount,
+				},
+				{
+					url: url,
+				},
+			);
+
 			const sth = await dbh.prepare(`
 				UPDATE
 					d_resource
 				SET
-					error = :error
+					${sqlSet}
 				WHERE
-					url = :url
+					${sqlWhere}
 			`);
-			await sth.run({
-				':error': errorCount,
-				':url': url.toString(),
-			});
+			await sth.run(bindParams);
 			await sth.finalize();
 
 			await dbh.exec('COMMIT');

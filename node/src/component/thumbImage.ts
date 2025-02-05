@@ -12,7 +12,7 @@ const dao = new ThumbImageDao(env('SQLITE_THUMB_IMAGE'));
 
 const exec = async (): Promise<void> => {
 	const queue = await dao.selectQueue();
-	if (queue === null) {
+	if (queue === undefined) {
 		logger.info('キューにデータがないので処理を行わない');
 		return;
 	}
@@ -20,7 +20,7 @@ const exec = async (): Promise<void> => {
 	const endpoint = env('THUMBIMAGE_ENDPOINT');
 
 	const bodyObject: Readonly<Record<string, string | number | undefined>> = {
-		path: queue.file_path,
+		path: queue.filePath,
 		type: queue.type,
 		width: queue.width,
 		height: queue.height,

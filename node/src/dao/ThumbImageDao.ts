@@ -1,6 +1,6 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
-import { unixToDate } from '../util/db.js';
+import { sqliteToJS, prepareDelete } from '../util/sql.js';
 
 /**
  * サムネイル画像生成
@@ -47,7 +47,7 @@ export default class ThumbImageDao {
 	 *
 	 * @returns キューに登録された画像情報
 	 */
-	async selectQueue(): Promise<ThumbImageDb.Queue | null> {
+	async selectQueue(): Promise<ThumbImageDb.Queue | undefined> {
 		interface Select {
 			file_path: string;
 			file_type: string;
@@ -77,16 +77,16 @@ export default class ThumbImageDao {
 		await sth.finalize();
 
 		if (row === undefined) {
-			return null;
+			return undefined;
 		}
 
 		return {
-			file_path: row.file_path,
-			type: row.file_type,
-			width: row.width,
-			height: row.height,
-			quality: row.quality,
-			registered_at: unixToDate(row.registered_at)!,
+			filePath: sqliteToJS(row.file_path),
+			type: sqliteToJS(row.file_type),
+			width: sqliteToJS(row.width),
+			height: sqliteToJS(row.height),
+			quality: sqliteToJS(row.quality),
+			registeredAt: sqliteToJS(row.registered_at, 'date'),
 		};
 	}
 
@@ -100,23 +100,21 @@ export default class ThumbImageDao {
 
 		await dbh.exec('BEGIN');
 		try {
+			const { sqlWhere, bindParams } = prepareDelete({
+				file_path: queue.filePath,
+				file_type: queue.type,
+				width: queue.width,
+				height: queue.height,
+				quality: queue.quality,
+			});
+
 			const sth = await dbh.prepare(`
 				DELETE FROM
 					d_queue
 				WHERE
-					file_path = :file_path AND
-					file_type = :type AND
-					width = :width AND
-					height = :height AND
-					quality = :quality
+					${sqlWhere}
 			`);
-			await sth.run({
-				':file_path': queue.file_path,
-				':type': queue.type,
-				':width': queue.width,
-				':height': queue.height,
-				':quality': queue.quality,
-			});
+			await sth.run(bindParams);
 			await sth.finalize();
 
 			await dbh.exec('COMMIT');

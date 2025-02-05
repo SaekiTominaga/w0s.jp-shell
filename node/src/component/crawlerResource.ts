@@ -167,7 +167,7 @@ const exec = async (notice: Notice): Promise<void> => {
 		const contentHash = md5.digest('hex');
 		logger.debug(`コンテンツ hash: ${contentHash}`);
 
-		if (contentHash === targetData.content_hash) {
+		if (contentHash === targetData.contentHash) {
 			logger.info(`コンテンツ hash (${contentHash}) が DB に格納された値と同じ`);
 		} else {
 			/* DB 書き込み */
