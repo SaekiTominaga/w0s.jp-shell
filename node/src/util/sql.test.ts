@@ -134,7 +134,7 @@ await test('prepareUpdate', () => {
 		},
 	);
 
-	assert.equal(sqlSet, 'string = :string AND undefined = :undefined');
+	assert.equal(sqlSet, 'string = :string, undefined = :undefined');
 	assert.equal(sqlWhere, 'number = :number AND undefined IS NULL');
 	assert.deepEqual(bindParams, {
 		':string': 'foo',
