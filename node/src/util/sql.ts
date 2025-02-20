@@ -142,7 +142,7 @@ export const prepareUpdate = (
 
 	const sqlSet = setArray
 		.map(([key]) => `${key} = :${key}`)
-		.join(' AND ');
+		.join(', ');
 
 	const sqlWhere = whereArray
 		.map(([key, value]) => {
