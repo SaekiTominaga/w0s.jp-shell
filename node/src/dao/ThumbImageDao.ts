@@ -1,6 +1,6 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
-import { sqliteToJS, prepareDelete } from '../util/sql.js';
+import { sqliteToJS, prepareDelete } from '../util/sql.ts';
 
 /**
  * サムネイル画像生成

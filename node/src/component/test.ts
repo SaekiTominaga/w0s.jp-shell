@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import Log4js from 'log4js';
-import type Notice from '../Notice.js';
+import type Notice from '../Notice.ts';
 
 /**
  * シェル機能のテスト用

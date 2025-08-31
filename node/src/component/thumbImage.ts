@@ -1,7 +1,7 @@
 import path from 'node:path';
 import Log4js from 'log4js';
-import ThumbImageDao from '../dao/ThumbImageDao.js';
-import { env } from '../util/env.js';
+import ThumbImageDao from '../dao/ThumbImageDao.ts';
+import { env } from '../util/env.ts';
 
 /**
  * サムネイル画像生成

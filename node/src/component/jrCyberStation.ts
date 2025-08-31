@@ -4,10 +4,10 @@ import dayjs from 'dayjs';
 import Log4js from 'log4js';
 import puppeteer from 'puppeteer-core';
 import { JSDOM } from 'jsdom';
-import config from '../config/jrCyberStation.js';
-import type Notice from '../Notice.js';
-import { env } from '../util/env.js';
-import { sleep } from '../util/sleep.js';
+import config from '../config/jrCyberStation.ts';
+import type Notice from '../Notice.ts';
+import { env } from '../util/env.ts';
+import { sleep } from '../util/sleep.ts';
 
 interface Search {
 	depature: string; // e.g. 東京
