@@ -29,7 +29,7 @@
 		"@types/jsdom": "^21.1.7",
 		"@types/nodemailer": "^6.4.17",
 		"@types/whatwg-mimetype": "^3.0.2",
-		"@w0s/eslint-config": "^8.5.0",
+		"@w0s/eslint-config": "^8.6.0",
 		"@w0s/tsconfig": "^1.6.0",
 		"eslint": "^9.34.0",
 		"prettier": "^3.4.2",
