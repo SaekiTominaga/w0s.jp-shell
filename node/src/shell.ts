@@ -41,7 +41,7 @@ const notice = new Notice(noticeTitle);
 try {
 	/* コンポーネントの読み込みと実行 */
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-	await (await import(`./component/${componentName}.js`)).default(notice);
+	await (await import(`./component/${componentName}.ts`)).default(notice);
 } catch (e) {
 	logger.fatal(e);
 } finally {
