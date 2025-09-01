@@ -140,9 +140,7 @@ export const prepareUpdate = (
 	const setArray = Object.entries(set);
 	const whereArray = Object.entries(where);
 
-	const sqlSet = setArray
-		.map(([key]) => `${key} = :${key}`)
-		.join(', ');
+	const sqlSet = setArray.map(([key]) => `${key} = :${key}`).join(', ');
 
 	const sqlWhere = whereArray
 		.map(([key, value]) => {
