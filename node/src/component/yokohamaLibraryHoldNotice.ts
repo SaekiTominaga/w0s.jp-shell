@@ -3,10 +3,10 @@ import { JSDOM } from 'jsdom';
 import Log4js from 'log4js';
 import puppeteer from 'puppeteer-core';
 import { convert as stringConvert } from '@w0s/string-convert';
-import YokohamaLibraryDao, { type Book } from '../dao/YokohamaLibraryDao.js';
-import config from '../config/yokohamaLibraryHoldNotice.js';
-import type Notice from '../Notice.js';
-import { env } from '../util/env.js';
+import YokohamaLibraryDao, { type Book } from '../dao/YokohamaLibraryDao.ts';
+import config from '../config/yokohamaLibraryHoldNotice.ts';
+import type Notice from '../Notice.ts';
+import { env } from '../util/env.ts';
 
 /**
  * 横浜市立図書館　予約連絡

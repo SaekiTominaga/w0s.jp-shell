@@ -1,6 +1,6 @@
 import puppeteer from 'puppeteer-core';
 import MIMEType from 'whatwg-mimetype';
-import { env } from './env.js';
+import { env } from './env.ts';
 
 export class HTTPResponseError extends Error {
 	readonly #status: number;

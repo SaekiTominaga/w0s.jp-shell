@@ -9,6 +9,14 @@ export default [
 		ignores: ['node/dist/**/*.js'],
 	},
 	{
+		files: ['**/*.ts'],
+		languageOptions: {
+			parserOptions: {
+				tsconfigRootDir: import.meta.dirname,
+			},
+		},
+	},
+	{
 		files: ['node/src/component/crawlerNews.ts', 'node/src/component/crawlerResource.ts'],
 		rules: {
 			'no-await-in-loop': 'off',

@@ -1,6 +1,6 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
-import { sqliteToJS, prepareSelect, prepareInsert, prepareUpdate } from '../util/sql.js';
+import { sqliteToJS, prepareSelect, prepareInsert, prepareUpdate } from '../util/sql.ts';
 
 /**
  * ウェブ巡回（ニュース）

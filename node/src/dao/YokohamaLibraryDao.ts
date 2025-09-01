@@ -1,6 +1,6 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
-import { sqliteToJS, prepareSelect, prepareInsert, prepareDelete } from '../util/sql.js';
+import { sqliteToJS, prepareSelect, prepareInsert, prepareDelete } from '../util/sql.ts';
 
 export interface Book {
 	type: string;

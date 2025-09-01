@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
-import { HTTPResponseError, requestBrowser } from './httpAccess.js';
+import { HTTPResponseError, requestBrowser } from './httpAccess.ts';
 
 await test('requestBrowser', async (t) => {
 	await t.test('HTML page', async () => {

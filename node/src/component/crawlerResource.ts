@@ -4,12 +4,12 @@ import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
 import Log4js from 'log4js';
-import CrawlerResourceDao from '../dao/CrawlerResourceDao.js';
-import config from '../config/crawlerResource.js';
-import { requestFetch, requestBrowser, type HTTPResponse, HTTPResponseError } from '../util/httpAccess.js';
-import type Notice from '../Notice.js';
-import { env } from '../util/env.js';
-import { sleep } from '../util/sleep.js';
+import CrawlerResourceDao from '../dao/CrawlerResourceDao.ts';
+import config from '../config/crawlerResource.ts';
+import { requestFetch, requestBrowser, type HTTPResponse, HTTPResponseError } from '../util/httpAccess.ts';
+import type Notice from '../Notice.ts';
+import { env } from '../util/env.ts';
+import { sleep } from '../util/sleep.ts';
 
 /**
  * ウェブページを巡回し、レスポンスボディの差分を調べて通知する

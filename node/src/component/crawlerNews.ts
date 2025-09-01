@@ -4,11 +4,11 @@ import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
 import Log4js from 'log4js';
 import { resolve } from 'relative-to-absolute-iri';
-import CrawlerNewsDao from '../dao/CrawlerNewsDao.js';
-import config from '../config/crawlerNews.js';
-import { requestFetch, requestBrowser, HTTPResponseError, type HTTPResponse } from '../util/httpAccess.js';
-import type Notice from '../Notice.js';
-import { env } from '../util/env.js';
+import CrawlerNewsDao from '../dao/CrawlerNewsDao.ts';
+import config from '../config/crawlerNews.ts';
+import { requestFetch, requestBrowser, HTTPResponseError, type HTTPResponse } from '../util/httpAccess.ts';
+import type Notice from '../Notice.ts';
+import { env } from '../util/env.ts';
 
 const DATE_FORMAT_LIST = [
 	/^([0-9]{4})-(0[1-9]|[1-9][0-9]?)-(0[1-9]|[1-9][0-9]?)/ /* YYYY-MM-DD */,
