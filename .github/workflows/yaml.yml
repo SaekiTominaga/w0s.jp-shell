@@ -1,4 +1,4 @@
-name: Linting YAML files
+name: YAML files
 
 on:
   pull_request:

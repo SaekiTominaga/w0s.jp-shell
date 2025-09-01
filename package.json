@@ -7,8 +7,7 @@
 		"prebuild": "rimraf node/dist/* -g",
 		"build": "tsc --project node/tsconfig.json",
 		"lint": "eslint node/src/**/*.ts node/@types/*.d.ts",
-		"pretest": "npm run build",
-		"test": "node --experimental-test-coverage --env-file=.env.development --test **/*.test.js",
+		"test": "node --experimental-strip-types --experimental-test-coverage --env-file=.env.development --test node/src/**/*.test.ts",
 		"format": "prettier -w .",
 		"yaml-lint": "yamllint .github/workflows/*.yml"
 	},
