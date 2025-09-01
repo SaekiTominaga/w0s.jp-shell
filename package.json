@@ -3,10 +3,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"watch": "tsc --project node/tsconfig.json -w",
-		"prebuild": "rimraf node/dist/* -g",
-		"build": "tsc --project node/tsconfig.json",
-		"lint": "eslint node/src/**/*.ts node/@types/*.d.ts",
+		"lint": "tsc --project node/tsconfig.json && eslint node/src/**/*.ts node/@types/*.d.ts",
 		"test": "node --experimental-test-coverage --env-file=.env.development --test node/src/**/*.test.ts",
 		"format": "prettier -w .",
 		"yaml-lint": "yamllint .github/workflows/*.yml"
@@ -29,7 +26,7 @@
 		"@types/nodemailer": "^7.0.1",
 		"@types/whatwg-mimetype": "^3.0.2",
 		"@w0s/eslint-config": "^8.6.0",
-		"@w0s/tsconfig": "^1.6.0",
+		"@w0s/tsconfig": "^1.6.1",
 		"eslint": "^9.34.0",
 		"prettier": "^3.6.2",
 		"rimraf": "^6.0.1",

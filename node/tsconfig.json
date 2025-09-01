@@ -3,7 +3,6 @@
 	"include": ["src/**/*.ts", "@types/*.d.ts"],
 	"compilerOptions": {
 		/* Emit */
-		"outDir": "dist",
-		"sourceMap": true
+		"noEmit": true
 	}
 }
