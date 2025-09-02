@@ -210,7 +210,7 @@ const exec = async (notice: Notice): Promise<void> => {
 				continue;
 			}
 
-			if (await dao.existData(targetData.url, contentText)) {
+			if (await dao.existData(targetData.url, date, contentText)) {
 				logger.debug(`データ登録済み: ${contentText.substring(0, 30)}...`);
 				continue;
 			}
