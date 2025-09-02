@@ -136,11 +136,13 @@ export default class CrawlerNewsDao {
 	 * ニュースデータが登録されているか
 	 *
 	 * @param url - URL
+	 * @param date - 日付
 	 * @param content - 内容
+	 * @param referUrl - 参照 URL
 	 *
 	 * @returns 登録件数
 	 */
-	async existData(url: URL, content: string): Promise<boolean> {
+	async existData(url: URL, date: Date | undefined, content: string, referUrl: string | undefined): Promise<boolean> {
 		interface Select {
 			count: number;
 		}
@@ -149,7 +151,9 @@ export default class CrawlerNewsDao {
 
 		const { sqlWhere, bindParams } = prepareSelect({
 			url: url,
+			date: date,
 			content: content,
+			refer_url: referUrl,
 		});
 
 		const sth = await dbh.prepare(`
