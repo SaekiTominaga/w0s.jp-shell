@@ -210,11 +210,6 @@ const exec = async (notice: Notice): Promise<void> => {
 				continue;
 			}
 
-			if (await dao.existData(targetData.url, date, contentText)) {
-				logger.debug(`データ登録済み: ${contentText.substring(0, 30)}...`);
-				continue;
-			}
-
 			/* アンカーリンク抽出 */
 			let referUrl: string | undefined;
 			const newsAnchorElements = contentElement.querySelectorAll<HTMLAnchorElement>('a[href]');
@@ -222,6 +217,11 @@ const exec = async (notice: Notice): Promise<void> => {
 				/* メッセージ内にリンクが一つだけある場合のみ、その URL を対象ページとする */
 				referUrl = resolve(newsAnchorElements.item(0).href.trim(), targetData.url.toString());
 				logger.debug('URL', referUrl);
+			}
+
+			if (await dao.existData(targetData.url, date, contentText, referUrl)) {
+				logger.debug(`データ登録済み: ${contentText.substring(0, 30)}...`);
+				continue;
 			}
 
 			/* DB 書き込み */
