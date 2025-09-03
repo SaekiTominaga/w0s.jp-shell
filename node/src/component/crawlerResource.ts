@@ -112,7 +112,14 @@ const exec = async (notice: Notice): Promise<void> => {
 
 		let response: HTTPResponse;
 		try {
-			response = targetData.browser ? await requestBrowser(targetData.url) : await requestFetch(targetData.url, { timeout: config.fetchTimeout });
+			response = targetData.browser
+				? await requestBrowser(targetData.url, {
+						path: env('BROWSER_PATH'),
+						ua: env('BROWSER_UA'),
+					})
+				: await requestFetch(targetData.url, {
+						timeout: config.fetchTimeout,
+					});
 		} catch (e) {
 			if (e instanceof HTTPResponseError) {
 				const errorCount = await accessError(targetData.url, targetData.error);

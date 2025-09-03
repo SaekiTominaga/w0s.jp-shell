@@ -1,6 +1,5 @@
 import puppeteer from 'puppeteer-core';
 import MIMEType from 'whatwg-mimetype';
-import { env } from './env.ts';
 
 export class HTTPResponseError extends Error {
 	readonly #status: number;
@@ -71,14 +70,25 @@ export const requestFetch = async (url: URL, option: { timeout: number }): Promi
  * ブラウザで URL にリクエストを行い、レスポンスボディを取得する
  *
  * @param url - URL
+ * @param browserOption - ブラウザのオプション
+ * @param browserOption.path - 実行ファイルのパス
+ * @param browserOption.ua - UA 文字列
  *
  * @returns レスポンス
  */
-export const requestBrowser = async (url: URL): Promise<HTTPResponse> => {
-	const browser = await puppeteer.launch({ executablePath: env('BROWSER_PATH') });
+export const requestBrowser = async (
+	url: URL,
+	browserOption: {
+		path: string;
+		ua?: string;
+	},
+): Promise<HTTPResponse> => {
+	const browser = await puppeteer.launch({ executablePath: browserOption.path });
 	try {
 		const page = await browser.newPage();
-		await page.setUserAgent(env('BROWSER_UA'));
+		if (browserOption.ua !== undefined) {
+			await page.setUserAgent(browserOption.ua);
+		}
 		await page.setRequestInterception(true);
 		page.on('request', (request) => {
 			switch (request.resourceType()) {
