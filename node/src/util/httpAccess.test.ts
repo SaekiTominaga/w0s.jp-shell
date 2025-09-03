@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { env } from './env.ts';
 import { HTTPResponseError, requestBrowser } from './httpAccess.ts';
 
-let githubActions: boolean;
+let githubActions = false;
 try {
 	githubActions = env('GITHUB_ACTIONS', 'boolean');
 } catch {}
