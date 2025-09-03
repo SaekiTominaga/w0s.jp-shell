@@ -3,7 +3,16 @@ import { test } from 'node:test';
 import { env } from './env.ts';
 import { HTTPResponseError, requestBrowser } from './httpAccess.ts';
 
+let githubActions: boolean;
+try {
+	githubActions = env('GITHUB_ACTIONS', 'boolean');
+} catch {}
+
 await test('requestBrowser', async (t) => {
+	if (githubActions) {
+		return;
+	}
+
 	await t.test('HTML page', async () => {
 		const responce = await requestBrowser(new URL('https://example.com/'), {
 			path: env('BROWSER_PATH'),
