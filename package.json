@@ -4,7 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"lint": "tsc --project node/tsconfig.json && eslint node/src/**/*.ts node/@types/*.d.ts",
-		"test": "node --experimental-test-coverage --env-file=.env.development --test node/src/**/*.test.ts",
+		"test": "node --experimental-test-coverage --env-file-if-exists=.env.development --test node/src/**/*.test.ts",
 		"format": "prettier -w .",
 		"yaml-lint": "yamllint .github/workflows/*.yml"
 	},

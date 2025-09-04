@@ -28,4 +28,4 @@ jobs:
         with:
           node-version: '24'
       - run: npm ci
-      - run: node --test node/src/**/*.test.ts
+      - run: npm test
