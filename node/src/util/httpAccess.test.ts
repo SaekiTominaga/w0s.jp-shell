@@ -1,21 +1,16 @@
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
-import { env } from './env.ts';
 import { HTTPResponseError, requestBrowser } from './httpAccess.ts';
 
-let githubActions = false;
-try {
-	githubActions = env('GITHUB_ACTIONS', 'boolean');
-} catch {}
-
 await test('requestBrowser', async (t) => {
-	if (githubActions) {
+	const browserPath = process.env['BROWSER_PATH'];
+	if (browserPath === undefined) {
 		return;
 	}
 
 	await t.test('HTML page', async () => {
 		const responce = await requestBrowser(new URL('https://example.com/'), {
-			path: env('BROWSER_PATH'),
+			path: browserPath,
 		});
 
 		assert.equal(responce.html, true);
@@ -25,7 +20,7 @@ await test('requestBrowser', async (t) => {
 	await t.test('404', async () => {
 		try {
 			await requestBrowser(new URL('https://example.com/404'), {
-				path: env('BROWSER_PATH'),
+				path: browserPath,
 			});
 		} catch (e) {
 			if (e instanceof HTTPResponseError) {
