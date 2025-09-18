@@ -3,7 +3,8 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"lint": "tsc --project node/tsconfig.json && eslint node/src/**/*.ts node/@types/*.d.ts",
+		"prelint": "tsc --project node/tsconfig.json",
+		"lint": "eslint node/src/**/*.ts node/@types/*.d.ts",
 		"test": "node --experimental-test-coverage --env-file-if-exists=.env.development --test node/src/**/*.test.ts",
 		"format": "prettier -w ."
 	},
@@ -24,9 +25,9 @@
 		"@types/jsdom": "^21.1.7",
 		"@types/nodemailer": "^7.0.1",
 		"@types/whatwg-mimetype": "^3.0.2",
-		"@w0s/eslint-config": "^8.6.0",
-		"@w0s/tsconfig": "^1.6.1",
-		"eslint": "^9.34.0",
+		"@w0s/eslint-config": "^9.1.0",
+		"@w0s/tsconfig": "^1.7.0",
+		"eslint": "^9.35.0",
 		"prettier": "^3.6.2",
 		"rimraf": "^6.0.1",
 		"typescript": "^5.8.3"

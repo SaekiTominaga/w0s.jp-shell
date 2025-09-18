@@ -132,7 +132,7 @@ const exec = async (notice: Notice): Promise<void> => {
 			let closedReason = ''; // 休館理由
 
 			calendarPageDocument.querySelectorAll<HTMLElement>(config.calendar.cellSelector).forEach((tdElement): void => {
-				const matchGroup = tdElement.textContent?.trim().match(/(?<day>[1-9][0-9]{0,1})(?<reason>.*)/)?.groups;
+				const matchGroup = tdElement.textContent?.trim().match(/(?<day>[1-9][0-9]{0,1})(?<reason>.*)/v)?.groups;
 				if (matchGroup !== undefined) {
 					const day = Number(matchGroup['day']);
 					const result = matchGroup['reason'];
