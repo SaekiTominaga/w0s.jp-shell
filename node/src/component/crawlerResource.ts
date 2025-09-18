@@ -58,7 +58,7 @@ const accessError = async (url: URL, error: number): Promise<number> => {
 const saveFile = async (url: URL, responseBody: string): Promise<string> => {
 	const date = new Date();
 
-	const fileDir = url.pathname === '/' ? url.hostname : `${url.hostname}${url.pathname.replace(/\/[^/]*$/g, '')}`;
+	const fileDir = url.pathname === '/' ? url.hostname : `${url.hostname}${url.pathname.replace(/\/[^\/]*$/gv, '')}`;
 	const fileFullDir = `${env('CRAWLER_RESOURCE_SAVE_DIRECTORY')}/${fileDir}`;
 	const fileName = `${String(url.pathname.split('/').at(-1))}_${String(date.getFullYear())}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
 		date.getDate(),
