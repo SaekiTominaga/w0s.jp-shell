@@ -4,11 +4,11 @@ import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
 import Log4js from 'log4js';
+import { env } from '@w0s/env-value-type';
 import CrawlerResourceDao from '../dao/CrawlerResourceDao.ts';
 import config from '../config/crawlerResource.ts';
 import { requestFetch, requestBrowser, type HTTPResponse, HTTPResponseError } from '../util/httpAccess.ts';
 import type Notice from '../Notice.ts';
-import { env } from '../util/env.ts';
 import { sleep } from '../util/sleep.ts';
 
 /**

@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { env } from './util/env.ts';
+import { env } from '@w0s/env-value-type';
 
 export default class Notice {
 	readonly #title: string;

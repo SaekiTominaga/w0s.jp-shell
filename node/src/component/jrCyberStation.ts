@@ -4,9 +4,9 @@ import dayjs from 'dayjs';
 import Log4js from 'log4js';
 import puppeteer from 'puppeteer-core';
 import { JSDOM } from 'jsdom';
+import { env } from '@w0s/env-value-type';
 import config from '../config/jrCyberStation.ts';
 import type Notice from '../Notice.ts';
-import { env } from '../util/env.ts';
 import { sleep } from '../util/sleep.ts';
 
 interface Search {
