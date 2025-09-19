@@ -1,6 +1,6 @@
 import * as sqlite from 'sqlite';
 import sqlite3 from 'sqlite3';
-import { sqliteToJS, prepareUpdate } from '../util/sql.ts';
+import { sqliteToJS, prepareUpdate } from '@w0s/sqlite-utility';
 
 /**
  * ウェブ巡回（リソース）
