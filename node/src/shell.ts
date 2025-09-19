@@ -1,7 +1,7 @@
 import { parseArgs } from 'node:util';
 import Log4js from 'log4js';
+import { env } from '@w0s/env-value-type';
 import Notice from './Notice.ts';
-import { env } from './util/env.ts';
 
 /* タイムアウト判定用計測 */
 const startTime = Date.now();
