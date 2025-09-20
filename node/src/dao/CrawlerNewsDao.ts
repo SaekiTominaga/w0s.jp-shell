@@ -53,7 +53,7 @@ export default class CrawlerNewsDao {
 		interface Select {
 			url: string;
 			title: string;
-			class: number;
+			category: number;
 			priority: number;
 			browser: number;
 			selector_wrap: string;
@@ -68,7 +68,7 @@ export default class CrawlerNewsDao {
 			SELECT
 				url,
 				title,
-				class,
+				category,
 				priority,
 				browser,
 				selector_wrap,
@@ -89,7 +89,7 @@ export default class CrawlerNewsDao {
 		return rows.map((row) => ({
 			url: sqliteToJS(row.url, 'url'),
 			title: sqliteToJS(row.title),
-			class: sqliteToJS(row.class),
+			category: sqliteToJS(row.category),
 			priority: sqliteToJS(row.priority),
 			browser: sqliteToJS(row.browser, 'boolean'),
 			selectorWrap: sqliteToJS(row.selector_wrap),
