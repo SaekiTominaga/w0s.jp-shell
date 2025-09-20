@@ -2,7 +2,7 @@ declare namespace CrawlerDb {
 	export interface News {
 		url: URL;
 		title: string;
-		class: number;
+		category: number;
 		priority: number;
 		browser: boolean;
 		selectorWrap: string;
