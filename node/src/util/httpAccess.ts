@@ -87,7 +87,9 @@ export const requestBrowser = async (
 	try {
 		const page = await browser.newPage();
 		if (browserOption.ua !== undefined) {
-			await page.setUserAgent(browserOption.ua);
+			await page.setUserAgent({
+				userAgent: browserOption.ua,
+			});
 		}
 		await page.setRequestInterception(true);
 		page.on('request', (request) => {

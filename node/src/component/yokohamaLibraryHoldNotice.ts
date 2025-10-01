@@ -22,7 +22,9 @@ const exec = async (notice: Notice): Promise<void> => {
 	const browser = await puppeteer.launch({ executablePath: env('BROWSER_PATH') });
 	try {
 		const page = await browser.newPage();
-		await page.setUserAgent(env('BROWSER_UA'));
+		await page.setUserAgent({
+			userAgent: env('BROWSER_UA'),
+		});
 		await page.setRequestInterception(true);
 		page.on('request', (request) => {
 			request.continue().catch((e: unknown) => {
