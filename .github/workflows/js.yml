@@ -6,6 +6,7 @@ on:
       - 'node/@types/*.d.ts'
       - 'node/src/**/*.ts'
       - 'eslint.config.js'
+      - 'package.json'
   workflow_dispatch:
 
 permissions: {}
