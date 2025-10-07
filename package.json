@@ -16,7 +16,7 @@
 		"dayjs": "^1.11.18",
 		"jsdom": "^26.1.0",
 		"log4js": "^6.9.1",
-		"nodemailer": "^7.0.6",
+		"nodemailer": "^7.0.7",
 		"puppeteer-core": "^24.22.3",
 		"relative-to-absolute-iri": "^1.0.7",
 		"sqlite": "^5.1.1",
