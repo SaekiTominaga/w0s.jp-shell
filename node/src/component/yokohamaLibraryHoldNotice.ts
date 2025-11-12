@@ -4,13 +4,19 @@ import Log4js from 'log4js';
 import { launch } from 'puppeteer-core';
 import { env } from '@w0s/env-value-type';
 import { convert as stringConvert } from '@w0s/string-convert';
-import YokohamaLibraryDao, { type Book } from '../dao/YokohamaLibraryDao.ts';
+import YokohamaLibraryDao from '../db/YokohamaLibrary.ts';
 import config from '../config/yokohamaLibraryHoldNotice.ts';
 import type Notice from '../Notice.ts';
 
 /**
  * 横浜市立図書館　予約連絡
  */
+
+interface Book {
+	type: string;
+	title: string;
+}
+
 const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
 
 const dao = new YokohamaLibraryDao(env('SQLITE_YOKOHAMA_LIBRARY'));

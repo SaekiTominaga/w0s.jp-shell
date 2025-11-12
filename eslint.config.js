@@ -6,6 +6,9 @@ import w0sConfig from '@w0s/eslint-config';
 export default [
 	...w0sConfig,
 	{
+		ignores: ['@types', 'node/dist/**/*.js'],
+	},
+	{
 		files: ['**/*.ts'],
 		languageOptions: {
 			parserOptions: {
@@ -18,12 +21,6 @@ export default [
 		rules: {
 			'no-await-in-loop': 'off',
 			'no-continue': 'off',
-		},
-	},
-	{
-		files: ['node/src/dao/**/*.ts'],
-		rules: {
-			'@typescript-eslint/no-non-null-assertion': 'off',
 		},
 	},
 	{

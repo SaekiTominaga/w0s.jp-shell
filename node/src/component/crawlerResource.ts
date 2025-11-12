@@ -5,7 +5,7 @@ import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
 import Log4js from 'log4js';
 import { env } from '@w0s/env-value-type';
-import CrawlerResourceDao from '../dao/CrawlerResourceDao.ts';
+import CrawlerResourceDao from '../db/CrawlerResource.ts';
 import config from '../config/crawlerResource.ts';
 import { requestFetch, requestBrowser, type HTTPResponse, HTTPResponseError } from '../util/httpAccess.ts';
 import type Notice from '../Notice.ts';
@@ -108,7 +108,7 @@ const exec = async (notice: Notice): Promise<void> => {
 		}
 		prevHost = targetHost;
 
-		logger.info(`取得処理を実行: ${targetData.url.toString()}`);
+		logger.info(`取得処理を実行: ${targetData.url}`);
 
 		let response: HTTPResponse;
 		try {
@@ -124,10 +124,10 @@ const exec = async (notice: Notice): Promise<void> => {
 			if (e instanceof HTTPResponseError) {
 				const errorCount = await accessError(targetData.url, targetData.error);
 
-				logger.info(`HTTP Status Code: ${String(e.status)} ${targetData.url.toString()} 、エラー回数: ${String(errorCount)}`);
+				logger.info(`HTTP Status Code: ${String(e.status)} ${targetData.url} 、エラー回数: ${String(errorCount)}`);
 
 				if (errorCount % config.reportErrorCount === 0) {
-					notice.add(`${targetData.title}\n${targetData.url.toString()}\nHTTP Status Code: ${String(e.status)}\nエラー回数: ${String(errorCount)}`);
+					notice.add(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${String(e.status)}\nエラー回数: ${String(errorCount)}`);
 				}
 
 				continue;
@@ -137,9 +137,9 @@ const exec = async (notice: Notice): Promise<void> => {
 					case 'AbortError': {
 						const errorCount = await accessError(targetData.url, targetData.error);
 
-						logger.info(`タイムアウト: ${targetData.url.toString()} 、エラー回数: ${String(errorCount)}`);
+						logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${String(errorCount)}`);
 						if (errorCount % config.reportErrorCount === 0) {
-							notice.add(`${targetData.title}\n${targetData.url.toString()}\nタイムアウト\nエラー回数: ${String(errorCount)}`);
+							notice.add(`${targetData.title}\n${targetData.url}\nタイムアウト\nエラー回数: ${String(errorCount)}`);
 						}
 
 						break;
@@ -159,11 +159,11 @@ const exec = async (notice: Notice): Promise<void> => {
 			const narrowingSelector = targetData.selector ?? 'body';
 			const contentsElement = document.querySelector(narrowingSelector);
 			if (contentsElement === null) {
-				logger.error(`セレクター (${narrowingSelector}) に該当するノードが存在しない: ${targetData.url.toString()}`);
+				logger.error(`セレクター (${narrowingSelector}) に該当するノードが存在しない: ${targetData.url}`);
 				continue;
 			}
 			if (contentsElement.textContent === null) {
-				logger.error(`セレクター (${narrowingSelector}) の中身が空: ${targetData.url.toString()}`);
+				logger.error(`セレクター (${narrowingSelector}) の中身が空: ${targetData.url}`);
 				continue;
 			}
 
@@ -174,7 +174,7 @@ const exec = async (notice: Notice): Promise<void> => {
 		const contentHash = md5.digest('hex');
 		logger.debug(`コンテンツ hash: ${contentHash}`);
 
-		if (contentHash === targetData.contentHash) {
+		if (contentHash === targetData.content_hash) {
 			logger.info(`コンテンツ hash (${contentHash}) が DB に格納された値と同じ`);
 		} else {
 			/* DB 書き込み */
@@ -186,7 +186,7 @@ const exec = async (notice: Notice): Promise<void> => {
 			const fileDir = await saveFile(targetData.url, response.body);
 
 			/* 通知 */
-			notice.add(`${targetData.title} ${targetData.url.toString()}\n変更履歴: ${env('CRAWLER_RESOURCE_SAVE_URL')}?dir=${fileDir} 🔒`);
+			notice.add(`${targetData.title} ${targetData.url}\n変更履歴: ${env('CRAWLER_RESOURCE_SAVE_URL')}?dir=${fileDir} 🔒`);
 		}
 
 		await accessSuccess(targetData.url, targetData.error);

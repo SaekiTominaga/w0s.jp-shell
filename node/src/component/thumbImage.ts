@@ -1,7 +1,7 @@
 import path from 'node:path';
 import Log4js from 'log4js';
 import { env } from '@w0s/env-value-type';
-import ThumbImageDao from '../dao/ThumbImageDao.ts';
+import ThumbImageDao from '../db/ThumbImage.ts';
 
 /**
  * サムネイル画像生成
@@ -20,11 +20,11 @@ const exec = async (): Promise<void> => {
 	const endpoint = env('THUMBIMAGE_ENDPOINT');
 
 	const bodyObject: Readonly<Record<string, string | number | undefined>> = {
-		path: queue.filePath,
-		type: queue.type,
+		path: queue.file_path,
+		type: queue.file_type,
 		width: queue.width,
 		height: queue.height,
-		quality: queue.quality ?? undefined,
+		quality: queue.quality,
 	};
 
 	logger.info('Fetch', endpoint, bodyObject);

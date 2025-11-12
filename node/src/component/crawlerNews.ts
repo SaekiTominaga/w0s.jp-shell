@@ -5,7 +5,7 @@ import jsdom from 'jsdom';
 import Log4js from 'log4js';
 import { resolve } from 'relative-to-absolute-iri';
 import { env } from '@w0s/env-value-type';
-import CrawlerNewsDao from '../dao/CrawlerNewsDao.ts';
+import CrawlerNewsDao from '../db/CrawlerNews.ts';
 import config from '../config/crawlerNews.ts';
 import { requestFetch, requestBrowser, HTTPResponseError, type HTTPResponse } from '../util/httpAccess.ts';
 import type Notice from '../Notice.ts';
@@ -70,7 +70,7 @@ const exec = async (notice: Notice): Promise<void> => {
 	for (const targetData of await dao.select(priority)) {
 		const newUrl = (await dao.selectDataCount(targetData.url)) === 0; // 新規追加された URL か
 
-		logger.info(`取得処理を実行: ${targetData.url.toString()}`);
+		logger.info(`取得処理を実行: ${targetData.url}`);
 
 		let response: HTTPResponse;
 		try {
@@ -86,10 +86,10 @@ const exec = async (notice: Notice): Promise<void> => {
 			if (e instanceof HTTPResponseError) {
 				const errorCount = await accessError(targetData.url, targetData.error);
 
-				logger.info(`HTTP Status Code: ${String(e.status)} ${targetData.url.toString()} 、エラー回数: ${String(errorCount)}`);
+				logger.info(`HTTP Status Code: ${String(e.status)} ${targetData.url} 、エラー回数: ${String(errorCount)}`);
 
 				if (errorCount % config.reportErrorCount === 0) {
-					notice.add(`${targetData.title}\n${targetData.url.toString()}\nHTTP Status Code: ${String(e.status)}\nエラー回数: ${String(errorCount)}`);
+					notice.add(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${String(e.status)}\nエラー回数: ${String(errorCount)}`);
 				}
 
 				continue;
@@ -99,9 +99,9 @@ const exec = async (notice: Notice): Promise<void> => {
 					case 'AbortError': {
 						const errorCount = await accessError(targetData.url, targetData.error);
 
-						logger.info(`タイムアウト: ${targetData.url.toString()} 、エラー回数: ${String(errorCount)}`);
+						logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${String(errorCount)}`);
 						if (errorCount % config.reportErrorCount === 0) {
-							notice.add(`${targetData.title}\n${targetData.url.toString()}\nタイムアウト\nエラー回数: ${String(errorCount)}`);
+							notice.add(`${targetData.title}\n${targetData.url}\nタイムアウト\nエラー回数: ${String(errorCount)}`);
 						}
 
 						break;
@@ -114,7 +114,7 @@ const exec = async (notice: Notice): Promise<void> => {
 		}
 
 		if (!response.html) {
-			logger.error(`HTML ページではない: ${targetData.url.toString()}`);
+			logger.error(`HTML ページではない: ${targetData.url}`);
 			continue;
 		}
 
@@ -123,7 +123,7 @@ const exec = async (notice: Notice): Promise<void> => {
 
 		let wrapElements: NodeListOf<Element>;
 		try {
-			wrapElements = document.querySelectorAll(targetData.selectorWrap);
+			wrapElements = document.querySelectorAll(targetData.selector_wrap);
 		} catch (e) {
 			if (e instanceof SyntaxError) {
 				logger.error(e.message);
@@ -133,16 +133,16 @@ const exec = async (notice: Notice): Promise<void> => {
 			continue;
 		}
 		if (wrapElements.length === 0) {
-			logger.error(`包括要素（${targetData.selectorWrap}）が存在しない: ${targetData.url.toString()}\n\n${response.body}`);
+			logger.error(`包括要素（${targetData.selector_wrap}）が存在しない: ${targetData.url}\n\n${response.body}`);
 			continue;
 		}
 
 		for (const wrapElement of wrapElements) {
 			let date: Date | undefined;
-			if (targetData.selectorDate !== undefined) {
+			if (targetData.selector_date !== undefined) {
 				let dateElement: Element | null;
 				try {
-					dateElement = wrapElement.querySelector(targetData.selectorDate);
+					dateElement = wrapElement.querySelector(targetData.selector_date);
 				} catch (e) {
 					if (e instanceof SyntaxError) {
 						logger.error(e.message);
@@ -153,13 +153,13 @@ const exec = async (notice: Notice): Promise<void> => {
 				}
 
 				if (dateElement === null) {
-					logger.error(`日付要素（${targetData.selectorDate}）が存在しない: ${targetData.url.toString()}\n\n${response.body}`);
+					logger.error(`日付要素（${targetData.selector_date}）が存在しない: ${targetData.url}\n\n${response.body}`);
 					continue;
 				}
 
 				const dateText = dateElement.textContent?.trim();
 				if (dateText === undefined) {
-					logger.error(`日付要素（${targetData.selectorDate}）の文字列が取得できない: ${targetData.url.toString()}\n\n${response.body}`);
+					logger.error(`日付要素（${targetData.selector_date}）の文字列が取得できない: ${targetData.url}\n\n${response.body}`);
 					continue;
 				}
 
@@ -173,10 +173,10 @@ const exec = async (notice: Notice): Promise<void> => {
 			}
 
 			let contentElement = wrapElement;
-			if (targetData.selectorContent !== undefined && targetData.selectorContent !== '') {
+			if (targetData.selector_content !== undefined && targetData.selector_content !== '') {
 				let contentElement1: Element | null;
 				try {
-					contentElement1 = wrapElement.querySelector(targetData.selectorContent);
+					contentElement1 = wrapElement.querySelector(targetData.selector_content);
 				} catch (e) {
 					if (e instanceof SyntaxError) {
 						logger.error(e.message);
@@ -187,7 +187,7 @@ const exec = async (notice: Notice): Promise<void> => {
 				}
 
 				if (contentElement1 === null) {
-					logger.error(`内容要素（${targetData.selectorContent}）が存在しない: ${targetData.url.toString()}\n\n${response.body}`);
+					logger.error(`内容要素（${targetData.selector_content}）が存在しない: ${targetData.url}\n\n${response.body}`);
 					continue;
 				}
 
@@ -211,9 +211,7 @@ const exec = async (notice: Notice): Promise<void> => {
 			}
 
 			if (contentText === undefined) {
-				logger.error(
-					`内容要素（${targetData.selectorContent ?? targetData.selectorWrap}）の文字列が取得できない: ${targetData.url.toString()}\n\n${response.body}`,
-				);
+				logger.error(`内容要素（${targetData.selector_content ?? targetData.selector_wrap}）の文字列が取得できない: ${targetData.url}\n\n${response.body}`);
 				continue;
 			}
 
@@ -234,27 +232,27 @@ const exec = async (notice: Notice): Promise<void> => {
 			/* DB 書き込み */
 			logger.debug(`データ登録実行: ${contentText.substring(0, 30)}...`);
 			await dao.insertData({
-				id: crypto.randomUUID(),
+				uuid: crypto.randomUUID(),
 				url: targetData.url,
 				date: date,
 				content: contentText,
-				referUrl: referUrl,
+				refer_url: referUrl,
 			});
 
 			/* 通知 */
 			if (!newUrl) {
 				if (date === undefined) {
-					notice.add(`「${targetData.title}」\n${contentText}\n${referUrl ?? targetData.url.toString()}`);
+					notice.add(`「${targetData.title}」\n${contentText}\n${referUrl ?? targetData.url}`);
 				} else {
 					const dateFormat = date.toLocaleDateString('ja-JP', { weekday: 'narrow', year: 'numeric', month: 'long', day: 'numeric' });
 
 					const date2daysAgo = new Date();
 					date2daysAgo.setDate(date2daysAgo.getDate() - 2);
 					if (date2daysAgo < date) {
-						notice.add(`「${targetData.title}」\n日付: ${dateFormat}\n内容: ${contentText}\n${referUrl ?? targetData.url.toString()}`);
+						notice.add(`「${targetData.title}」\n日付: ${dateFormat}\n内容: ${contentText}\n${referUrl ?? targetData.url}`);
 					} else {
 						/* 2日前より古い日付の記事が新規追加されていた場合 */
-						notice.add(`「${targetData.title}」（※古い日付）\n日付: ${dateFormat}\n内容: ${contentText}\n${referUrl ?? targetData.url.toString()}`);
+						notice.add(`「${targetData.title}」（※古い日付）\n日付: ${dateFormat}\n内容: ${contentText}\n${referUrl ?? targetData.url}`);
 					}
 				}
 			}
