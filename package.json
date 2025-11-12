@@ -21,8 +21,6 @@
 		"nodemailer": "^7.0.10",
 		"puppeteer-core": "^24.28.0",
 		"relative-to-absolute-iri": "^1.0.7",
-		"sqlite": "^5.1.1",
-		"sqlite3": "^5.1.7",
 		"whatwg-mimetype": "^4.0.0"
 	},
 	"devDependencies": {
