@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { JSDOM } from 'jsdom';
 import Log4js from 'log4js';
-import puppeteer from 'puppeteer-core';
+import { launch } from 'puppeteer-core';
 import { env } from '@w0s/env-value-type';
 import { convert as stringConvert } from '@w0s/string-convert';
 import YokohamaLibraryDao, { type Book } from '../dao/YokohamaLibraryDao.ts';
@@ -19,7 +19,7 @@ const exec = async (notice: Notice): Promise<void> => {
 	const availableBooks: Book[] = [];
 
 	/* ブラウザで対象ページにアクセス */
-	const browser = await puppeteer.launch({ executablePath: env('BROWSER_PATH') });
+	const browser = await launch({ executablePath: env('BROWSER_PATH') });
 	try {
 		const page = await browser.newPage();
 		await page.setUserAgent({

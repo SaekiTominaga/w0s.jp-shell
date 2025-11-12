@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import dayjs from 'dayjs';
 import Log4js from 'log4js';
-import puppeteer from 'puppeteer-core';
+import { launch } from 'puppeteer-core';
 import { JSDOM } from 'jsdom';
 import { env } from '@w0s/env-value-type';
 import config from '../config/jrCyberStation.ts';
@@ -74,7 +74,7 @@ const exec = async (notice: Notice): Promise<void> => {
 	logger.debug(stationList);
 
 	/* 空席検索 */
-	const browser = await puppeteer.launch({ executablePath: env('BROWSER_PATH') });
+	const browser = await launch({ executablePath: env('BROWSER_PATH') });
 
 	let requestCount = 0;
 	try {

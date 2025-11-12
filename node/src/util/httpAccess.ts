@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer-core';
+import { launch } from 'puppeteer-core';
 import MIMEType from 'whatwg-mimetype';
 
 export class HTTPResponseError extends Error {
@@ -83,7 +83,7 @@ export const requestBrowser = async (
 		ua?: string;
 	},
 ): Promise<HTTPResponse> => {
-	const browser = await puppeteer.launch({ executablePath: browserOption.path });
+	const browser = await launch({ executablePath: browserOption.path });
 	try {
 		const page = await browser.newPage();
 		if (browserOption.ua !== undefined) {
