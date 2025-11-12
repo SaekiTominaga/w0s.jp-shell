@@ -8,9 +8,7 @@ import ThumbImageDao from '../db/ThumbImage.ts';
  */
 const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
 
-const dao = new ThumbImageDao(env('SQLITE_THUMB_IMAGE'), {
-	readonly: true,
-});
+const dao = new ThumbImageDao(env('SQLITE_THUMB_IMAGE'));
 
 const exec = async (): Promise<void> => {
 	const queue = await dao.selectQueue();
