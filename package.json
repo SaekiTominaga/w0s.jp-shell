@@ -14,7 +14,7 @@
 		"@w0s/sqlite-utility": "^1.0.0",
 		"@w0s/string-convert": "^3.0.2",
 		"dayjs": "^1.11.19",
-		"jsdom": "^26.1.0",
+		"jsdom": "^27.1.0",
 		"log4js": "^6.9.1",
 		"nodemailer": "^7.0.10",
 		"puppeteer-core": "^24.28.0",
@@ -24,7 +24,7 @@
 		"whatwg-mimetype": "^4.0.0"
 	},
 	"devDependencies": {
-		"@types/jsdom": "^21.1.7",
+		"@types/jsdom": "^27.0.0",
 		"@types/nodemailer": "^7.0.3",
 		"@types/whatwg-mimetype": "^3.0.2",
 		"@w0s/eslint-config": "^9.2.0",
