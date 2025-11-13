@@ -1,6 +1,6 @@
 import SQLite from 'better-sqlite3';
 import { Kysely, SqliteDialect, type Selectable } from 'kysely';
-import { jsToSQLite, sqliteToJS } from '@w0s/sqlite-utility';
+import { jsToSQLiteComparison, sqliteToJS } from '@w0s/sqlite-utility';
 import type { DB, DQueue } from '../../../@types/thumbimage.d.ts';
 
 /**
@@ -60,11 +60,11 @@ export default class ThumbImageDao {
 	 */
 	async deleteQueue(queue: Readonly<DQueue>): Promise<void> {
 		let query = this.db.deleteFrom('d_queue');
-		query = query.where('file_path', '=', jsToSQLite(queue.file_path));
-		query = query.where('file_type', '=', jsToSQLite(queue.file_type));
-		query = query.where('width', '=', jsToSQLite(queue.width));
-		query = query.where('height', '=', jsToSQLite(queue.height));
-		query = query.where('quality', '=', jsToSQLite(queue.quality));
+		query = query.where('file_path', '=', jsToSQLiteComparison(queue.file_path));
+		query = query.where('file_type', '=', jsToSQLiteComparison(queue.file_type));
+		query = query.where('width', '=', jsToSQLiteComparison(queue.width));
+		query = query.where('height', '=', jsToSQLiteComparison(queue.height));
+		query = query.where((eb) => (queue.quality !== undefined ? eb('quality', '=', jsToSQLiteComparison(queue.quality)) : eb('quality', 'is', null)));
 
 		await query.executeTakeFirst();
 	}

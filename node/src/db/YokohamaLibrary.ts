@@ -1,6 +1,6 @@
 import SQLite from 'better-sqlite3';
 import { Kysely, sql, SqliteDialect, type Insertable, type Selectable } from 'kysely';
-import { jsToSQLite, sqliteToJS } from '@w0s/sqlite-utility';
+import { jsToSQLiteAssignment, jsToSQLiteComparison, sqliteToJS } from '@w0s/sqlite-utility';
 import type { DAvailable, DB } from '../../../@types/yokohamalib.d.ts';
 
 /**
@@ -77,8 +77,8 @@ export default class YokohamaLibraryDao {
 		let query = this.db.insertInto('d_available');
 		query = query.values(
 			datas.map((data) => ({
-				type: jsToSQLite(data.type),
-				title: jsToSQLite(data.title),
+				type: jsToSQLiteAssignment(data.type),
+				title: jsToSQLiteAssignment(data.title),
 			})),
 		);
 
@@ -98,8 +98,8 @@ export default class YokohamaLibraryDao {
 		await Promise.all(
 			datas.map(async (data) => {
 				let query = this.db.deleteFrom('d_available');
-				query = query.where('type', '=', jsToSQLite(data.type));
-				query = query.where('title', '=', jsToSQLite(data.title));
+				query = query.where('type', '=', jsToSQLiteComparison(data.type));
+				query = query.where('title', '=', jsToSQLiteComparison(data.title));
 
 				await query.executeTakeFirst();
 			}),
