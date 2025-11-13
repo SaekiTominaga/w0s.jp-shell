@@ -1,6 +1,6 @@
 import SQLite from 'better-sqlite3';
 import { Kysely, SqliteDialect } from 'kysely';
-import { jsToSQLite, sqliteToJS } from '@w0s/sqlite-utility';
+import { jsToSQLiteAssignment, jsToSQLiteComparison, sqliteToJS } from '@w0s/sqlite-utility';
 import type { DB, DResource } from '../../../@types/crawler.d.ts';
 
 /**
@@ -62,9 +62,9 @@ export default class CrawlerResourceDao {
 	async update(data: Readonly<DResource>, contetnHash: string): Promise<void> {
 		let query = this.db.updateTable('d_resource');
 		query = query.set({
-			content_hash: jsToSQLite(contetnHash),
+			content_hash: jsToSQLiteAssignment(contetnHash),
 		});
-		query = query.where('url', '=', jsToSQLite(data.url));
+		query = query.where('url', '=', jsToSQLiteComparison(data.url));
 
 		await query.executeTakeFirst();
 	}
@@ -78,9 +78,9 @@ export default class CrawlerResourceDao {
 	async updateError(url: URL, errorCount: number): Promise<void> {
 		let query = this.db.updateTable('d_resource');
 		query = query.set({
-			error: jsToSQLite(errorCount),
+			error: jsToSQLiteAssignment(errorCount),
 		});
-		query = query.where('url', '=', jsToSQLite(url));
+		query = query.where('url', '=', jsToSQLiteComparison(url));
 
 		await query.executeTakeFirst();
 	}

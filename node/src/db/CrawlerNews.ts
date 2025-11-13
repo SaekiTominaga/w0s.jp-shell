@@ -1,6 +1,6 @@
 import SQLite from 'better-sqlite3';
 import { Kysely, sql, SqliteDialect } from 'kysely';
-import { sqliteToJS, jsToSQLite } from '@w0s/sqlite-utility';
+import { sqliteToJS, jsToSQLiteAssignment, jsToSQLiteComparison } from '@w0s/sqlite-utility';
 import type { DB, DNews, DNewsData } from '../../../@types/crawler.d.ts';
 
 /**
@@ -39,7 +39,7 @@ export default class CrawlerNewsDao {
 		let query = this.db
 			.selectFrom('d_news')
 			.select(['url', 'title', 'category', 'priority', 'browser', 'selector_wrap', 'selector_date', 'selector_content', 'error']);
-		query = query.where('priority', '>=', jsToSQLite(priority));
+		query = query.where('priority', '>=', jsToSQLiteComparison(priority));
 
 		const rows = await query.execute();
 
@@ -65,7 +65,7 @@ export default class CrawlerNewsDao {
 	 */
 	async selectDataCount(url: URL): Promise<number> {
 		let query = this.db.selectFrom('d_news_data').select([sql<number>`COUNT(uuid)`.as('count')]);
-		query = query.where('url', '=', jsToSQLite(url));
+		query = query.where('url', '=', jsToSQLiteComparison(url));
 
 		const row = await query.executeTakeFirst();
 
@@ -84,10 +84,10 @@ export default class CrawlerNewsDao {
 	 */
 	async existData(url: URL, date: Date | undefined, content: string, referUrl: string | undefined): Promise<boolean> {
 		let query = this.db.selectFrom('d_news_data').select([sql<number>`COUNT(uuid)`.as('count')]);
-		query = query.where('url', '=', jsToSQLite(url));
-		query = date !== undefined ? query.where('date', '=', jsToSQLite(date)) : query.where('date', 'is', null);
-		query = query.where('content', '=', jsToSQLite(content));
-		query = referUrl !== undefined ? query.where('refer_url', '=', jsToSQLite(referUrl)) : query.where('refer_url', 'is', null);
+		query = query.where('url', '=', jsToSQLiteComparison(url));
+		query = query.where((eb) => (date !== undefined ? eb('date', '=', jsToSQLiteComparison(date)) : eb('date', 'is', null)));
+		query = query.where('content', '=', jsToSQLiteComparison(content));
+		query = query.where((eb) => (referUrl !== undefined ? eb('refer_url', '=', jsToSQLiteComparison(referUrl)) : eb('refer_url', 'is', null)));
 
 		const row = await query.executeTakeFirst();
 
@@ -102,11 +102,11 @@ export default class CrawlerNewsDao {
 	async insertData(data: Readonly<DNewsData>): Promise<void> {
 		let query = this.db.insertInto('d_news_data');
 		query = query.values({
-			uuid: jsToSQLite(data.uuid),
-			url: jsToSQLite(data.url),
-			date: jsToSQLite(data.date),
-			content: jsToSQLite(data.content),
-			refer_url: jsToSQLite(data.refer_url),
+			uuid: jsToSQLiteAssignment(data.uuid),
+			url: jsToSQLiteAssignment(data.url),
+			date: jsToSQLiteAssignment(data.date),
+			content: jsToSQLiteAssignment(data.content),
+			refer_url: jsToSQLiteAssignment(data.refer_url),
 		});
 
 		await query.executeTakeFirst();
@@ -121,9 +121,9 @@ export default class CrawlerNewsDao {
 	async updateError(url: URL, errorCount: number): Promise<void> {
 		let query = this.db.updateTable('d_news');
 		query = query.set({
-			error: jsToSQLite(errorCount),
+			error: jsToSQLiteAssignment(errorCount),
 		});
-		query = query.where('url', '=', jsToSQLite(url));
+		query = query.where('url', '=', jsToSQLiteComparison(url));
 
 		await query.executeTakeFirst();
 	}
