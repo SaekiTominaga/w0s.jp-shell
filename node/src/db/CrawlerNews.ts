@@ -85,9 +85,9 @@ export default class CrawlerNewsDao {
 	async existData(url: URL, date: Date | undefined, content: string, referUrl: string | undefined): Promise<boolean> {
 		let query = this.db.selectFrom('d_news_data').select([sql<number>`COUNT(uuid)`.as('count')]);
 		query = query.where('url', '=', jsToSQLite(url));
-		query = query.where('date', '=', jsToSQLite(date));
+		query = date !== undefined ? query.where('date', '=', jsToSQLite(date)) : query.where('date', 'is', null);
 		query = query.where('content', '=', jsToSQLite(content));
-		query = query.where('refer_url', '=', jsToSQLite(referUrl));
+		query = referUrl !== undefined ? query.where('refer_url', '=', jsToSQLite(referUrl)) : query.where('refer_url', 'is', null);
 
 		const row = await query.executeTakeFirst();
 
