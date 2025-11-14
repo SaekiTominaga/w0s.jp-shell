@@ -1,5 +1,5 @@
 import SQLite from 'better-sqlite3';
-import { Kysely, sql, SqliteDialect } from 'kysely';
+import { Kysely, sql, SqliteDialect, type Insertable, type Selectable } from 'kysely';
 import { sqliteToJS, jsToSQLiteAssignment, jsToSQLiteComparison } from '@w0s/sqlite-utility';
 import type { DB, DNews, DNewsData } from '../../../@types/crawler.d.ts';
 
@@ -75,19 +75,16 @@ export default class CrawlerNewsDao {
 	/**
 	 * ニュースデータが登録されているか
 	 *
-	 * @param url - URL
-	 * @param date - 日付
-	 * @param content - 内容
-	 * @param referUrl - 参照 URL
+	 * @param data - 登録データ
 	 *
 	 * @returns 登録件数
 	 */
-	async existData(url: URL, date: Date | undefined, content: string, referUrl: string | undefined): Promise<boolean> {
+	async existData(data: Readonly<Selectable<Omit<DNewsData, 'uuid'>>>): Promise<boolean> {
 		let query = this.db.selectFrom('d_news_data').select([sql<number>`COUNT(uuid)`.as('count')]);
-		query = query.where('url', '=', jsToSQLiteComparison(url));
-		query = query.where((eb) => (date !== undefined ? eb('date', '=', jsToSQLiteComparison(date)) : eb('date', 'is', null)));
-		query = query.where('content', '=', jsToSQLiteComparison(content));
-		query = query.where((eb) => (referUrl !== undefined ? eb('refer_url', '=', jsToSQLiteComparison(referUrl)) : eb('refer_url', 'is', null)));
+		query = query.where('url', '=', jsToSQLiteComparison(data.url));
+		query = query.where((eb) => (data.date !== undefined ? eb('date', '=', jsToSQLiteComparison(data.date)) : eb('date', 'is', null)));
+		query = query.where('content', '=', jsToSQLiteComparison(data.content));
+		query = query.where((eb) => (data.refer_url !== undefined ? eb('refer_url', '=', jsToSQLiteComparison(data.refer_url)) : eb('refer_url', 'is', null)));
 
 		const row = await query.executeTakeFirst();
 
@@ -99,7 +96,7 @@ export default class CrawlerNewsDao {
 	 *
 	 * @param data - 登録データ
 	 */
-	async insertData(data: Readonly<DNewsData>): Promise<void> {
+	async insertData(data: Readonly<Insertable<DNewsData>>): Promise<void> {
 		let query = this.db.insertInto('d_news_data');
 		query = query.values({
 			uuid: jsToSQLiteAssignment(data.uuid),
