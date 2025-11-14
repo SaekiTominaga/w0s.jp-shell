@@ -224,7 +224,14 @@ const exec = async (notice: Notice): Promise<void> => {
 				logger.debug('URL', referUrl);
 			}
 
-			if (await dao.existData(targetData.url, date, contentText, referUrl)) {
+			if (
+				await dao.existData({
+					url: targetData.url,
+					date: date,
+					content: contentText,
+					refer_url: referUrl,
+				})
+			) {
 				logger.debug(`データ登録済み: ${contentText.substring(0, 30)}...`);
 				continue;
 			}
