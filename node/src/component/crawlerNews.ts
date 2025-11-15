@@ -9,7 +9,7 @@ import CrawlerNewsDao from '../db/CrawlerNews.ts';
 import config from '../config/crawlerNews.ts';
 import { requestFetch, requestBrowser, HTTPResponseError, type HTTPResponse } from '../util/httpAccess.ts';
 import type Notice from '../Notice.ts';
-import { parseDate } from '../util/crawler.ts';
+import { getHtmlContent, parseDate } from '../util/crawler.ts';
 
 /**
  * ウェブページを巡回し、新着情報の差分を調べて通知する
@@ -119,7 +119,7 @@ const exec = async (notice: Notice): Promise<void> => {
 			const { document } = new jsdom.JSDOM(response.body).window;
 
 			try {
-				const wrapElements = document.querySelectorAll(targetData.selector_wrap);
+				const wrapElements = document.querySelectorAll<HTMLElement>(targetData.selector_wrap);
 				if (wrapElements.length === 0) {
 					logger.error(`包括要素（${targetData.selector_wrap}）が存在しない: ${targetData.url}\n\n${response.body}`);
 					return;
@@ -129,7 +129,7 @@ const exec = async (notice: Notice): Promise<void> => {
 					[...wrapElements].map(async (wrapElement) => {
 						let date: Date | undefined;
 						if (targetData.selector_date !== undefined) {
-							const dateElement = wrapElement.querySelector(targetData.selector_date);
+							const dateElement = wrapElement.querySelector<HTMLElement>(targetData.selector_date);
 							if (dateElement === null) {
 								logger.error(`日付要素（${targetData.selector_date}）が存在しない: ${targetData.url}\n\n${response.body}`);
 								return;
@@ -146,7 +146,7 @@ const exec = async (notice: Notice): Promise<void> => {
 
 						let contentElement = wrapElement;
 						if (targetData.selector_content !== undefined && targetData.selector_content !== '') {
-							const contentElementTemp = wrapElement.querySelector(targetData.selector_content);
+							const contentElementTemp = wrapElement.querySelector<HTMLElement>(targetData.selector_content);
 							if (contentElementTemp === null) {
 								logger.error(`内容要素（${targetData.selector_content}）が存在しない: ${targetData.url}\n\n${response.body}`);
 								return;
@@ -155,28 +155,7 @@ const exec = async (notice: Notice): Promise<void> => {
 							contentElement = contentElementTemp;
 						}
 
-						let contentText: string | undefined;
-						switch (contentElement.tagName) {
-							case 'IMG': {
-								const altText = (contentElement as HTMLImageElement).alt.trim();
-								if (altText === '') {
-									contentText = (contentElement as HTMLImageElement).src.trim();
-								} else {
-									contentText = altText;
-								}
-								break;
-							}
-							default: {
-								contentText = contentElement.textContent?.trim();
-							}
-						}
-
-						if (contentText === undefined) {
-							logger.error(
-								`内容要素（${targetData.selector_content ?? targetData.selector_wrap}）の文字列が取得できない: ${targetData.url}\n\n${response.body}`,
-							);
-							return;
-						}
+						const contentText = getHtmlContent(contentElement);
 
 						/* アンカーリンク抽出 */
 						let referUrl: string | undefined;
