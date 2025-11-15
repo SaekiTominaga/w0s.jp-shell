@@ -3,7 +3,7 @@
  *
  * @param dateText - Web ページから取得した日付文字列
  *
- * @returns 連続アクセスエラー回数
+ * @returns 解析した日付データ（解析不能な場合は undefined）
  */
 export const parseDate = (dateText: string): Date | undefined => {
 	const FORMAT_LIST: readonly RegExp[] = [
