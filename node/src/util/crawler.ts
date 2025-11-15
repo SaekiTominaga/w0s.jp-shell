@@ -14,15 +14,15 @@ export const parseDate = (dateText: string): Date | undefined => {
 	];
 
 	let date: Date | undefined;
-	// eslint-disable-next-line functional/no-loop-statements
-	for (const format of FORMAT_LIST) {
+
+	FORMAT_LIST.some((format) => {
 		const result = format.exec(dateText);
 		if (result !== null) {
 			date = new Date(Date.UTC(Number(result[1]), Number(result[2]) - 1, Number(result[3])));
-			// eslint-disable-next-line no-continue
-			continue;
+			return true;
 		}
-	}
+		return false;
+	});
 
 	return date;
 };
