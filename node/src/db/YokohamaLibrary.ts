@@ -69,7 +69,7 @@ export default class YokohamaLibraryDao {
 	 *
 	 * @param datas - 登録するデータ
 	 */
-	async insertAvailable(datas: Readonly<Insertable<DAvailable>>[]): Promise<void> {
+	async insertAvailable(datas: readonly Readonly<Insertable<DAvailable>>[]): Promise<void> {
 		if (datas.length === 0) {
 			return;
 		}
@@ -90,7 +90,7 @@ export default class YokohamaLibraryDao {
 	 *
 	 * @param datas - 削除するデータ
 	 */
-	async deleteAvailable(datas: Readonly<DAvailable>[]): Promise<void> {
+	async deleteAvailable(datas: readonly Readonly<DAvailable>[]): Promise<void> {
 		if (datas.length === 0) {
 			return;
 		}

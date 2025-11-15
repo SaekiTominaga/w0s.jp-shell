@@ -36,7 +36,7 @@ const isHtml = (contentType: string): boolean =>
  *
  * @returns レスポンス
  */
-export const requestFetch = async (url: URL, option: { timeout: number }): Promise<HTTPResponse> => {
+export const requestFetch = async (url: URL, option: Readonly<{ timeout: number }>): Promise<HTTPResponse> => {
 	const controller = new AbortController();
 	const timeoutId = setTimeout(() => {
 		controller.abort();
@@ -78,10 +78,10 @@ export const requestFetch = async (url: URL, option: { timeout: number }): Promi
  */
 export const requestBrowser = async (
 	url: URL,
-	browserOption: {
+	browserOption: Readonly<{
 		path: string;
 		ua?: string;
-	},
+	}>,
 ): Promise<HTTPResponse> => {
 	const browser = await launch({ executablePath: browserOption.path });
 	try {
