@@ -16,12 +16,4 @@ export default [
 			},
 		},
 	},
-	{
-		files: ['node/src/component/crawlerNews.ts'],
-		rules: {
-			'no-await-in-loop': 'off',
-			'no-continue': 'off',
-			'functional/no-loop-statements': 'off',
-		},
-	},
 ];
