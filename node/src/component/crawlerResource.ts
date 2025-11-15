@@ -100,97 +100,101 @@ const exec = async (notice: Notice): Promise<void> => {
 
 	let prevHost: string | undefined; // ひとつ前のループで処理したホスト名
 
-	for (const targetData of await dao.select(priority)) {
-		const targetHost = targetData.url.hostname;
-		if (targetHost === prevHost) {
-			logger.debug(`${String(config.accessIntervalHost)} 秒待機`);
-			await sleep(config.accessIntervalHost); // 接続間隔を空ける
-		}
-		prevHost = targetHost;
+	const targetDatas = await dao.select(priority);
 
-		logger.info(`取得処理を実行: ${targetData.url}`);
-
-		let response: HTTPResponse;
-		try {
-			response = targetData.browser
-				? await requestBrowser(targetData.url, {
-						path: env('BROWSER_PATH'),
-						ua: env('BROWSER_UA'),
-					})
-				: await requestFetch(targetData.url, {
-						timeout: config.fetchTimeout,
-					});
-		} catch (e) {
-			if (e instanceof HTTPResponseError) {
-				const errorCount = await accessError(targetData.url, targetData.error);
-
-				logger.info(`HTTP Status Code: ${String(e.status)} ${targetData.url} 、エラー回数: ${String(errorCount)}`);
-
-				if (errorCount % config.reportErrorCount === 0) {
-					notice.add(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${String(e.status)}\nエラー回数: ${String(errorCount)}`);
-				}
-
-				continue;
+	await Promise.all(
+		targetDatas.map(async (targetData) => {
+			const targetHost = targetData.url.hostname;
+			if (targetHost === prevHost) {
+				logger.debug(`${String(config.accessIntervalHost)} 秒待機`);
+				await sleep(config.accessIntervalHost); // 接続間隔を空ける
 			}
-			if (e instanceof Error) {
-				switch (e.name) {
-					case 'AbortError': {
-						const errorCount = await accessError(targetData.url, targetData.error);
+			prevHost = targetHost;
 
-						logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${String(errorCount)}`);
-						if (errorCount % config.reportErrorCount === 0) {
-							notice.add(`${targetData.title}\n${targetData.url}\nタイムアウト\nエラー回数: ${String(errorCount)}`);
-						}
+			logger.info(`取得処理を実行: ${targetData.url}`);
 
-						break;
+			let response: HTTPResponse;
+			try {
+				response = targetData.browser
+					? await requestBrowser(targetData.url, {
+							path: env('BROWSER_PATH'),
+							ua: env('BROWSER_UA'),
+						})
+					: await requestFetch(targetData.url, {
+							timeout: config.fetchTimeout,
+						});
+			} catch (e) {
+				if (e instanceof HTTPResponseError) {
+					const errorCount = await accessError(targetData.url, targetData.error);
+
+					logger.info(`HTTP Status Code: ${String(e.status)} ${targetData.url} 、エラー回数: ${String(errorCount)}`);
+
+					if (errorCount % config.reportErrorCount === 0) {
+						notice.add(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${String(e.status)}\nエラー回数: ${String(errorCount)}`);
 					}
-					default:
+
+					return;
 				}
+				if (e instanceof Error) {
+					switch (e.name) {
+						case 'AbortError': {
+							const errorCount = await accessError(targetData.url, targetData.error);
+
+							logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${String(errorCount)}`);
+							if (errorCount % config.reportErrorCount === 0) {
+								notice.add(`${targetData.title}\n${targetData.url}\nタイムアウト\nエラー回数: ${String(errorCount)}`);
+							}
+
+							break;
+						}
+						default:
+					}
+				}
+
+				throw e;
 			}
 
-			throw e;
-		}
+			const md5 = crypto.createHash('md5');
+			if (response.html) {
+				/* HTML ページの場合は DOM 化 */
+				const { document } = new jsdom.JSDOM(response.body).window;
 
-		const md5 = crypto.createHash('md5');
-		if (response.html) {
-			/* HTML ページの場合は DOM 化 */
-			const { document } = new jsdom.JSDOM(response.body).window;
+				const narrowingSelector = targetData.selector ?? 'body';
+				const contentsElement = document.querySelector(narrowingSelector);
+				if (contentsElement === null) {
+					logger.error(`セレクター (${narrowingSelector}) に該当するノードが存在しない: ${targetData.url}`);
+					return;
+				}
+				if (contentsElement.textContent === null) {
+					logger.error(`セレクター (${narrowingSelector}) の中身が空: ${targetData.url}`);
+					return;
+				}
 
-			const narrowingSelector = targetData.selector ?? 'body';
-			const contentsElement = document.querySelector(narrowingSelector);
-			if (contentsElement === null) {
-				logger.error(`セレクター (${narrowingSelector}) に該当するノードが存在しない: ${targetData.url}`);
-				continue;
+				md5.update(contentsElement.innerHTML);
+			} else {
+				md5.update(response.body);
 			}
-			if (contentsElement.textContent === null) {
-				logger.error(`セレクター (${narrowingSelector}) の中身が空: ${targetData.url}`);
-				continue;
+			const contentHash = md5.digest('hex');
+			logger.debug(`コンテンツ hash: ${contentHash}`);
+
+			if (contentHash === targetData.content_hash) {
+				logger.info(`コンテンツ hash (${contentHash}) が DB に格納された値と同じ`);
+			} else {
+				/* DB 書き込み */
+				logger.debug('更新あり');
+
+				await dao.update(targetData, contentHash);
+
+				/* ファイル保存 */
+				const fileDir = await saveFile(targetData.url, response.body);
+
+				/* 通知 */
+				notice.add(`${targetData.title} ${targetData.url}\n変更履歴: ${env('CRAWLER_RESOURCE_SAVE_URL')}?dir=${fileDir} 🔒`);
 			}
 
-			md5.update(contentsElement.innerHTML);
-		} else {
-			md5.update(response.body);
-		}
-		const contentHash = md5.digest('hex');
-		logger.debug(`コンテンツ hash: ${contentHash}`);
-
-		if (contentHash === targetData.content_hash) {
-			logger.info(`コンテンツ hash (${contentHash}) が DB に格納された値と同じ`);
-		} else {
-			/* DB 書き込み */
-			logger.debug('更新あり');
-
-			await dao.update(targetData, contentHash);
-
-			/* ファイル保存 */
-			const fileDir = await saveFile(targetData.url, response.body);
-
-			/* 通知 */
-			notice.add(`${targetData.title} ${targetData.url}\n変更履歴: ${env('CRAWLER_RESOURCE_SAVE_URL')}?dir=${fileDir} 🔒`);
-		}
-
-		await accessSuccess(targetData.url, targetData.error);
-	}
+			await accessSuccess(targetData.url, targetData.error);
+		}),
+	);
 };
 
 export default exec;
