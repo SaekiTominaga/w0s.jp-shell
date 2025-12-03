@@ -18,7 +18,7 @@
 		"jsdom": "^27.2.0",
 		"kysely": "^0.28.8",
 		"log4js": "^6.9.1",
-		"nodemailer": "^7.0.10",
+		"nodemailer": "^7.0.11",
 		"puppeteer-core": "^24.31.0",
 		"relative-to-absolute-iri": "^1.0.7",
 		"whatwg-mimetype": "^4.0.0"
