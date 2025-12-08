@@ -1,7 +1,7 @@
 import SQLite from 'better-sqlite3';
 import { Kysely, SqliteDialect, type Selectable } from 'kysely';
 import { jsToSQLiteComparison, sqliteToJS } from '@w0s/sqlite-utility';
-import type { DB, DQueue } from '../../../@types/thumbimage.d.ts';
+import type { DB, DQueue } from '../../../@types/db_thumbimage.ts';
 
 /**
  * サムネイル画像生成
