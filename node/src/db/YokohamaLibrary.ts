@@ -1,7 +1,7 @@
 import SQLite from 'better-sqlite3';
 import { Kysely, sql, SqliteDialect, type Insertable, type Selectable } from 'kysely';
 import { jsToSQLiteAssignment, jsToSQLiteComparison, sqliteToJS } from '@w0s/sqlite-utility';
-import type { DAvailable, DB } from '../../../@types/yokohamalib.d.ts';
+import type { DAvailable, DB } from '../../../@types/db_yokohamalib.ts';
 
 /**
  * 横浜市立図書館
