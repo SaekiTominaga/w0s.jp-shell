@@ -1,10 +1,9 @@
+**/node_modules
 .env
 .env.*
 tsconfig.tsbuildinfo
 
-/data/
-/log/
-
+/data
+/log
 /node/log4js.*.json
 
-/node_modules/
