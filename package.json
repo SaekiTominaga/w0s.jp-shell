@@ -3,8 +3,8 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"prelint": "tsc --project node/tsconfig.json",
 		"lint": "eslint node/src/**/*.ts",
+		"pretest": "tsc -p node/tsconfig.json",
 		"test": "node --experimental-test-coverage --env-file-if-exists=.env.development --test node/src/**/*.test.ts"
 	},
 	"dependencies": {
