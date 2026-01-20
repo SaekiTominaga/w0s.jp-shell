@@ -40,12 +40,13 @@ const exec = async (notice: Notice): Promise<void> => {
 
 		/* ログイン */
 		await page.goto(config.url, {
+			timeout: config.timeout * 1000,
 			waitUntil: 'domcontentloaded',
 		}); // Cookie を取得するためにいったん適当なページにアクセス
 		logger.debug(await browser.cookies());
 
 		await page.goto(config.login.url, {
-			timeout: config.login.timeout * 1000,
+			timeout: config.timeout * 1000,
 			waitUntil: 'domcontentloaded',
 		});
 
@@ -53,7 +54,7 @@ const exec = async (notice: Notice): Promise<void> => {
 
 		const [response] = await Promise.all([
 			page.waitForNavigation({
-				timeout: config.login.timeout * 1000,
+				timeout: config.timeout * 1000,
 				waitUntil: 'domcontentloaded',
 			}),
 			page.click(config.login.submitSelector),
@@ -129,7 +130,7 @@ const exec = async (notice: Notice): Promise<void> => {
 		if (noticeBooks.length >= 1) {
 			/* 開館日カレンダー */
 			await page.goto(config.calendar.url, {
-				timeout: config.calendar.timeout * 1000,
+				timeout: config.timeout * 1000,
 				waitUntil: 'domcontentloaded',
 			});
 			const calendarPageResponse = await page.content();
