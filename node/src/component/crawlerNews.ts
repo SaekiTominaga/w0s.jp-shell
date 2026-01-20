@@ -1,4 +1,3 @@
-import crypto from 'node:crypto';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
@@ -65,7 +64,7 @@ const exec = async (notice: Notice): Promise<void> => {
 
 	await Promise.all(
 		targetDatas.map(async (targetData) => {
-			const newUrl = (await dao.selectDataCount(targetData.url)) === 0; // 新規追加された URL か
+			const newPage = (await dao.selectDataCount(targetData.random_id)) === 0; // 新規追加された Web ページかどうか
 
 			logger.info(`取得処理を実行: ${targetData.url}`);
 
@@ -168,7 +167,7 @@ const exec = async (notice: Notice): Promise<void> => {
 
 						if (
 							await dao.existData({
-								url: targetData.url,
+								news_id: targetData.random_id,
 								date: date,
 								content: contentText,
 								refer_url: referUrl,
@@ -181,15 +180,14 @@ const exec = async (notice: Notice): Promise<void> => {
 						/* DB 書き込み */
 						logger.debug(`データ登録実行: ${contentText.substring(0, 30)}...`);
 						await dao.insertData({
-							uuid: crypto.randomUUID(),
-							url: targetData.url,
+							news_id: targetData.random_id,
 							date: date,
 							content: contentText,
 							refer_url: referUrl,
 						});
 
 						/* 通知 */
-						if (!newUrl) {
+						if (!newPage) {
 							if (date === undefined) {
 								notice.add(`「${targetData.title}」\n${contentText}\n${referUrl ?? targetData.url}`);
 							} else {
@@ -212,6 +210,8 @@ const exec = async (notice: Notice): Promise<void> => {
 					logger.error(e.message);
 					return;
 				}
+
+				throw e;
 			}
 
 			await accessSuccess(targetData.url, targetData.error);
