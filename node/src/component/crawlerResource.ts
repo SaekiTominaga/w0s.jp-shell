@@ -157,7 +157,8 @@ const exec = async (notice: Notice): Promise<void> => {
 			const md5 = crypto.createHash('md5');
 			if (response.html) {
 				/* HTML ページの場合は DOM 化 */
-				const { document } = new jsdom.JSDOM(response.body).window;
+				const { window } = new jsdom.JSDOM(response.body);
+				const { document } = window;
 
 				const narrowingSelector = targetData.selector ?? 'body';
 				const contentsElement = document.querySelector(narrowingSelector);
