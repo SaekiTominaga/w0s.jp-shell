@@ -115,7 +115,8 @@ const exec = async (notice: Notice): Promise<void> => {
 			}
 
 			/* DOM 化 */
-			const { document } = new jsdom.JSDOM(response.body).window;
+			const { window } = new jsdom.JSDOM(response.body);
+			const { document } = window;
 
 			try {
 				const wrapElements = document.querySelectorAll<HTMLElement>(targetData.selector_wrap);
@@ -154,7 +155,7 @@ const exec = async (notice: Notice): Promise<void> => {
 							contentElement = contentElementTemp;
 						}
 
-						const contentText = getHtmlContent(contentElement);
+						const contentText = getHtmlContent(window, contentElement);
 
 						/* アンカーリンク抽出 */
 						let referUrl: string | undefined;

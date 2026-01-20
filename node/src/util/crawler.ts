@@ -1,3 +1,5 @@
+import jsdom from 'jsdom';
+
 /**
  * 日付文字列を解析する
  *
@@ -30,30 +32,31 @@ export const parseDate = (dateText: string): Date | undefined => {
 /**
  * Get the content of a HTMLElement
  *
+ * @param window - Window
  * @param element - HTML element
  *
  * @returns Content of a HTMLElement
  */
-export const getHtmlContent = (element: HTMLElement): string => {
-	if (element instanceof HTMLAreaElement || element instanceof HTMLImageElement) {
+export const getHtmlContent = (window: jsdom.DOMWindow, element: HTMLElement): string => {
+	if (element instanceof window.HTMLAreaElement || element instanceof window.HTMLImageElement) {
 		return element.alt;
 	}
 	if (
-		element instanceof HTMLInputElement ||
-		element instanceof HTMLOptionElement ||
-		element instanceof HTMLSelectElement ||
-		element instanceof HTMLTextAreaElement ||
-		element instanceof HTMLOutputElement
+		element instanceof window.HTMLInputElement ||
+		element instanceof window.HTMLOptionElement ||
+		element instanceof window.HTMLSelectElement ||
+		element instanceof window.HTMLTextAreaElement ||
+		element instanceof window.HTMLOutputElement
 	) {
 		return element.value;
 	}
-	if (element instanceof HTMLMetaElement) {
+	if (element instanceof window.HTMLMetaElement) {
 		return element.content;
 	}
-	if (element instanceof HTMLMeterElement || element instanceof HTMLProgressElement) {
+	if (element instanceof window.HTMLMeterElement || element instanceof window.HTMLProgressElement) {
 		return String(element.value);
 	}
-	if (element instanceof HTMLPreElement) {
+	if (element instanceof window.HTMLPreElement) {
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		return element.textContent!; // HTMLPreElement では `Node.textContent` が null になることはない
 	}
