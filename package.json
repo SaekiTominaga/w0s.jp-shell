@@ -18,7 +18,7 @@
 		"kysely": "^0.28.9",
 		"log4js": "^6.9.1",
 		"nodemailer": "^7.0.12",
-		"puppeteer-core": "^24.34.0",
+		"puppeteer-core": "^24.35.0",
 		"relative-to-absolute-iri": "^1.0.7",
 		"whatwg-mimetype": "^4.0.0"
 	},
