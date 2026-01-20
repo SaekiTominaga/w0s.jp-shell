@@ -3,6 +3,7 @@ type NullTransform<T> = Exclude<T, undefined> | (undefined extends T ? null : ne
 type Transform<T> = TypeTransform<NullTransform<T>>;
 
 export interface DNews {
+	random_id: string;
 	url: URL;
 	title: string;
 	category: number;
@@ -15,8 +16,8 @@ export interface DNews {
 }
 
 export interface DNewsData {
-	uuid: string;
-	url: URL;
+	random_id: string;
+	news_id: string;
 	date: Date | undefined;
 	content: string;
 	refer_url: string | undefined;
