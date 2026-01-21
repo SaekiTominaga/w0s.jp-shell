@@ -5,6 +5,6 @@
 	"editor.renderWhitespace": "boundary",
 	"eslint.validate": ["typescript"],
 	"search.exclude": {
-		"**/package-lock.json": true
+		"**/pnpm-lock.yaml": true
 	}
 }
