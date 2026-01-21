@@ -3,12 +3,12 @@ export default {
 	timeout: 45,
 	login: {
 		url: 'https://opac.lib.city.yokohama.lg.jp/winj/opac/login.do?dispatch=/opac/reserve-list.do',
-		postUrl: 'https://opac.lib.city.yokohama.lg.jp/winj/opac/reserve-list.do',
 		cardSelector: '#usercd',
 		passwordSelector: '#password',
 		submitSelector: "input[name='submit_btn_login']",
 	},
 	reserve: {
+		url: 'https://opac.lib.city.yokohama.lg.jp/winj/opac/reserve-list.do',
 		wrapSelector: '.list-book > li',
 		typeSelector: '.link-image > b',
 		titleSelector: '.title',

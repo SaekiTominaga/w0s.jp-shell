@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { JSDOM } from 'jsdom';
 import Log4js from 'log4js';
-import { launch } from 'puppeteer-core';
+import { HTTPResponse, launch } from 'puppeteer-core';
 import { env } from '@w0s/env-value-type';
 import { convert as stringConvert } from '@w0s/string-convert';
 import YokohamaLibraryDao from '../db/YokohamaLibrary.ts';
@@ -43,7 +43,7 @@ const exec = async (notice: Notice): Promise<void> => {
 			timeout: config.timeout * 1000,
 			waitUntil: 'domcontentloaded',
 		}); // Cookie を取得するためにいったん適当なページにアクセス
-		logger.debug(await browser.cookies());
+		logger.debug('Cookie', await browser.cookies());
 
 		await page.goto(config.login.url, {
 			timeout: config.timeout * 1000,
@@ -52,7 +52,7 @@ const exec = async (notice: Notice): Promise<void> => {
 
 		await Promise.all([page.type(config.login.cardSelector, env('YOKOHAMA_CARD')), page.type(config.login.passwordSelector, env('YOKOHAMA_PASSWORD'))]);
 
-		const [response] = await Promise.all([
+		const [loginPostResponse] = await Promise.all([
 			page.waitForNavigation({
 				timeout: config.timeout * 1000,
 				waitUntil: 'domcontentloaded',
@@ -61,17 +61,28 @@ const exec = async (notice: Notice): Promise<void> => {
 		]);
 		logger.debug(`ログインボタン \`${config.login.submitSelector}\` 押下`);
 
-		if (response === null) {
+		if (loginPostResponse === null) {
 			logger.warn('ログイン後のレスポンスが存在しない');
 			return;
 		}
 
-		if (page.url() !== config.login.postUrl) {
+		let reserveListResponse: HTTPResponse | null = null;
+		if (page.url() !== config.reserve.url) {
 			logger.info('ログイン後に想定と異なるページにリダイレクト', page.url());
-			return;
+
+			reserveListResponse = await page.goto(config.reserve.url, {
+				timeout: config.timeout * 1000,
+				waitUntil: 'domcontentloaded',
+			});
+			logger.debug('貸出中/予約中ページにアクセス', config.reserve.url);
+
+			if (reserveListResponse === null) {
+				logger.warn('レスポンスが存在しない', config.reserve.url);
+				return;
+			}
 		}
 
-		const reserveListPageContent = await response.text();
+		const reserveListPageContent = await (reserveListResponse ?? loginPostResponse).text();
 		logger.debug(reserveListPageContent);
 
 		/* DOM 化 */
