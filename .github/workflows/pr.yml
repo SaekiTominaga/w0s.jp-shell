@@ -25,11 +25,11 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
+      - name: Install dependencies
+        run: pnpm i --no-lockfile
+
       - name: Check formatting
         run: npx prettier . -c
-
-      - name: Install dependencies
-        run: pnpm i --frozen-lockfile
 
       - name: Run lint
         run: pnpm lint
@@ -48,7 +48,7 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm i --frozen-lockfile
+        run: pnpm i --no-lockfile
 
       - name: Run test
         run: pnpm test
