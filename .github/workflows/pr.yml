@@ -50,5 +50,8 @@ jobs:
       - name: Install dependencies
         run: pnpm i --no-lockfile
 
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps firefox
+
       - name: Run test
         run: pnpm test
