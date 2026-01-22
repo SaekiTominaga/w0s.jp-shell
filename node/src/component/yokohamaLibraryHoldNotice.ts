@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { JSDOM } from 'jsdom';
 import Log4js from 'log4js';
-import { HTTPResponse, launch } from 'puppeteer-core';
+import { launch } from 'puppeteer-core';
 import { env } from '@w0s/env-value-type';
 import { convert as stringConvert } from '@w0s/string-convert';
 import YokohamaLibraryDao from '../db/YokohamaLibrary.ts';
@@ -25,7 +25,9 @@ const exec = async (notice: Notice): Promise<void> => {
 	const availableBooks: Book[] = [];
 
 	/* ブラウザで対象ページにアクセス */
+	const launchStartTime = Date.now();
 	const browser = await launch({ executablePath: env('BROWSER_PATH') });
+	logger.info(`Puppeteer 起動: ${String(Math.round((Date.now() - launchStartTime) / 1000))}s`); // 本番環境ではこの処理に時間が掛かる
 	try {
 		const page = await browser.newPage();
 		await page.setUserAgent({
@@ -37,20 +39,24 @@ const exec = async (notice: Notice): Promise<void> => {
 				throw e;
 			});
 		});
+		logger.debug('Puppeteer 初期処理終了');
 
 		/* ログイン */
 		await page.goto(config.url, {
 			timeout: config.timeout * 1000,
 			waitUntil: 'domcontentloaded',
 		}); // Cookie を取得するためにいったん適当なページにアクセス
+		logger.info('Cookie 取得用の画面にアクセス', page.url());
 		logger.debug('Cookie', await browser.cookies());
 
 		await page.goto(config.login.url, {
 			timeout: config.timeout * 1000,
 			waitUntil: 'domcontentloaded',
 		});
+		logger.info('ログイン画面にアクセス', page.url());
 
-		await Promise.all([page.type(config.login.cardSelector, env('YOKOHAMA_CARD')), page.type(config.login.passwordSelector, env('YOKOHAMA_PASSWORD'))]);
+		await page.type(config.login.cardSelector, env('YOKOHAMA_CARD'));
+		await page.type(config.login.passwordSelector, env('YOKOHAMA_PASSWORD')); // `Promise.all()` でまとめず個々に実行する必要がある
 
 		const [loginPostResponse] = await Promise.all([
 			page.waitForNavigation({
@@ -66,27 +72,19 @@ const exec = async (notice: Notice): Promise<void> => {
 			return;
 		}
 
-		let reserveListResponse: HTTPResponse | null = null;
-		if (page.url() !== config.reserve.url) {
-			logger.info('ログイン後に想定と異なるページにリダイレクト', page.url());
+		const loginPostPageContent = await loginPostResponse.text();
+		const loginPostPageUrl = page.url();
 
-			reserveListResponse = await page.goto(config.reserve.url, {
-				timeout: config.timeout * 1000,
-				waitUntil: 'domcontentloaded',
-			});
-			logger.debug('貸出中/予約中ページにアクセス', config.reserve.url);
-
-			if (reserveListResponse === null) {
-				logger.warn('レスポンスが存在しない', config.reserve.url);
-				return;
-			}
+		if (loginPostPageUrl !== config.reserve.url) {
+			logger.warn('ログイン失敗', loginPostPageUrl, loginPostPageContent);
+			return;
 		}
 
-		const reserveListPageContent = await (reserveListResponse ?? loginPostResponse).text();
-		logger.debug(reserveListPageContent);
+		logger.info('ログイン後ページ', loginPostPageUrl);
+		logger.debug(loginPostPageContent);
 
 		/* DOM 化 */
-		const reserveListPageDocument = new JSDOM(reserveListPageContent).window.document;
+		const reserveListPageDocument = new JSDOM(loginPostPageContent).window.document;
 
 		reserveListPageDocument.querySelectorAll<HTMLElement>(config.reserve.wrapSelector).forEach((bookElement): void => {
 			if (bookElement.querySelector(config.reserve.availableSelector) === null) {
@@ -121,8 +119,8 @@ const exec = async (notice: Notice): Promise<void> => {
 		const receivedBooks = (await dao.selectAvailables()).filter(
 			(registed) => !availableBooks.some((available) => available.type === registed.type && available.title === registed.title),
 		);
-		logger.debug('データ削除', receivedBooks);
 		await dao.deleteAvailable(receivedBooks);
+		logger.info('データ削除', receivedBooks);
 
 		/* Web ページに記載されていて DB に未登録のデータ（受取可能になったデータ）を削除 */
 		const noticeBooks: Book[] = [];
@@ -135,8 +133,8 @@ const exec = async (notice: Notice): Promise<void> => {
 			}),
 		);
 
-		logger.debug('データ追加', noticeBooks);
 		await dao.insertAvailable(noticeBooks);
+		logger.info('データ追加', noticeBooks);
 
 		if (noticeBooks.length >= 1) {
 			/* 開館日カレンダー */
@@ -144,6 +142,7 @@ const exec = async (notice: Notice): Promise<void> => {
 				timeout: config.timeout * 1000,
 				waitUntil: 'domcontentloaded',
 			});
+			logger.info('カレンダー画面にアクセス', page.url());
 			const calendarPageResponse = await page.content();
 
 			/* DOM 化 */
