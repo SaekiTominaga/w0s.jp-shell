@@ -1,7 +1,6 @@
 import path from 'node:path';
-import { JSDOM } from 'jsdom';
 import Log4js from 'log4js';
-import { launch } from 'puppeteer-core';
+import { firefox } from 'playwright';
 import { env } from '@w0s/env-value-type';
 import { convert as stringConvert } from '@w0s/string-convert';
 import YokohamaLibraryDao from '../db/YokohamaLibrary.ts';
@@ -22,24 +21,13 @@ const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
 const dao = new YokohamaLibraryDao(env('SQLITE_YOKOHAMA_LIBRARY'));
 
 const exec = async (notice: Notice): Promise<void> => {
-	const availableBooks: Book[] = [];
-
 	/* ブラウザで対象ページにアクセス */
 	const launchStartTime = Date.now();
-	const browser = await launch({ executablePath: env('BROWSER_PATH') });
-	logger.info(`Puppeteer 起動: ${String(Math.round((Date.now() - launchStartTime) / 1000))}s`); // 本番環境ではこの処理に時間が掛かる
+	const browser = await firefox.launch();
+	logger.info(`Launch ${browser.browserType().name()} ${browser.version()}: ${String(Math.round((Date.now() - launchStartTime) / 1000))}s`);
 	try {
-		const page = await browser.newPage();
-		await page.setUserAgent({
-			userAgent: env('BROWSER_UA'),
-		});
-		await page.setRequestInterception(true);
-		page.on('request', (request) => {
-			request.continue().catch((e: unknown) => {
-				throw e;
-			});
-		});
-		logger.debug('Puppeteer 初期処理終了');
+		const browserContext = await browser.newContext();
+		const page = await browserContext.newPage();
 
 		/* ログイン */
 		await page.goto(config.url, {
@@ -47,7 +35,7 @@ const exec = async (notice: Notice): Promise<void> => {
 			waitUntil: 'domcontentloaded',
 		}); // Cookie を取得するためにいったん適当なページにアクセス
 		logger.info('Cookie 取得用の画面にアクセス', page.url());
-		logger.debug('Cookie', await browser.cookies());
+		logger.debug('Cookie', await browserContext.cookies());
 
 		await page.goto(config.login.url, {
 			timeout: config.timeout * 1000,
@@ -55,63 +43,47 @@ const exec = async (notice: Notice): Promise<void> => {
 		});
 		logger.info('ログイン画面にアクセス', page.url());
 
-		await page.type(config.login.cardSelector, env('YOKOHAMA_CARD'));
-		await page.type(config.login.passwordSelector, env('YOKOHAMA_PASSWORD')); // `Promise.all()` でまとめず個々に実行する必要がある
+		await page.locator(config.login.cardSelector).fill(env('YOKOHAMA_CARD'));
+		await page.locator(config.login.passwordSelector).fill(env('YOKOHAMA_PASSWORD'));
 
-		const [loginPostResponse] = await Promise.all([
-			page.waitForNavigation({
-				timeout: config.timeout * 1000,
-				waitUntil: 'domcontentloaded',
-			}),
-			page.click(config.login.submitSelector),
-		]);
+		await page.locator(config.login.submitSelector).click();
 		logger.debug(`ログインボタン \`${config.login.submitSelector}\` 押下`);
 
-		if (loginPostResponse === null) {
-			logger.warn('ログイン後のレスポンスが存在しない');
-			return;
-		}
-
-		const loginPostPageContent = await loginPostResponse.text();
-		const loginPostPageUrl = page.url();
-
-		if (loginPostPageUrl !== config.reserve.url) {
-			logger.warn('ログイン失敗', loginPostPageUrl, loginPostPageContent);
-			return;
-		}
-
-		logger.info('ログイン後ページ', loginPostPageUrl);
-		logger.debug(loginPostPageContent);
-
-		/* DOM 化 */
-		const reserveListPageDocument = new JSDOM(loginPostPageContent).window.document;
-
-		reserveListPageDocument.querySelectorAll<HTMLElement>(config.reserve.wrapSelector).forEach((bookElement): void => {
-			if (bookElement.querySelector(config.reserve.availableSelector) === null) {
-				/* 準備中、回送中の本は除外 */
-				return;
-			}
-
-			const type = bookElement.querySelector(config.reserve.typeSelector)?.textContent;
-			if (type === null || type === undefined) {
-				throw new Error(`資料区分の HTML 要素 \`${config.reserve.typeSelector}\` が存在しない`);
-			}
-
-			const title = bookElement.querySelector(config.reserve.titleSelector)?.textContent;
-			if (title === null || title === undefined) {
-				throw new Error(`資料名の HTML 要素 \`${config.reserve.titleSelector}\` が存在しない`);
-			}
-
-			availableBooks.push({
-				type: type,
-				title: stringConvert(title, {
-					trim: true,
-					toHankakuEisu: true,
-					toHankakuSpace: true,
-					table: { '\n': ' ' },
-				}),
-			});
+		await page.waitForLoadState('domcontentloaded', {
+			timeout: config.timeout * 1000,
 		});
+
+		const loginPostPageUrl = page.url();
+		if (loginPostPageUrl !== config.reserve.url) {
+			logger.warn('ログイン失敗', loginPostPageUrl);
+			return;
+		}
+		logger.info('ログイン成功', loginPostPageUrl);
+
+		const availableBooks: Book[] = [];
+		await Promise.all(
+			(await page.locator(config.reserve.wrapSelector).all()).map(async (bookElement) => {
+				const type = await bookElement.locator(config.reserve.typeSelector).textContent();
+				if (type === null) {
+					throw new Error(`資料区分の HTML 要素 \`${config.reserve.typeSelector}\` が存在しない`);
+				}
+
+				const title = await bookElement.locator(config.reserve.titleSelector).textContent();
+				if (title === null) {
+					throw new Error(`資料名の HTML 要素 \`${config.reserve.titleSelector}\` が存在しない`);
+				}
+
+				availableBooks.push({
+					type: type,
+					title: stringConvert(title, {
+						trim: true,
+						toHankakuEisu: true,
+						toHankakuSpace: true,
+						table: { '\n': ' ' },
+					}),
+				});
+			}),
+		);
 
 		logger.info(`受取可能資料 ${String(availableBooks.length)} 件`);
 
@@ -143,30 +115,27 @@ const exec = async (notice: Notice): Promise<void> => {
 				waitUntil: 'domcontentloaded',
 			});
 			logger.info('カレンダー画面にアクセス', page.url());
-			const calendarPageResponse = await page.content();
-
-			/* DOM 化 */
-			const calendarPageDocument = new JSDOM(calendarPageResponse).window.document;
 
 			let closedReason = ''; // 休館理由
+			await Promise.all(
+				(await page.locator(config.calendar.cellSelector).all()).map(async (tdElement): Promise<void> => {
+					const matchGroup = (await tdElement.textContent())?.trim().match(/(?<day>[1-9][0-9]{0,1})(?<reason>.*)/v)?.groups;
+					if (matchGroup !== undefined) {
+						const day = Number(matchGroup['day']);
+						const result = matchGroup['reason'];
 
-			calendarPageDocument.querySelectorAll<HTMLElement>(config.calendar.cellSelector).forEach((tdElement): void => {
-				const matchGroup = tdElement.textContent?.trim().match(/(?<day>[1-9][0-9]{0,1})(?<reason>.*)/v)?.groups;
-				if (matchGroup !== undefined) {
-					const day = Number(matchGroup['day']);
-					const result = matchGroup['reason'];
-
-					if (day === new Date().getDate() && result !== undefined) {
-						closedReason = result;
+						if (day === new Date().getDate() && result !== undefined) {
+							closedReason = result;
+						}
 					}
-				}
-			});
+				}),
+			);
 
 			notice.add(`${noticeBooks.map((book) => `${book.type}${book.title}`).join('\n')}\n\n${config.url}\n\n${closedReason}`);
 		}
 	} finally {
-		logger.debug('browser.close()');
 		await browser.close();
+		logger.info('Browser closed');
 	}
 };
 

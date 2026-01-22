@@ -1,4 +1,4 @@
-import { launch } from 'puppeteer-core';
+import { firefox } from 'playwright';
 import MIMEType from 'whatwg-mimetype';
 
 export class HTTPResponseError extends Error {
@@ -70,47 +70,18 @@ export const requestFetch = async (url: URL, option: Readonly<{ timeout: number 
  * ブラウザで URL にリクエストを行い、レスポンスボディを取得する
  *
  * @param url - URL
- * @param browserOption - ブラウザのオプション
- * @param browserOption.path - 実行ファイルのパス
- * @param browserOption.ua - UA 文字列
  *
  * @returns レスポンス
  */
-export const requestBrowser = async (
-	url: URL,
-	browserOption: Readonly<{
-		path: string;
-		ua?: string;
-	}>,
-): Promise<HTTPResponse> => {
-	const browser = await launch({ executablePath: browserOption.path });
+export const requestBrowser = async (url: URL): Promise<HTTPResponse> => {
+	const browser = await firefox.launch();
+
 	try {
-		const page = await browser.newPage();
-		if (browserOption.ua !== undefined) {
-			await page.setUserAgent({
-				userAgent: browserOption.ua,
-			});
-		}
-		await page.setRequestInterception(true);
-		page.on('request', (request) => {
-			switch (request.resourceType()) {
-				case 'document':
-				case 'stylesheet':
-				case 'script':
-				case 'xhr':
-				case 'fetch': {
-					// eslint-disable-next-line @typescript-eslint/no-floating-promises
-					request.continue();
-					break;
-				}
-				default: {
-					// eslint-disable-next-line @typescript-eslint/no-floating-promises
-					request.abort();
-				}
-			}
-		});
+		const browserContext = await browser.newContext();
+		const page = await browserContext.newPage();
+
 		const response = await page.goto(url.toString(), {
-			waitUntil: 'networkidle0',
+			waitUntil: 'networkidle',
 		});
 		if (response === null) {
 			throw new Error('Resolving resource response failed');
