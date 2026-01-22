@@ -115,7 +115,7 @@ const exec = async (notice: Notice): Promise<void> => {
 					Origin: url.origin,
 				},
 			});
-			logger.info(`検索完了: ${requestCount} 件目`);
+			logger.info(`検索完了: ${String(requestCount)} 件目`);
 
 			if (!response.ok) {
 				throw new Error(`\`${response.url}\` is ${String(response.status)} ${response.statusText}`);
