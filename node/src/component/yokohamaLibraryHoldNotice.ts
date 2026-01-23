@@ -47,7 +47,9 @@ const exec = async (notice: Notice): Promise<void> => {
 		await page.locator(config.login.cardSelector).fill(env('YOKOHAMA_CARD'));
 		await page.locator(config.login.passwordSelector).fill(env('YOKOHAMA_PASSWORD'));
 
-		await page.locator(config.login.submitSelector).click();
+		await page.locator(config.login.submitSelector).click({
+			timeout: config.timeout * 1000,
+		});
 		logger.debug(`ログインボタン \`${config.login.submitSelector}\` 押下`);
 
 		await page.waitForLoadState('domcontentloaded', {
