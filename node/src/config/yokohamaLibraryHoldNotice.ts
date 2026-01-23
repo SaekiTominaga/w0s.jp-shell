@@ -9,9 +9,10 @@ export default {
 	},
 	reserve: {
 		url: 'https://opac.lib.city.yokohama.lg.jp/winj/opac/reserve-list.do',
-		wrapSelector: '.list-book > li:has(.icon-available)',
+		wrapSelector: '.list-book > li',
 		typeSelector: '.link-image > b',
-		titleSelector: '.title',
+		titleSelector: '.link-image .title',
+		stateSelector: '.column.info > div[style="display: flex;"] > p',
 	},
 	calendar: {
 		url: 'https://opac.lib.city.yokohama.lg.jp/winj/opac/calendar.do?submit_btn_reference=cal&cmb_ar=11',

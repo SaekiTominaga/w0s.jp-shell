@@ -52,12 +52,12 @@
 			"outputCapture": "std"
 		},
 		{
-			"name": "yokohamaLibraryHoldNotice",
+			"name": "yokohamaLibrary",
 			"type": "node",
 			"request": "launch",
 			"skipFiles": ["<node_internals>/**"],
 			"program": "${workspaceFolder}/node/src/shell.ts",
-			"args": ["-c", "yokohamaLibraryHoldNotice", "-n", "横浜市立図書館　予約連絡"],
+			"args": ["-c", "yokohamaLibrary", "-n", "横浜市立図書館　予約情報"],
 			"envFile": "${workspaceFolder}/.env.development",
 			"outputCapture": "std"
 		}
