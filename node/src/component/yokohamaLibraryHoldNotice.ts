@@ -28,7 +28,7 @@ const dao = new YokohamaLibraryDao(env('SQLITE_YOKOHAMA_LIBRARY'));
  * @returns 休館理由（開館日の場合は undefined）
  */
 export const getClosedReason = (cellText: string): string | undefined => {
-	const matchGroup = cellText.match(/(?<day>[1-9][0-9]{0,1})(?<reason>.*)/v)?.groups;
+	const matchGroup = /(?<day>[1-9][0-9]{0,1})(?<reason>.*)/v.exec(cellText)?.groups;
 	if (matchGroup === undefined) {
 		return undefined;
 	}
