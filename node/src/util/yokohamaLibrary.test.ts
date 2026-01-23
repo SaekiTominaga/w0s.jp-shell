@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
-import { getClosedReason } from './yokohamaLibraryHoldNotice.ts';
+import { getClosedReason } from './yokohamaLibrary.ts';
 
 await test('getClosed', async (t) => {
 	const day = new Date().getDate();
