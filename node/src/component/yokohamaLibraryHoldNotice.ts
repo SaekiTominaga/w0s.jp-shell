@@ -20,6 +20,29 @@ const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
 
 const dao = new YokohamaLibraryDao(env('SQLITE_YOKOHAMA_LIBRARY'));
 
+/**
+ * 休館情報を取得する（今日が休館かどうか）
+ *
+ * @param cellText 開館日カレンダーのセルのテキスト（HTMLTableCellElement.textContent）
+ *
+ * @returns 休館理由（開館日の場合は undefined）
+ */
+export const getClosedReason = (cellText: string): string | undefined => {
+	const matchGroup = cellText.match(/(?<day>[1-9][0-9]{0,1})(?<reason>.*)/v)?.groups;
+	if (matchGroup === undefined) {
+		return undefined;
+	}
+
+	const day = Number(matchGroup['day']);
+	const result = matchGroup['reason'];
+
+	if (day !== new Date().getDate() || result === undefined) {
+		return undefined;
+	}
+
+	return result;
+};
+
 const exec = async (notice: Notice): Promise<void> => {
 	/* ブラウザで対象ページにアクセス */
 	const launchStartTime = Date.now();
@@ -116,22 +139,19 @@ const exec = async (notice: Notice): Promise<void> => {
 			});
 			logger.info('カレンダー画面にアクセス', page.url());
 
-			let closedReason = ''; // 休館理由
-			await Promise.all(
-				(await page.locator(config.calendar.cellSelector).all()).map(async (tdElement): Promise<void> => {
-					const matchGroup = (await tdElement.textContent())?.trim().match(/(?<day>[1-9][0-9]{0,1})(?<reason>.*)/v)?.groups;
-					if (matchGroup !== undefined) {
-						const day = Number(matchGroup['day']);
-						const result = matchGroup['reason'];
-
-						if (day === new Date().getDate() && result !== undefined) {
-							closedReason = result;
+			const closedReason = (
+				await Promise.all(
+					(await page.locator(config.calendar.cellSelector).all()).map(async (tdElement): Promise<string | undefined> => {
+						const cellText = await tdElement.textContent();
+						if (cellText === null) {
+							return undefined;
 						}
-					}
-				}),
-			);
+						return getClosedReason(cellText);
+					}),
+				)
+			).find((reason) => reason !== undefined);
 
-			notice.add(`${noticeBooks.map((book) => `${book.type}${book.title}`).join('\n')}\n\n${config.url}\n\n${closedReason}`);
+			notice.add(`${noticeBooks.map((book) => `${book.type}${book.title}`).join('\n')}\n\n${config.url}\n\n${closedReason ?? ''}`);
 		}
 	} finally {
 		await browser.close();
