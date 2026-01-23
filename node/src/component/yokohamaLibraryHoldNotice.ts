@@ -3,9 +3,10 @@ import Log4js from 'log4js';
 import { firefox } from 'playwright';
 import { env } from '@w0s/env-value-type';
 import { convert as stringConvert } from '@w0s/string-convert';
-import YokohamaLibraryDao from '../db/YokohamaLibrary.ts';
-import config from '../config/yokohamaLibraryHoldNotice.ts';
 import type Notice from '../Notice.ts';
+import config from '../config/yokohamaLibraryHoldNotice.ts';
+import YokohamaLibraryDao from '../db/YokohamaLibrary.ts';
+import { getClosedReason } from '../util/yokohamaLibrary.ts';
 
 /**
  * 横浜市立図書館　予約連絡
@@ -116,22 +117,19 @@ const exec = async (notice: Notice): Promise<void> => {
 			});
 			logger.info('カレンダー画面にアクセス', page.url());
 
-			let closedReason = ''; // 休館理由
-			await Promise.all(
-				(await page.locator(config.calendar.cellSelector).all()).map(async (tdElement): Promise<void> => {
-					const matchGroup = (await tdElement.textContent())?.trim().match(/(?<day>[1-9][0-9]{0,1})(?<reason>.*)/v)?.groups;
-					if (matchGroup !== undefined) {
-						const day = Number(matchGroup['day']);
-						const result = matchGroup['reason'];
-
-						if (day === new Date().getDate() && result !== undefined) {
-							closedReason = result;
+			const closedReason = (
+				await Promise.all(
+					(await page.locator(config.calendar.cellSelector).all()).map(async (tdElement): Promise<string | undefined> => {
+						const cellText = await tdElement.textContent();
+						if (cellText === null) {
+							return undefined;
 						}
-					}
-				}),
-			);
+						return getClosedReason(cellText);
+					}),
+				)
+			).find((reason) => reason !== undefined);
 
-			notice.add(`${noticeBooks.map((book) => `${book.type}${book.title}`).join('\n')}\n\n${config.url}\n\n${closedReason}`);
+			notice.add(`${noticeBooks.map((book) => `${book.type}${book.title}`).join('\n')}\n\n${config.url}\n\n${closedReason ?? ''}`);
 		}
 	} finally {
 		await browser.close();
