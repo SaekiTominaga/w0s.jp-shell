@@ -1,7 +1,7 @@
 import SQLite from 'better-sqlite3';
-import { Kysely, sql, SqliteDialect, type Insertable, type Selectable } from 'kysely';
+import { Kysely, SqliteDialect, type Insertable, type Selectable } from 'kysely';
 import { jsToSQLiteAssignment, jsToSQLiteComparison, sqliteToJS } from '@w0s/sqlite-utility';
-import type { DAvailable, DB } from '../../../@types/db_yokohamalib.d.ts';
+import type { DReserve, DB } from '../../../@types/db_yokohamalib.d.ts';
 
 /**
  * 横浜市立図書館
@@ -29,56 +29,38 @@ export default class YokohamaLibraryDao {
 	}
 
 	/**
-	 * すべての受取可能データを取得する
+	 * すべての予約データを取得する
 	 *
-	 * @returns 受取可能データ
+	 * @returns 予約データ
 	 */
-	async selectAvailables(): Promise<Selectable<DAvailable>[]> {
-		const query = this.db.selectFrom('d_available').select(['type', 'title']);
+	async select(): Promise<Selectable<DReserve>[]> {
+		const query = this.db.selectFrom('d_reserve').select(['material_type', 'title', 'state']);
 
 		const rows = await query.execute();
 
 		return rows.map((row) => ({
-			type: sqliteToJS(row.type),
+			material_type: sqliteToJS(row.material_type),
 			title: sqliteToJS(row.title),
+			state: sqliteToJS(row.state),
 		}));
 	}
 
 	/**
-	 * 指定されたデータが登録済みかどうかチェックする
-	 *
-	 * @param data - 書籍データ
-	 *
-	 * @returns 登録済みなら true
-	 */
-	async isRegisted(data: Readonly<Selectable<DAvailable>>): Promise<boolean> {
-		let query = this.db.selectFrom('d_available').select([sql<number>`COUNT(title)`.as('count')]);
-		query = query.where('type', '=', data.type);
-		query = query.where('title', '=', data.title);
-
-		const row = await query.executeTakeFirst();
-		if (row === undefined) {
-			return false;
-		}
-
-		return row.count > 0;
-	}
-
-	/**
-	 * 受取可能データを登録する
+	 * 予約データを登録する
 	 *
 	 * @param datas - 登録するデータ
 	 */
-	async insertAvailable(datas: readonly Readonly<Insertable<DAvailable>>[]): Promise<void> {
+	async insert(datas: readonly Readonly<Insertable<DReserve>>[]): Promise<void> {
 		if (datas.length === 0) {
 			return;
 		}
 
-		let query = this.db.insertInto('d_available');
+		let query = this.db.insertInto('d_reserve');
 		query = query.values(
 			datas.map((data) => ({
-				type: jsToSQLiteAssignment(data.type),
+				material_type: jsToSQLiteAssignment(data.material_type),
 				title: jsToSQLiteAssignment(data.title),
+				state: jsToSQLiteAssignment(data.state),
 			})),
 		);
 
@@ -86,20 +68,37 @@ export default class YokohamaLibraryDao {
 	}
 
 	/**
-	 * 受取可能データを削除する
+	 * 予約データを削除する
 	 *
 	 * @param datas - 削除するデータ
 	 */
-	async deleteAvailable(datas: readonly Readonly<DAvailable>[]): Promise<void> {
-		if (datas.length === 0) {
-			return;
-		}
-
+	async delete(datas: readonly Readonly<DReserve>[]): Promise<void> {
 		await Promise.all(
 			datas.map(async (data) => {
-				let query = this.db.deleteFrom('d_available');
-				query = query.where('type', '=', jsToSQLiteComparison(data.type));
+				let query = this.db.deleteFrom('d_reserve');
+				query = query.where('material_type', '=', jsToSQLiteComparison(data.material_type));
 				query = query.where('title', '=', jsToSQLiteComparison(data.title));
+
+				await query.executeTakeFirst();
+			}),
+		);
+	}
+
+	/**
+	 * 状態を変更する
+	 *
+	 * @param datas - 予約データ
+	 */
+	async updateState(datas: readonly Readonly<DReserve>[]): Promise<void> {
+		await Promise.all(
+			datas.map(async (data) => {
+				const query = this.db
+					.updateTable('d_reserve')
+					.set({
+						state: jsToSQLiteAssignment(data.state),
+					})
+					.where('material_type', '=', jsToSQLiteComparison(data.material_type))
+					.where('title', '=', jsToSQLiteComparison(data.title));
 
 				await query.executeTakeFirst();
 			}),
