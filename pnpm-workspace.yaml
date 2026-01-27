@@ -1,2 +1,14 @@
+# Settings <https://pnpm.io/settings>
+
+## Dependency Resolution
+
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  - semver@6.3.1
+blockExoticSubdeps: true
+
+## Build Settings
+
+strictDepBuilds: true
 onlyBuiltDependencies:
   - better-sqlite3
