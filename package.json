@@ -29,7 +29,7 @@
 		"@types/whatwg-mimetype": "3.0.2",
 		"@w0s/eslint-config": "9.4.1",
 		"@w0s/tsconfig": "1.7.0",
-		"prettier": "3.8.0",
+		"prettier": "3.8.1",
 		"rimraf": "6.1.2",
 		"typescript": "5.8.3"
 	},
