@@ -173,21 +173,24 @@ const exec = async (notice: Notice): Promise<void> => {
 				md5.update(response.body);
 			}
 			const contentHash = md5.digest('hex');
-			logger.debug(`コンテンツ hash: ${contentHash}`);
 
 			if (contentHash === targetData.content_hash) {
-				logger.info(`コンテンツ hash (${contentHash}) が DB に格納された値と同じ`);
+				logger.info(`コンテンツ更新なし: ${contentHash}`);
 			} else {
-				/* DB 書き込み */
-				logger.debug('更新あり');
+				logger.info(`コンテンツ更新あり: ${contentHash}`);
 
-				await dao.update(targetData, contentHash);
+				const [, fileDir] = await Promise.all([
+					/* DB 書き込み */
+					dao.update(targetData, contentHash),
 
-				/* ファイル保存 */
-				const fileDir = await saveFile(targetData.url, response.body);
+					/* ファイル保存 */
+					saveFile(targetData.url, response.body),
+				]);
 
 				/* 通知 */
-				notice.add(`${targetData.title} ${targetData.url}\n変更履歴: ${env('CRAWLER_RESOURCE_SAVE_URL')}?dir=${fileDir} 🔒`);
+				if (targetData.content_hash !== undefined) {
+					notice.add(`${targetData.title} ${targetData.url}\n変更履歴: ${env('CRAWLER_RESOURCE_SAVE_URL')}?dir=${fileDir} 🔒`);
+				}
 			}
 
 			await accessSuccess(targetData.url, targetData.error);
