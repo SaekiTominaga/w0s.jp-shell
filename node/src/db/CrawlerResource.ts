@@ -36,8 +36,10 @@ export default class CrawlerResourceDao {
 	 * @returns 登録データ
 	 */
 	async select(priority: number): Promise<DResource[]> {
-		let query = this.db.selectFrom('d_resource').select(['url', 'title', 'category', 'priority', 'browser', 'selector', 'content_hash', 'error']);
-		query = query.where('priority', '>=', priority);
+		const query = this.db
+			.selectFrom('d_resource')
+			.select(['url', 'title', 'category', 'priority', 'browser', 'selector', 'content_hash', 'error'])
+			.where((eb) => eb.or([eb('priority', '>=', priority), eb('content_hash', 'is', null)]));
 
 		const rows = await query.execute();
 
