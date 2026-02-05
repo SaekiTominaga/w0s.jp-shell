@@ -36,8 +36,8 @@ importers:
         specifier: 6.9.1
         version: 6.9.1
       nodemailer:
-        specifier: 7.0.12
-        version: 7.0.12
+        specifier: 7.0.13
+        version: 7.0.13
       playwright:
         specifier: 1.58.0
         version: 1.58.0
@@ -1091,8 +1091,8 @@ packages:
     resolution: {integrity: sha512-Z+iLaBGVaSjbIzQ4pX6XV41HrooLsQ10ZWPUehGmuantvzWoDVBnmsdUcOIDM1t+yPor5pDhVlDESgOMEGxhHA==}
     engines: {node: '>=6.0.0'}
 
-  nodemailer@7.0.12:
-    resolution: {integrity: sha512-H+rnK5bX2Pi/6ms3sN4/jRQvYSMltV6vqup/0SFOrxYYY/qoNvhXPlYq3e+Pm9RFJRwrMGbMIwi81M4dxpomhA==}
+  nodemailer@7.0.13:
+    resolution: {integrity: sha512-PNDFSJdP+KFgdsG3ZzMXCgquO7I6McjY2vlqILjtJd0hy8wEvtugS9xKRF2NWlPNGxvLCXlTNIae4serI7dinw==}
     engines: {node: '>=6.0.0'}
 
   object-deep-merge@2.0.0:
@@ -2728,7 +2728,7 @@ snapshots:
 
   nodemailer@6.10.1: {}
 
-  nodemailer@7.0.12: {}
+  nodemailer@7.0.13: {}
 
   object-deep-merge@2.0.0: {}
 
