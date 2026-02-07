@@ -97,7 +97,7 @@ const exec = async (notice: Notice): Promise<void> => {
 								notice.add(`${targetData.title}\n${targetData.url}\nタイムアウト\nエラー回数: ${String(errorCount)}`);
 							}
 
-							break;
+							return;
 						}
 						default:
 					}
