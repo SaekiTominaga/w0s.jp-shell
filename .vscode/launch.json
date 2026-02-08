@@ -32,12 +32,12 @@
 			"outputCapture": "std"
 		},
 		{
-			"name": "jrCyberStation",
+			"name": "jrSearchTrain",
 			"type": "node",
 			"request": "launch",
 			"skipFiles": ["<node_internals>/**"],
 			"program": "${workspaceFolder}/node/src/shell.ts",
-			"args": ["-c", "jrCyberStation", "-n", "JR 空席確認"],
+			"args": ["-c", "jrSearchTrain", "-n", "JR 列車空席確認"],
 			"envFile": "${workspaceFolder}/.env.development",
 			"outputCapture": "std"
 		},

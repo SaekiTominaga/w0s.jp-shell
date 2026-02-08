@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import Log4js from 'log4js';
 import { JSDOM } from 'jsdom';
 import { env } from '@w0s/env-value-type';
-import config from '../config/jrCyberStation.ts';
+import config from '../config/jrSearchTrain.ts';
 import type Notice from '../Notice.ts';
 import { sleep } from '../util/sleep.ts';
 
@@ -16,7 +16,7 @@ interface Search {
 }
 
 /**
- * JR CYBER STATION で空席があれば通知する
+ * JR 列車空席確認
  */
 const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
 
