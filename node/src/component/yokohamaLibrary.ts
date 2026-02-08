@@ -47,8 +47,8 @@ const exec = async (notice: Notice): Promise<void> => {
 			});
 			logger.info('ログイン画面にアクセス', page.url());
 
-			await page.locator(config.login.cardSelector).fill(env('YOKOHAMA_LIBRARY__CARD'));
-			await page.locator(config.login.passwordSelector).fill(env('YOKOHAMA_LIBRARY__PASSWORD'));
+			await page.locator(config.login.cardSelector).fill(env('YOKOHAMA_LIBRARY_CARD'));
+			await page.locator(config.login.passwordSelector).fill(env('YOKOHAMA_LIBRARY_PASSWORD'));
 
 			await page.locator(config.login.submitSelector).click({
 				timeout: config.timeout * 1000,
