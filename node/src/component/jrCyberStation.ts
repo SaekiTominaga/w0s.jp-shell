@@ -26,7 +26,7 @@ const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
  * @returns 駅名リスト
  */
 const getSearchTrain = async (): Promise<Search[]> => {
-	const targetPath = env('JR_SEARCH_TRAIN_FILE');
+	const targetPath = `${env('ROOT')}/${env('JR_SEARCH_TRAIN_FILE_PATH')}`;
 
 	return JSON.parse((await fs.promises.readFile(targetPath)).toString()) as Search[];
 };

@@ -16,7 +16,7 @@ import { sleep } from '../util/sleep.ts';
  */
 const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
 
-const dao = new CrawlerResourceDao(env('SQLITE_CRAWLER'));
+const dao = new CrawlerResourceDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_CRAWLER')}`);
 
 /**
  * URL へのアクセスが成功した時の処理
@@ -59,7 +59,7 @@ const saveFile = async (url: URL, responseBody: string): Promise<string> => {
 	const date = new Date();
 
 	const fileDir = url.pathname === '/' ? url.hostname : `${url.hostname}${url.pathname.replace(/\/[^\/]*$/gv, '')}`;
-	const fileFullDir = `${env('CRAWLER_RESOURCE_SAVE_DIRECTORY')}/${fileDir}`;
+	const fileFullDir = `${env('ROOT')}/${env('CRAWLER_RESOURCE_SAVE_DIRECTORY')}/${fileDir}`;
 	const fileName = `${String(url.pathname.split('/').at(-1))}_${String(date.getFullYear())}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
 		date.getDate(),
 	).padStart(2, '0')}_${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(
@@ -189,7 +189,7 @@ const exec = async (notice: Notice): Promise<void> => {
 
 				/* 通知 */
 				if (targetData.content_hash !== undefined) {
-					notice.add(`${targetData.title} ${targetData.url}\n変更履歴: ${env('CRAWLER_RESOURCE_SAVE_URL')}?dir=${fileDir} 🔒`);
+					notice.add(`${targetData.title} ${targetData.url}\n変更履歴: https://w0s.jp/admin/crawler-resource/diff?dir=${fileDir} 🔒`);
 				}
 			}
 
