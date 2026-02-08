@@ -21,7 +21,7 @@ interface Material {
 
 const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
 
-const dao = new YokohamaLibraryDao(env('SQLITE_YOKOHAMA_LIBRARY'));
+const dao = new YokohamaLibraryDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_YOKOHAMA_LIBRARY')}`);
 
 const exec = async (notice: Notice): Promise<void> => {
 	/* ブラウザで対象ページにアクセス */
