@@ -31,7 +31,7 @@ const timeout = Number(argsParsedValues.timeout); // タイムアウト秒数（
 const noticeTitle = String(argsParsedValues.notice); // 通知タイトル
 
 /* Logger 設定 */
-Log4js.configure(env('LOGGER'));
+Log4js.configure(env('NODE_LOG4JS_CONF'));
 const logger = Log4js.getLogger(componentName);
 
 logger.info('----- Start processing');

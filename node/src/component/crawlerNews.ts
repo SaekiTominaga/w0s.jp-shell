@@ -15,7 +15,7 @@ import { getHtmlContent, parseDate } from '../util/crawler.ts';
  */
 const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
 
-const dao = new CrawlerNewsDao(env('SQLITE_CRAWLER'));
+const dao = new CrawlerNewsDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_CRAWLER')}`);
 
 /**
  * URL へのアクセスが成功した時の処理
