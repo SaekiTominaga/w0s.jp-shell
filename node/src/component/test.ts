@@ -6,7 +6,7 @@ import type Notice from '../Notice.ts';
 /**
  * シェル機能のテスト用
  */
-const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
+const logger = Log4js.getLogger(path.basename(import.meta.url, '.ts'));
 
 const exec = (notice: Notice): void => {
 	logger.info('args', parseArgs({ strict: false }).values);

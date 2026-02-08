@@ -6,7 +6,7 @@ import ThumbImageDao from '../db/ThumbImage.ts';
 /**
  * サムネイル画像生成
  */
-const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
+const logger = Log4js.getLogger(path.basename(import.meta.url, '.ts'));
 
 const dao = new ThumbImageDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_THUMB_IMAGE')}`);
 
