@@ -13,7 +13,7 @@ import { getHtmlContent, parseDate } from '../util/crawler.ts';
 /**
  * ウェブページを巡回し、新着情報の差分を調べて通知する
  */
-const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
+const logger = Log4js.getLogger(path.basename(import.meta.url, '.ts'));
 
 const dao = new CrawlerNewsDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_CRAWLER')}`);
 

@@ -14,7 +14,7 @@ import { sleep } from '../util/sleep.ts';
 /**
  * ウェブページを巡回し、レスポンスボディの差分を調べて通知する
  */
-const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
+const logger = Log4js.getLogger(path.basename(import.meta.url, '.ts'));
 
 const dao = new CrawlerResourceDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_CRAWLER')}`);
 

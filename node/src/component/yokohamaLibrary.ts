@@ -19,7 +19,7 @@ interface Material {
 	state: string;
 }
 
-const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
+const logger = Log4js.getLogger(path.basename(import.meta.url, '.ts'));
 
 const dao = new YokohamaLibraryDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_YOKOHAMA_LIBRARY')}`);
 

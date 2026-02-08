@@ -18,7 +18,7 @@ interface Search {
 /**
  * JR 列車空席確認
  */
-const logger = Log4js.getLogger(path.basename(import.meta.url, '.js'));
+const logger = Log4js.getLogger(path.basename(import.meta.url, '.ts'));
 
 /**
  * 検索列車リストを取得
