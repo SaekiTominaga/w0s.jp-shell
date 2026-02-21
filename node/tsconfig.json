@@ -1,5 +1,5 @@
 {
-	"extends": "@w0s/tsconfig",
+	"extends": "@w0s/tsconfig/node",
 	"include": ["src/**/*.ts"],
 	"compilerOptions": {
 		/* Emit */
