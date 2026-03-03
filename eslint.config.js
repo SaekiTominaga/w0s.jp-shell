@@ -16,4 +16,10 @@ export default [
 			},
 		},
 	},
+	{
+		files: ['node/src/logger.ts'],
+		rules: {
+			'no-console': 'off',
+		},
+	},
 ];

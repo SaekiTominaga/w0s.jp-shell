@@ -1,11 +1,9 @@
 import fs from 'node:fs';
-import path from 'node:path';
 import dayjs from 'dayjs';
-import Log4js from 'log4js';
 import { JSDOM } from 'jsdom';
 import { env } from '@w0s/env-value-type';
+import type { DefaultFunctionArgs } from '../shell.ts';
 import config from '../config/jrSearchTrain.ts';
-import type Notice from '../Notice.ts';
 import { sleep } from '../util/sleep.ts';
 
 interface Search {
@@ -18,8 +16,6 @@ interface Search {
 /**
  * JR 列車空席確認
  */
-const logger = Log4js.getLogger(path.basename(import.meta.url, '.ts'));
-
 /**
  * 検索列車リストを取得
  *
@@ -36,30 +32,32 @@ const getSearchTrain = async (): Promise<Search[]> => {
  *
  * @returns 駅名リスト
  */
-const getStationList = async (): Promise<Map<string, string>> => {
+const getStationList = async (): Promise<{ id: string | undefined; name: string | undefined; yomi: string | undefined; shinkansen: string | undefined }[]> => {
 	const response = await fetch(config.stationUrl);
 	if (!response.ok) {
 		throw new Error(`HTTP Status Code: ${String(response.status)} <${config.stationUrl}>`);
 	}
 
-	const stationList = new Map<string, string>();
-	(await response.text())
+	const stationList = (await response.text())
 		.split('\n')
-		.map((col) => col.trim())
-		.forEach((col) => {
-			const patternMatchGroups = /\["(?<shinkansen>[0-9]{10})","(?<id>[0-9]{4})","(?<yomi>.+?)","(?<name>.+?)"\],?/v.exec(col)?.groups;
-			if (patternMatchGroups !== undefined) {
-				const { name, id } = patternMatchGroups;
-				if (name !== undefined && id !== undefined) {
-					stationList.set(name, id);
-				}
+		.map((col) => {
+			const patternMatchGroups = /\["(?<shinkansen>[0-9]{10})","(?<id>[0-9]{4})","(?<yomi>.+?)","(?<name>.+?)"\],?/v.exec(col.trim())?.groups;
+			if (patternMatchGroups === undefined) {
+				return undefined;
 			}
-		});
+
+			const { id, name, yomi, shinkansen } = patternMatchGroups;
+
+			return { id, name, yomi, shinkansen };
+		})
+		.filter((station) => station !== undefined);
 
 	return stationList;
 };
 
-const exec = async (notice: Notice): Promise<void> => {
+const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
+	const { logger, notice } = option;
+
 	/* 検索列車リストを取得 */
 	const searchTrainList = await getSearchTrain();
 	if (searchTrainList.length === 0) {
@@ -69,19 +67,19 @@ const exec = async (notice: Notice): Promise<void> => {
 
 	/* 駅名リストを取得 */
 	const stationList = await getStationList();
-	logger.debug('駅名リスト', stationList);
+	logger.debug(stationList, `駅名リスト`);
 
 	/* 空席検索 */
 	let requestCount = 0;
 
 	await Promise.all(
 		searchTrainList.map(async (search) => {
-			const depatureStationId = stationList.get(search.depature);
-			if (depatureStationId === undefined) {
+			const depatureStation = stationList.find((station) => station.name === search.depature);
+			if (depatureStation === undefined) {
 				throw new Error(`出発駅が存在しない: ${search.depature}`);
 			}
-			const arrivalStationId = stationList.get(search.arrival);
-			if (arrivalStationId === undefined) {
+			const arrivalStation = stationList.find((station) => station.name === search.arrival);
+			if (arrivalStation === undefined) {
 				throw new Error(`到着駅が存在しない: ${search.arrival}`);
 			}
 
@@ -96,8 +94,8 @@ const exec = async (notice: Notice): Promise<void> => {
 			urlSearchParams.append('hour', date.format('H'));
 			urlSearchParams.append('minute', date.format('m'));
 			urlSearchParams.append('train', '5'); // 在来線
-			urlSearchParams.append('dep_stnpb', depatureStationId);
-			urlSearchParams.append('arr_stnpb', arrivalStationId);
+			urlSearchParams.append('dep_stnpb', depatureStation.id ?? '');
+			urlSearchParams.append('arr_stnpb', arrivalStation.id ?? '');
 			urlSearchParams.append('script', '1');
 
 			/* 対象ページにアクセス */
@@ -115,14 +113,14 @@ const exec = async (notice: Notice): Promise<void> => {
 					Origin: url.origin,
 				},
 			});
-			logger.info(`検索完了: ${String(requestCount)} 件目`);
+			logger.info(`検索完了: ${String(requestCount)}件目`);
 
 			if (!response.ok) {
 				throw new Error(`\`${response.url}\` is ${String(response.status)} ${response.statusText}`);
 			}
 
 			const content = await response.text();
-			logger.debug('検索結果ページ', content.trim());
+			logger.debug(`検索結果ページ: ${content.trim()}`);
 
 			/* DOM 化 */
 			const { document } = new JSDOM(content).window;
@@ -145,7 +143,7 @@ const exec = async (notice: Notice): Promise<void> => {
 					),
 				)
 				.map((trElement) => trElement.querySelector('td:first-child .table_train_name')?.textContent);
-			logger.debug('空席のある列車', vacancyTrain);
+			logger.debug(vacancyTrain, '空席のある列車');
 
 			if (vacancyTrain.length >= 1) {
 				notice.add(`${date.format('YYYY年M月D日')}の${vacancyTrain.map((train) => `「${String(train)}」`).join('')}に空席\n\n${config.topUrl}`);

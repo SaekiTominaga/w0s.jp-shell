@@ -1,7 +1,12 @@
 import { parseArgs } from 'node:util';
-import Log4js from 'log4js';
-import { env } from '@w0s/env-value-type';
+import type { Logger } from 'pino';
+import { getLogger } from './logger.ts';
 import Notice from './Notice.ts';
+
+export interface DefaultFunctionArgs {
+	logger: Logger;
+	notice: Notice;
+}
 
 /* タイムアウト判定用計測 */
 const startTime = Date.now();
@@ -31,8 +36,7 @@ const timeout = Number(argsParsedValues.timeout); // タイムアウト秒数（
 const noticeTitle = String(argsParsedValues.notice); // 通知タイトル
 
 /* Logger 設定 */
-Log4js.configure(env('NODE_LOG4JS_CONF'));
-const logger = Log4js.getLogger(componentName);
+const logger = getLogger(componentName);
 
 logger.info('----- Start processing');
 
@@ -41,7 +45,7 @@ const notice = new Notice(noticeTitle);
 try {
 	/* コンポーネントの読み込みと実行 */
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-	await (await import(`./component/${componentName}.ts`)).default(notice);
+	await (await import(`./component/${componentName}.ts`)).default({ logger, notice } as DefaultFunctionArgs);
 } catch (e) {
 	logger.fatal(e);
 } finally {

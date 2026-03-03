@@ -1,15 +1,14 @@
-import path from 'node:path';
 import { parseArgs } from 'node:util';
-import Log4js from 'log4js';
-import type Notice from '../Notice.ts';
+import type { DefaultFunctionArgs } from '../shell.ts';
 
 /**
  * シェル機能のテスト用
  */
-const logger = Log4js.getLogger(path.basename(import.meta.url, '.ts'));
 
-const exec = (notice: Notice): void => {
-	logger.info('args', parseArgs({ strict: false }).values);
+const exec = (option: Readonly<DefaultFunctionArgs>): void => {
+	const { logger, notice } = option;
+
+	logger.info(parseArgs({ strict: false }).values, 'args');
 
 	notice.add('test1');
 	notice.add('test2');

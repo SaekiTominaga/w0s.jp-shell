@@ -41,7 +41,7 @@ export default class Notice {
 
 		await transporter.sendMail({
 			from: env('MAIL_FROM'),
-			to: env('MAIL_TO'),
+			to: env('NOTICE_MAIL_TO'),
 			subject: this.#title,
 			text: this.#data.join('\n\n'),
 		});
