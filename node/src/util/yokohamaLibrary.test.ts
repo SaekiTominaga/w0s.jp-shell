@@ -8,14 +8,7 @@ await test('getClosed', async (t) => {
 	await t.test('開館日', () => {
 		assert.equal(
 			getClosedReason(`
-
-
-
-
-1
-
-
-
+${String(day + 1)}
 `),
 			undefined,
 		);
@@ -25,8 +18,6 @@ await test('getClosed', async (t) => {
 		assert.equal(
 			getClosedReason(`
 
-
-
 `),
 			undefined,
 		);
@@ -35,16 +26,7 @@ await test('getClosed', async (t) => {
 	await t.test('本日が休館日', () => {
 		assert.equal(
 			getClosedReason(`
-
-
-
-
-
-
-
 ${String(day)}施設点検
-
-
 `),
 			'施設点検',
 		);
@@ -53,16 +35,7 @@ ${String(day)}施設点検
 	await t.test('明日が休館日', () => {
 		assert.equal(
 			getClosedReason(`
-
-
-
-
-
-
-
 ${String(day + 1)}特別整理
-
-
 `),
 			undefined,
 		);
