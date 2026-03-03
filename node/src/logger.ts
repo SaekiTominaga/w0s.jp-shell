@@ -25,14 +25,13 @@ const sendErrorMail = async (message: string): Promise<void> => {
 export const getLogger = (name: string): Logger => {
 	const logger = pino({
 		name: name,
-		level: 'trace',
+		level: development ? 'trace' : 'info',
 		transport: {
 			targets: development
 				? [
 						{
 							/* 標準出力 */
 							target: 'pino-pretty',
-							level: 'trace',
 							options: {
 								colorize: true,
 								translateTime: 'SYS:yyyy-mm-dd HH:MM:ss.l',
@@ -45,7 +44,6 @@ export const getLogger = (name: string): Logger => {
 						{
 							/* ファイル書き込み */
 							target: 'pino-pretty',
-							level: 'info',
 							options: {
 								colorize: false,
 								translateTime: 'SYS:yyyy-mm-dd HH:MM:ss.l',
