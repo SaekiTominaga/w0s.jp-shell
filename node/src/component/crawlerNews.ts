@@ -1,20 +1,16 @@
-import path from 'node:path';
 import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
-import Log4js from 'log4js';
 import { resolve } from 'relative-to-absolute-iri';
 import { env } from '@w0s/env-value-type';
+import type { DefaultFunctionArgs } from '../shell.ts';
 import CrawlerNewsDao from '../db/CrawlerNews.ts';
 import config from '../config/crawlerNews.ts';
 import { requestFetch, requestBrowser, HTTPResponseError, type HTTPResponse } from '../util/httpAccess.ts';
-import type Notice from '../Notice.ts';
 import { getHtmlContent, parseDate } from '../util/crawler.ts';
 
 /**
  * ウェブページを巡回し、新着情報の差分を調べて通知する
  */
-const logger = Log4js.getLogger(path.basename(import.meta.url, '.ts'));
-
 const dao = new CrawlerNewsDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_CRAWLER')}`);
 
 /**
@@ -46,7 +42,9 @@ const accessError = async (url: URL, error: number): Promise<number> => {
 	return nowError;
 };
 
-const exec = async (notice: Notice): Promise<void> => {
+const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
+	const { logger, notice } = option;
+
 	const argsParsedValues = parseArgs({
 		options: {
 			priority: {
@@ -160,7 +158,7 @@ const exec = async (notice: Notice): Promise<void> => {
 						if (newsAnchorElements.length === 1) {
 							/* メッセージ内にリンクが一つだけある場合のみ、その URL を対象ページとする */
 							referUrl = resolve(newsAnchorElements.item(0).href.trim(), targetData.url.toString());
-							logger.debug('URL', referUrl);
+							logger.debug(`URL: ${referUrl}`);
 						}
 
 						if (

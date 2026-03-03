@@ -1,9 +1,7 @@
-import path from 'node:path';
-import Log4js from 'log4js';
 import { firefox } from 'playwright';
 import { env } from '@w0s/env-value-type';
 import { convert as stringConvert } from '@w0s/string-convert';
-import type Notice from '../Notice.ts';
+import type { DefaultFunctionArgs } from '../shell.ts';
 import config from '../config/yokohamaLibraryHoldNotice.ts';
 import YokohamaLibraryDao from '../db/YokohamaLibrary.ts';
 import { getClosedReason } from '../util/yokohamaLibrary.ts';
@@ -19,11 +17,11 @@ interface Material {
 	state: string;
 }
 
-const logger = Log4js.getLogger(path.basename(import.meta.url, '.ts'));
-
 const dao = new YokohamaLibraryDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_YOKOHAMA_LIBRARY')}`);
 
-const exec = async (notice: Notice): Promise<void> => {
+const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
+	const { logger, notice } = option;
+
 	/* ブラウザで対象ページにアクセス */
 	const launchStartTime = Date.now();
 	const browser = await firefox.launch();
@@ -38,14 +36,14 @@ const exec = async (notice: Notice): Promise<void> => {
 				timeout: config.timeout * 1000,
 				waitUntil: 'domcontentloaded',
 			}); // Cookie を取得するためにいったん適当なページにアクセス
-			logger.info('Cookie 取得用の画面にアクセス', page.url());
-			logger.debug('Cookie', await browserContext.cookies());
+			logger.info(`Cookie 取得用の画面にアクセス: ${page.url()}`);
+			logger.debug(await browserContext.cookies(), 'Cookie');
 
 			await page.goto(config.login.url, {
 				timeout: config.timeout * 1000,
 				waitUntil: 'domcontentloaded',
 			});
-			logger.info('ログイン画面にアクセス', page.url());
+			logger.info(`ログイン画面にアクセス: ${page.url()}`);
 
 			await page.locator(config.login.cardSelector).fill(env('YOKOHAMA_LIBRARY_CARD'));
 			await page.locator(config.login.passwordSelector).fill(env('YOKOHAMA_LIBRARY_PASSWORD'));
@@ -61,10 +59,10 @@ const exec = async (notice: Notice): Promise<void> => {
 
 			const loginPostPageUrl = page.url();
 			if (loginPostPageUrl !== config.reserve.url) {
-				logger.warn('ログイン失敗', loginPostPageUrl);
+				logger.warn(`ログイン失敗: ${loginPostPageUrl}`);
 				return;
 			}
-			logger.info('ログイン成功', loginPostPageUrl);
+			logger.info(`ログイン成功: ${loginPostPageUrl}`);
 		}
 
 		const reserveList = await Promise.all(
@@ -133,12 +131,12 @@ const exec = async (notice: Notice): Promise<void> => {
 		const targetReserveList = reserveList.filter((reserve) =>
 			registedList.some((registed) => registed.material_type === reserve.type && registed.title === reserve.title),
 		);
-		logger.debug('解析対象', targetReserveList);
+		logger.debug(targetReserveList, '解析対象');
 
 		const changeList = targetReserveList.filter(
 			(target) => target.state !== registedList.find((registed) => registed.material_type === target.type && registed.title === target.title)?.state,
 		);
-		logger.debug('差分', changeList);
+		logger.debug(changeList, '差分');
 
 		await dao.updateState(
 			changeList.map(
@@ -157,7 +155,7 @@ const exec = async (notice: Notice): Promise<void> => {
 				timeout: config.timeout * 1000,
 				waitUntil: 'domcontentloaded',
 			});
-			logger.info('カレンダー画面にアクセス', page.url());
+			logger.info(`カレンダー画面にアクセス: ${page.url()}`);
 
 			const closedReason = (
 				await Promise.all(

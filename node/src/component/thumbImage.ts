@@ -1,16 +1,15 @@
-import path from 'node:path';
-import Log4js from 'log4js';
 import { env } from '@w0s/env-value-type';
+import type { DefaultFunctionArgs } from '../shell.ts';
 import ThumbImageDao from '../db/ThumbImage.ts';
 
 /**
  * サムネイル画像生成
  */
-const logger = Log4js.getLogger(path.basename(import.meta.url, '.ts'));
-
 const dao = new ThumbImageDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_THUMB_IMAGE')}`);
 
-const exec = async (): Promise<void> => {
+const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
+	const { logger } = option;
+
 	const queue = await dao.selectQueue();
 	if (queue === undefined) {
 		logger.info('キューにデータがないので処理を行わない');
@@ -27,7 +26,7 @@ const exec = async (): Promise<void> => {
 		quality: queue.quality,
 	};
 
-	logger.info('Fetch', endpoint, bodyObject);
+	logger.info(bodyObject, `Fetch: ${endpoint}`);
 
 	const response = await fetch(endpoint, {
 		method: 'POST',
@@ -38,10 +37,10 @@ const exec = async (): Promise<void> => {
 		body: JSON.stringify(bodyObject),
 	});
 	if (!response.ok) {
-		logger.error('Fetch error', endpoint);
+		logger.error(`Fetch error: ${endpoint}`);
 	} else {
 		await dao.deleteQueue(queue);
-		logger.info('キューからデータを削除', queue);
+		logger.info(queue, 'キューからデータを削除');
 	}
 };
 

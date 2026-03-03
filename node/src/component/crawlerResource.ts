@@ -1,21 +1,17 @@
 import crypto from 'node:crypto';
-import path from 'node:path';
 import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
-import Log4js from 'log4js';
 import { env } from '@w0s/env-value-type';
+import type { DefaultFunctionArgs } from '../shell.ts';
 import CrawlerResourceDao from '../db/CrawlerResource.ts';
 import config from '../config/crawlerResource.ts';
 import { requestFetch, requestBrowser, type HTTPResponse, HTTPResponseError } from '../util/httpAccess.ts';
-import type Notice from '../Notice.ts';
 import { sleep } from '../util/sleep.ts';
 
 /**
  * ウェブページを巡回し、レスポンスボディの差分を調べて通知する
  */
-const logger = Log4js.getLogger(path.basename(import.meta.url, '.ts'));
-
 const dao = new CrawlerResourceDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_CRAWLER')}`);
 
 /**
@@ -52,10 +48,13 @@ const accessError = async (url: URL, error: number): Promise<number> => {
  *
  * @param url - URL
  * @param responseBody - レスポンスボディ
+ * @param commonOption - 共通オプション
  *
  * @returns ファイルディレクトリ
  */
-const saveFile = async (url: URL, responseBody: string): Promise<string> => {
+const saveFile = async (url: URL, responseBody: string, commonOption: Readonly<DefaultFunctionArgs>): Promise<string> => {
+	const { logger } = commonOption;
+
 	const date = new Date();
 
 	const fileDir = url.pathname === '/' ? url.hostname : `${url.hostname}${url.pathname.replace(/\/[^\/]*$/gv, '')}`;
@@ -74,17 +73,19 @@ const saveFile = async (url: URL, responseBody: string): Promise<string> => {
 		await fs.promises.access(fileFullDir);
 	} catch {
 		await fs.promises.mkdir(fileFullDir, { recursive: true });
-		logger.info('mkdir', fileDir);
+		logger.info(`mkdir: ${fileDir}`);
 	}
 
 	const fileHandle = await fs.promises.open(fileFullPath, 'wx');
 	await fs.promises.writeFile(fileHandle, responseBody);
-	logger.info('File write success', filePath);
+	logger.info(`File write success: ${filePath}`);
 
 	return fileDir;
 };
 
-const exec = async (notice: Notice): Promise<void> => {
+const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
+	const { logger, notice } = option;
+
 	const argsParsedValues = parseArgs({
 		options: {
 			priority: {
@@ -184,7 +185,7 @@ const exec = async (notice: Notice): Promise<void> => {
 					dao.update(targetData, contentHash),
 
 					/* ファイル保存 */
-					saveFile(targetData.url, response.body),
+					saveFile(targetData.url, response.body, option),
 				]);
 
 				/* 通知 */
