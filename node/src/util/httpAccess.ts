@@ -1,5 +1,5 @@
 import { firefox } from 'playwright';
-import MIMEType from 'whatwg-mimetype';
+import { MIMEType } from 'whatwg-mimetype';
 
 export class HTTPResponseError extends Error {
 	readonly #status: number;
