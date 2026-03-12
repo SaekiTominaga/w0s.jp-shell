@@ -1,4 +1,4 @@
-import jsdom from 'jsdom';
+import type { DOMWindow } from 'jsdom';
 
 /**
  * 日付文字列を解析する
@@ -37,7 +37,7 @@ export const parseDate = (dateText: string): Date | undefined => {
  *
  * @returns Content of a HTMLElement
  */
-export const getHtmlContent = (window: jsdom.DOMWindow, element: HTMLElement): string => {
+export const getHtmlContent = (window: DOMWindow, element: HTMLElement): string => {
 	if (element instanceof window.HTMLAreaElement || element instanceof window.HTMLImageElement) {
 		return element.alt;
 	}
@@ -63,4 +63,22 @@ export const getHtmlContent = (window: jsdom.DOMWindow, element: HTMLElement): s
 
 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	return element.textContent!.trim(); // HTMLElement では `Node.textContent` が null になることはない（空要素は空文字列を返す）
+};
+
+/**
+ * アンカーリンク抽出
+ *
+ * @param element - HTML element
+ * @param base - 対象 Web ページの URL
+ *
+ * @returns アンカーリンクの URL
+ */
+export const getAnchorLink = (element: HTMLElement, base: URL): URL | undefined => {
+	const anchorElements = element.querySelectorAll<HTMLAnchorElement>('a[href]');
+	if (anchorElements.length !== 1) {
+		return undefined;
+	}
+
+	/* メッセージ内にリンクが一つだけある場合のみ、その URL を対象ページとする */
+	return new URL(anchorElements.item(0).href.trim(), base);
 };
