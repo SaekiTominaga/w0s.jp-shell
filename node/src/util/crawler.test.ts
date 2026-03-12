@@ -1,7 +1,11 @@
 import { strict as assert } from 'node:assert';
-import { test } from 'node:test';
+import { before, test } from 'node:test';
 import { JSDOM } from 'jsdom';
-import { getHtmlContent, parseDate } from './crawler.ts';
+import { getAnchorLink, getHtmlContent, parseDate } from './crawler.ts';
+
+before(() => {
+	global.document = new JSDOM().window.document;
+});
 
 await test('parseDate', async (t) => {
 	await t.test('YYYY-M-D', () => {
@@ -39,7 +43,7 @@ await test('parseDate', async (t) => {
 
 await test('getHtmlContent', async (t) => {
 	const { window } = new JSDOM();
-	global.document = window.document;
+	const { document } = window;
 
 	await t.test('img', () => {
 		const element = document.createElement('img');
@@ -75,5 +79,39 @@ await test('getHtmlContent', async (t) => {
 		const element = document.createElement('div');
 		element.textContent = ' sample ';
 		assert.equal(getHtmlContent(window, element), 'sample');
+	});
+});
+
+await test('getAnchorLink', async (t) => {
+	await t.test('no anchor', () => {
+		document.body.innerHTML = `<p></p>`;
+
+		assert.equal(getAnchorLink(document.createElement('p')!, new URL('http://example.com/')), undefined);
+	});
+
+	await t.test('single anchor', async (t2) => {
+		await t2.test('absolute URL', () => {
+			document.body.innerHTML = `<p><a href="http://example.com/path2/to2"></a></p>`;
+
+			assert.equal(getAnchorLink(document.querySelector('p')!, new URL('http://example.com/path/to'))?.toString(), 'http://example.com/path2/to2');
+		});
+
+		await t2.test('absolute path', () => {
+			document.body.innerHTML = `<p><a href="/path2/to2"></a></p>`;
+
+			assert.equal(getAnchorLink(document.querySelector('p')!, new URL('http://example.com/path/to'))?.toString(), 'http://example.com/path2/to2');
+		});
+
+		await t2.test('relative path', () => {
+			document.body.innerHTML = `<p><a href="path2/to2"></a></p>`;
+
+			assert.equal(getAnchorLink(document.querySelector('p')!, new URL('http://example.com/path/to'))?.toString(), 'http://example.com/path/path2/to2');
+		});
+	});
+
+	await t.test('multiple anchor', () => {
+		document.body.innerHTML = `<p><a href=""></a><a href=""></a></p>`;
+
+		assert.equal(getAnchorLink(document.querySelector('p')!, new URL('http://example.com/')), undefined);
 	});
 });

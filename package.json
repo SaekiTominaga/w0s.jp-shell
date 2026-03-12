@@ -5,7 +5,7 @@
 	"scripts": {
 		"lint": "eslint node/src/**/*.ts",
 		"pretest": "tsc -p node/tsconfig.json",
-		"test": "node --experimental-test-coverage --env-file-if-exists=.env.development --test node/src/**/*.test.ts"
+		"test": "node --experimental-test-coverage --test node/src/**/*.test.ts"
 	},
 	"dependencies": {
 		"@w0s/env-value-type": "1.0.1",

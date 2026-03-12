@@ -5,30 +5,12 @@ import type { DefaultFunctionArgs } from '../shell.ts';
 import CrawlerNewsDao from '../db/CrawlerNews.ts';
 import config from '../config/crawlerNews.ts';
 import { requestFetch, requestBrowser, HTTPResponseError, type HTTPResponse } from '../util/httpAccess.ts';
-import { getHtmlContent, parseDate } from '../util/crawler.ts';
+import { getAnchorLink, getHtmlContent, parseDate } from '../util/crawler.ts';
 
 /**
  * ウェブページを巡回し、新着情報の差分を調べて通知する
  */
 const dao = new CrawlerNewsDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_CRAWLER')}`);
-
-/**
- * アンカーリンク抽出
- *
- * @param element - HTML element
- * @param base - 対象 Web ページの URL
- *
- * @returns アンカーリンクの URL
- */
-export const getAnchorLink = (element: HTMLElement, base: URL): URL | undefined => {
-	const anchorElements = element.querySelectorAll<HTMLAnchorElement>('a[href]');
-	if (anchorElements.length !== 1) {
-		return undefined;
-	}
-
-	/* メッセージ内にリンクが一つだけある場合のみ、その URL を対象ページとする */
-	return new URL(anchorElements.item(0).href.trim(), base);
-};
 
 /**
  * URL へのアクセスが成功した時の処理
