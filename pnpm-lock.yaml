@@ -41,9 +41,6 @@ importers:
       playwright:
         specifier: 1.58.2
         version: 1.58.2
-      relative-to-absolute-iri:
-        specifier: 1.0.7
-        version: 1.0.7
       whatwg-mimetype:
         specifier: 5.0.0
         version: 5.0.0
@@ -1292,9 +1289,6 @@ packages:
   regexp.prototype.flags@1.5.4:
     resolution: {integrity: sha512-dYqgNSZbDwkaJ2ceRd9ojCGjBq+mOm9LmtXnAnEGyHhN/5R7iDW2TRw3h+o/jCFxus3P2LfWIIiwowAjANm7IA==}
     engines: {node: '>= 0.4'}
-
-  relative-to-absolute-iri@1.0.7:
-    resolution: {integrity: sha512-Xjyl4HmIzg2jzK/Un2gELqbcE8Fxy85A/aLSHE6PE/3+OGsFwmKVA1vRyGaz6vLWSqLDMHA+5rjD/xbibSQN1Q==}
 
   require-from-string@2.0.2:
     resolution: {integrity: sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==}
@@ -3049,8 +3043,6 @@ snapshots:
       get-proto: 1.0.1
       gopd: 1.2.0
       set-function-name: 2.0.2
-
-  relative-to-absolute-iri@1.0.7: {}
 
   require-from-string@2.0.2: {}
 

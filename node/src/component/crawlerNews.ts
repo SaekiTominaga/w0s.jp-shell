@@ -1,6 +1,5 @@
 import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
-import { resolve } from 'relative-to-absolute-iri';
 import { env } from '@w0s/env-value-type';
 import type { DefaultFunctionArgs } from '../shell.ts';
 import CrawlerNewsDao from '../db/CrawlerNews.ts';
@@ -12,6 +11,24 @@ import { getHtmlContent, parseDate } from '../util/crawler.ts';
  * ウェブページを巡回し、新着情報の差分を調べて通知する
  */
 const dao = new CrawlerNewsDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_CRAWLER')}`);
+
+/**
+ * アンカーリンク抽出
+ *
+ * @param element - HTML element
+ * @param base - 対象 Web ページの URL
+ *
+ * @returns アンカーリンクの URL
+ */
+export const getAnchorLink = (element: HTMLElement, base: URL): URL | undefined => {
+	const anchorElements = element.querySelectorAll<HTMLAnchorElement>('a[href]');
+	if (anchorElements.length !== 1) {
+		return undefined;
+	}
+
+	/* メッセージ内にリンクが一つだけある場合のみ、その URL を対象ページとする */
+	return new URL(anchorElements.item(0).href.trim(), base);
+};
 
 /**
  * URL へのアクセスが成功した時の処理
@@ -153,12 +170,9 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 						const contentText = getHtmlContent(window, contentElement);
 
 						/* アンカーリンク抽出 */
-						let referUrl: string | undefined;
-						const newsAnchorElements = contentElement.querySelectorAll<HTMLAnchorElement>('a[href]');
-						if (newsAnchorElements.length === 1) {
-							/* メッセージ内にリンクが一つだけある場合のみ、その URL を対象ページとする */
-							referUrl = resolve(newsAnchorElements.item(0).href.trim(), targetData.url.toString());
-							logger.debug(`URL: ${referUrl}`);
+						const referUrl = getAnchorLink(contentElement, targetData.url);
+						if (referUrl !== undefined) {
+							logger.debug(`URL: ${referUrl.toString()}`);
 						}
 
 						if (
@@ -166,7 +180,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 								news_id: targetData.random_id,
 								date: date,
 								content: contentText,
-								refer_url: referUrl,
+								refer_url: referUrl?.toString(),
 							})
 						) {
 							logger.debug(`データ登録済み: ${contentText.substring(0, 30)}...`);
@@ -179,7 +193,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 							news_id: targetData.random_id,
 							date: date,
 							content: contentText,
-							refer_url: referUrl,
+							refer_url: referUrl?.toString(),
 						});
 
 						/* 通知 */
