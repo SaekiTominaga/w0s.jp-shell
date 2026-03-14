@@ -48,7 +48,7 @@ export const getLogger = (name: string): Logger => {
 								colorize: false,
 								translateTime: 'SYS:yyyy-mm-dd HH:MM:ss.l',
 								ignore: 'pid,hostname',
-								destination: env('LOGGER_FILE'),
+								destination: `${env('ROOT')}/${env('LOGGER_FILE')}`,
 								mkdir: true,
 							},
 						},
