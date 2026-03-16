@@ -1,5 +1,6 @@
 import { parseArgs } from 'node:util';
 import type { Logger } from 'pino';
+import { env } from '@w0s/env-value-type';
 import { getLogger } from './logger.ts';
 import Notice from './Notice.ts';
 
@@ -40,23 +41,25 @@ const logger = getLogger(componentName);
 
 logger.info('----- Start processing');
 
-const notice = new Notice(noticeTitle);
+const notice = new Notice(env('NOTICE_MAIL_TITLE'));
+const componentNotice = new Notice(noticeTitle);
 
 try {
 	/* コンポーネントの読み込みと実行 */
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-	await (await import(`./component/${componentName}.ts`)).default({ logger, notice } as DefaultFunctionArgs);
+	await (await import(`./component/${componentName}.ts`)).default({ logger, notice: componentNotice } as DefaultFunctionArgs);
 } catch (e) {
 	logger.fatal(e);
 } finally {
 	/* 通知送信 */
-	await notice.send();
+	await componentNotice.send();
 
 	/* タイムアウト判定 */
 	const processingTime = (Date.now() - startTime) / 1000;
 	if (timeout > 0 && processingTime > timeout) {
-		logger.error(`End of process (excessive processing time): ${String(Math.round(processingTime))}s -----`);
-	} else {
-		logger.info(`End of process: ${String(Math.round(processingTime))}s -----`);
+		notice.add(`\`${componentName}\` の実行時間過多: ${String(processingTime)}s`);
 	}
+	await notice.send();
+
+	logger.info(`End of process: ${String(processingTime)}s -----`);
 }
