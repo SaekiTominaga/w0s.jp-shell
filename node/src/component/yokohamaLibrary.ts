@@ -2,7 +2,7 @@ import { firefox } from 'playwright';
 import { env } from '@w0s/env-value-type';
 import { convert as stringConvert } from '@w0s/string-convert';
 import type { DefaultFunctionArgs } from '../shell.ts';
-import config from '../config/yokohamaLibraryHoldNotice.ts';
+import config from '../config/yokohamaLibrary.ts';
 import YokohamaLibraryDao from '../db/YokohamaLibrary.ts';
 import { getClosedReason } from '../util/yokohamaLibrary.ts';
 import type { DReserve } from '../../../@types/db_yokohamalib.ts';
