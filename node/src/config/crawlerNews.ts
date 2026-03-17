@@ -1,4 +1,4 @@
 export default {
-	fetchTimeout: 6000,
+	fetchTimeout: 6,
 	reportErrorCount: 3,
 };
