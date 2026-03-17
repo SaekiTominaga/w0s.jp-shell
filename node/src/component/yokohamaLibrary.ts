@@ -1,4 +1,4 @@
-import { firefox } from 'playwright';
+import { webkit } from 'playwright';
 import { env } from '@w0s/env-value-type';
 import { convert as stringConvert } from '@w0s/string-convert';
 import type { DefaultFunctionArgs } from '../shell.ts';
@@ -25,11 +25,16 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 
 	/* ブラウザで対象ページにアクセス */
 	const launchStartTime = Date.now();
-	const browser = await firefox.launch();
-	logger.info(`Launch ${browser.browserType().name()} ${browser.version()} (${formatSeconds((Date.now() - launchStartTime) / 1000)})`);
+	const browser = await webkit.launch();
+	logger.info(`Launched browser: ${browser.browserType().name()} ${browser.version()} (${formatSeconds((Date.now() - launchStartTime) / 1000)})`);
 	try {
+		const newContextStartTime = Date.now();
 		const browserContext = await browser.newContext();
+		logger.info(`Created a new browser context (${formatSeconds((Date.now() - newContextStartTime) / 1000)})`);
+
+		const newPageStartTime = Date.now();
 		const page = await browserContext.newPage();
+		logger.info(`Created a new page (${formatSeconds((Date.now() - newPageStartTime) / 1000)})`);
 
 		/* ログイン */
 		{
