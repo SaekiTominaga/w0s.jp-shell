@@ -3,7 +3,7 @@ import type { Logger } from 'pino';
 import { env } from '@w0s/env-value-type';
 import { getLogger } from './logger.ts';
 import Notice from './Notice.ts';
-import { formatSeconds } from './util/time.ts';
+import ProcessTime from './util/ProcessTime.ts';
 
 export interface DefaultFunctionArgs {
 	logger: Logger;
@@ -11,7 +11,7 @@ export interface DefaultFunctionArgs {
 }
 
 /* タイムアウト判定用計測 */
-const startTime = Date.now();
+const processTime = new ProcessTime();
 
 /* 引数処理 */
 const argsParsedValues = parseArgs({
@@ -56,9 +56,9 @@ try {
 	await componentNotice.send();
 
 	/* タイムアウト判定 */
-	const processingTime = (Date.now() - startTime) / 1000;
+	const processingTime = processTime.getTime();
 	if (timeout > 0 && processingTime > timeout) {
-		notice.add(`\`${componentName}\` の実行時間過多: ${formatSeconds(processingTime)}`);
+		notice.add(`\`${componentName}\` の実行時間過多: ${ProcessTime.format(processingTime)}`);
 	}
 	await notice.send();
 
