@@ -29,7 +29,11 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 	logger.info(`Launched browser: ${browser.browserType().name()} ${browser.version()} (${formatSeconds((Date.now() - launchStartTime) / 1000)})`);
 	try {
 		const newContextStartTime = Date.now();
-		const browserContext = await browser.newContext();
+		const browserContext = await browser.newContext({
+			javaScriptEnabled: false,
+			serviceWorkers: 'block',
+			viewport: config.browser.context.viewport,
+		});
 		logger.info(`Created a new browser context (${formatSeconds((Date.now() - newContextStartTime) / 1000)})`);
 
 		const newPageStartTime = Date.now();
@@ -40,7 +44,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 		{
 			const cookieGotoStartTime = Date.now();
 			await page.goto(config.url, {
-				timeout: config.timeout * 1000,
+				timeout: config.browser.timeout * 1000,
 				waitUntil: 'domcontentloaded',
 			}); // Cookie を取得するためにいったん適当なページにアクセス
 			logger.info(`Cookie 取得用の画面にアクセス: ${page.url()} (${formatSeconds((Date.now() - cookieGotoStartTime) / 1000)})`);
@@ -48,32 +52,32 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 
 			const loginGotoStartTime = Date.now();
 			await page.goto(config.login.url, {
-				timeout: config.timeout * 1000,
+				timeout: config.browser.timeout * 1000,
 				waitUntil: 'domcontentloaded',
 			});
 			logger.info(`ログイン画面にアクセス: ${page.url()} (${formatSeconds((Date.now() - loginGotoStartTime) / 1000)})`);
 
 			const cardFillStartTime = Date.now();
 			await page.locator(config.login.cardSelector).fill(env('YOKOHAMA_LIBRARY_CARD'), {
-				timeout: config.timeout * 1000,
+				timeout: config.browser.timeout * 1000,
 			});
 			logger.info(`カード番号欄 \`${config.login.cardSelector}\` 入力 (${formatSeconds((Date.now() - cardFillStartTime) / 1000)})`);
 
 			const passwordFillStartTime = Date.now();
 			await page.locator(config.login.passwordSelector).fill(env('YOKOHAMA_LIBRARY_PASSWORD'), {
-				timeout: config.timeout * 1000,
+				timeout: config.browser.timeout * 1000,
 			});
 			logger.info(`パスワード欄 \`${config.login.passwordSelector}\` 入力 (${formatSeconds((Date.now() - passwordFillStartTime) / 1000)})`);
 
 			const loginSubmitStartTime = Date.now();
 			await page.locator(config.login.submitSelector).click({
-				timeout: config.timeout * 1000,
+				timeout: config.browser.timeout * 1000,
 			});
 			logger.info(`ログインボタン \`${config.login.submitSelector}\` 押下 (${formatSeconds((Date.now() - loginSubmitStartTime) / 1000)})`);
 
 			const loginWaitStartTime = Date.now();
 			await page.waitForLoadState('domcontentloaded', {
-				timeout: config.timeout * 1000,
+				timeout: config.browser.timeout * 1000,
 			});
 			const loginPostPageUrl = page.url();
 			if (loginPostPageUrl !== config.reserve.url) {
@@ -171,7 +175,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 			/* 開館日カレンダー */
 			const calendarGotoStartTime = Date.now();
 			await page.goto(config.calendar.url, {
-				timeout: config.timeout * 1000,
+				timeout: config.browser.timeout * 1000,
 				waitUntil: 'domcontentloaded',
 			});
 			logger.info(`カレンダー画面にアクセス: ${page.url()} (${formatSeconds((Date.now() - calendarGotoStartTime) / 1000)})`);
