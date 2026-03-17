@@ -1,5 +1,5 @@
 export default {
-	fetchTimeout: 6000,
+	fetchTimeout: 6,
 	accessIntervalHost: 1,
 	reportErrorCount: 3,
 };

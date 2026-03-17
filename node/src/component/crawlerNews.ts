@@ -70,7 +70,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 				response = targetData.browser
 					? await requestBrowser(targetData.url)
 					: await requestFetch(targetData.url, {
-							timeout: config.fetchTimeout,
+							timeout: config.fetchTimeout * 1000,
 						});
 			} catch (e) {
 				if (e instanceof HTTPResponseError) {
