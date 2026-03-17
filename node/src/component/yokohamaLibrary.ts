@@ -45,13 +45,20 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 			});
 			logger.info(`ログイン画面にアクセス: ${page.url()}`);
 
-			await page.locator(config.login.cardSelector).fill(env('YOKOHAMA_LIBRARY_CARD'));
-			await page.locator(config.login.passwordSelector).fill(env('YOKOHAMA_LIBRARY_PASSWORD'));
+			await page.locator(config.login.cardSelector).fill(env('YOKOHAMA_LIBRARY_CARD'), {
+				timeout: config.timeout * 1000,
+			});
+			logger.info(`カード番号欄 \`${config.login.cardSelector}\` 入力`);
+
+			await page.locator(config.login.passwordSelector).fill(env('YOKOHAMA_LIBRARY_PASSWORD'), {
+				timeout: config.timeout * 1000,
+			});
+			logger.info(`パスワード欄 \`${config.login.passwordSelector}\` 入力`);
 
 			await page.locator(config.login.submitSelector).click({
 				timeout: config.timeout * 1000,
 			});
-			logger.debug(`ログインボタン \`${config.login.submitSelector}\` 押下`);
+			logger.info(`ログインボタン \`${config.login.submitSelector}\` 押下`);
 
 			await page.waitForLoadState('domcontentloaded', {
 				timeout: config.timeout * 1000,
