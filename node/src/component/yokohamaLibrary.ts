@@ -4,7 +4,7 @@ import { convert as stringConvert } from '@w0s/string-convert';
 import type { DefaultFunctionArgs } from '../shell.ts';
 import config from '../config/yokohamaLibrary.ts';
 import YokohamaLibraryDao from '../db/YokohamaLibrary.ts';
-import { formatSeconds } from '../util/time.ts';
+import ProcessTime from '../util/ProcessTime.ts';
 import { getClosedReason } from '../util/yokohamaLibrary.ts';
 import type { DReserve } from '../../../@types/db_yokohamalib.ts';
 
@@ -24,67 +24,67 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 	const { logger, notice } = option;
 
 	/* ブラウザで対象ページにアクセス */
-	const launchStartTime = Date.now();
+	const launchProcessTime = new ProcessTime();
 	const browser = await webkit.launch();
-	logger.info(`Launched browser: ${browser.browserType().name()} ${browser.version()} (${formatSeconds((Date.now() - launchStartTime) / 1000)})`);
+	logger.info(`Launched browser: ${browser.browserType().name()} ${browser.version()} (${launchProcessTime.getTimeFormat()})`);
 	try {
-		const newContextStartTime = Date.now();
+		const newContextProcessTime = new ProcessTime();
 		const browserContext = await browser.newContext({
 			javaScriptEnabled: false,
 			serviceWorkers: 'block',
 			viewport: config.browser.context.viewport,
 		});
-		logger.info(`Created a new browser context (${formatSeconds((Date.now() - newContextStartTime) / 1000)})`);
+		logger.info(`Created a new browser context (${newContextProcessTime.getTimeFormat()})`);
 
-		const newPageStartTime = Date.now();
+		const newPageProcessTime = new ProcessTime();
 		const page = await browserContext.newPage();
-		logger.info(`Created a new page (${formatSeconds((Date.now() - newPageStartTime) / 1000)})`);
+		logger.info(`Created a new page (${newPageProcessTime.getTimeFormat()})`);
 
 		/* ログイン */
 		{
-			const cookieGotoStartTime = Date.now();
+			const cookieGotoProcessTime = new ProcessTime();
 			await page.goto(config.url, {
 				timeout: config.browser.timeout * 1000,
 				waitUntil: 'domcontentloaded',
 			}); // Cookie を取得するためにいったん適当なページにアクセス
-			logger.info(`Cookie 取得用の画面にアクセス: ${page.url()} (${formatSeconds((Date.now() - cookieGotoStartTime) / 1000)})`);
+			logger.info(`Cookie 取得用の画面にアクセス: ${page.url()} (${cookieGotoProcessTime.getTimeFormat()})`);
 			logger.debug(await browserContext.cookies(), 'Cookie');
 
-			const loginGotoStartTime = Date.now();
+			const loginGotoProcessTime = new ProcessTime();
 			await page.goto(config.login.url, {
 				timeout: config.browser.timeout * 1000,
 				waitUntil: 'domcontentloaded',
 			});
-			logger.info(`ログイン画面にアクセス: ${page.url()} (${formatSeconds((Date.now() - loginGotoStartTime) / 1000)})`);
+			logger.info(`ログイン画面にアクセス: ${page.url()} (${loginGotoProcessTime.getTimeFormat()})`);
 
-			const cardFillStartTime = Date.now();
+			const cardFillProcessTime = new ProcessTime();
 			await page.locator(config.login.cardSelector).fill(env('YOKOHAMA_LIBRARY_CARD'), {
 				timeout: config.browser.timeout * 1000,
 			});
-			logger.info(`カード番号欄 \`${config.login.cardSelector}\` 入力 (${formatSeconds((Date.now() - cardFillStartTime) / 1000)})`);
+			logger.info(`カード番号欄 \`${config.login.cardSelector}\` 入力 (${cardFillProcessTime.getTimeFormat()})`);
 
-			const passwordFillStartTime = Date.now();
+			const passwordFillProcessTime = new ProcessTime();
 			await page.locator(config.login.passwordSelector).fill(env('YOKOHAMA_LIBRARY_PASSWORD'), {
 				timeout: config.browser.timeout * 1000,
 			});
-			logger.info(`パスワード欄 \`${config.login.passwordSelector}\` 入力 (${formatSeconds((Date.now() - passwordFillStartTime) / 1000)})`);
+			logger.info(`パスワード欄 \`${config.login.passwordSelector}\` 入力 (${passwordFillProcessTime.getTimeFormat()})`);
 
-			const loginSubmitStartTime = Date.now();
+			const loginSubmitProcessTime = new ProcessTime();
 			await page.locator(config.login.submitSelector).click({
 				timeout: config.browser.timeout * 1000,
 			});
-			logger.info(`ログインボタン \`${config.login.submitSelector}\` 押下 (${formatSeconds((Date.now() - loginSubmitStartTime) / 1000)})`);
+			logger.info(`ログインボタン \`${config.login.submitSelector}\` 押下 (${loginSubmitProcessTime.getTimeFormat()})`);
 
-			const loginWaitStartTime = Date.now();
+			const loginWaitProcessTime = new ProcessTime();
 			await page.waitForLoadState('domcontentloaded', {
 				timeout: config.browser.timeout * 1000,
 			});
 			const loginPostPageUrl = page.url();
 			if (loginPostPageUrl !== config.reserve.url) {
-				logger.warn(`ログイン失敗: ${loginPostPageUrl} (${formatSeconds((Date.now() - loginWaitStartTime) / 1000)})`);
+				logger.warn(`ログイン失敗: ${loginPostPageUrl} (${loginWaitProcessTime.getTimeFormat()})`);
 				return;
 			}
-			logger.info(`ログイン成功: ${loginPostPageUrl} (${formatSeconds((Date.now() - loginWaitStartTime) / 1000)})`);
+			logger.info(`ログイン成功: ${loginPostPageUrl} (${loginWaitProcessTime.getTimeFormat()})`);
 		}
 
 		const reserveList = await Promise.all(
@@ -173,12 +173,12 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 
 		if (changeList.length >= 1) {
 			/* 開館日カレンダー */
-			const calendarGotoStartTime = Date.now();
+			const calendarGotoProcessTime = new ProcessTime();
 			await page.goto(config.calendar.url, {
 				timeout: config.browser.timeout * 1000,
 				waitUntil: 'domcontentloaded',
 			});
-			logger.info(`カレンダー画面にアクセス: ${page.url()} (${formatSeconds((Date.now() - calendarGotoStartTime) / 1000)})`);
+			logger.info(`カレンダー画面にアクセス: ${page.url()} (${calendarGotoProcessTime.getTimeFormat()})`);
 
 			const closedReason = (
 				await Promise.all(
