@@ -5,7 +5,7 @@ import jsdom from 'jsdom';
 import { env } from '@w0s/env-value-type';
 import type { DefaultFunctionArgs } from '../shell.ts';
 import CrawlerResourceDao from '../db/CrawlerResource.ts';
-import config from '../config/crawlerResource.ts';
+import config from '../config/crawler.ts';
 import { requestFetch, requestBrowser, type HTTPResponse, HTTPResponseError } from '../util/httpAccess.ts';
 import { sleep } from '../util/sleep.ts';
 
@@ -119,7 +119,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 				response = targetData.browser
 					? await requestBrowser(targetData.url)
 					: await requestFetch(targetData.url, {
-							timeout: config.fetchTimeout * 1000,
+							timeout: config.fetchTimeout,
 						});
 			} catch (e) {
 				if (e instanceof HTTPResponseError) {
@@ -135,7 +135,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 				}
 				if (e instanceof Error) {
 					switch (e.name) {
-						case 'AbortError': {
+						case 'TimeoutError': {
 							const errorCount = await accessError(targetData.url, targetData.error);
 
 							logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${String(errorCount)}`);

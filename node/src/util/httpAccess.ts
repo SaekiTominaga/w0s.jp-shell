@@ -32,38 +32,29 @@ const isHtml = (contentType: string): boolean =>
  *
  * @param url - URL
  * @param option - オプション
- * @param option.timeout - タイムアウト時間
+ * @param option.timeout - タイムアウト時間（秒）
  *
  * @returns レスポンス
  */
 export const requestFetch = async (url: URL, option: Readonly<{ timeout: number }>): Promise<HTTPResponse> => {
-	const controller = new AbortController();
-	const timeoutId = setTimeout(() => {
-		controller.abort();
-	}, option.timeout);
-
-	try {
-		const response = await fetch(url, {
-			signal: controller.signal,
-		});
-		if (!response.ok) {
-			throw new HTTPResponseError(response.status);
-		}
-
-		/* レスポンスヘッダーのチェック */
-		const contentType = response.headers.get('Content-Type');
-		if (contentType === null) {
-			throw new Error(`Content-Type ヘッダーが存在しない: ${url.toString()}`);
-		}
-
-		/* レスポンスボディ */
-		return {
-			html: isHtml(contentType),
-			body: await response.text(),
-		};
-	} finally {
-		clearTimeout(timeoutId);
+	const response = await fetch(url, {
+		signal: AbortSignal.timeout(option.timeout * 1000),
+	});
+	if (!response.ok) {
+		throw new HTTPResponseError(response.status);
 	}
+
+	/* レスポンスヘッダーのチェック */
+	const contentType = response.headers.get('Content-Type');
+	if (contentType === null) {
+		throw new Error(`Content-Type ヘッダーが存在しない: ${url.toString()}`);
+	}
+
+	/* レスポンスボディ */
+	return {
+		html: isHtml(contentType),
+		body: await response.text(),
+	};
 };
 
 /**

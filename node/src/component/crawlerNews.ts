@@ -3,7 +3,7 @@ import jsdom from 'jsdom';
 import { env } from '@w0s/env-value-type';
 import type { DefaultFunctionArgs } from '../shell.ts';
 import CrawlerNewsDao from '../db/CrawlerNews.ts';
-import config from '../config/crawlerNews.ts';
+import config from '../config/crawler.ts';
 import { requestFetch, requestBrowser, HTTPResponseError, type HTTPResponse } from '../util/httpAccess.ts';
 import { getAnchorLink, getHtmlContent, parseDate } from '../util/crawler.ts';
 
@@ -70,7 +70,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 				response = targetData.browser
 					? await requestBrowser(targetData.url)
 					: await requestFetch(targetData.url, {
-							timeout: config.fetchTimeout * 1000,
+							timeout: config.fetchTimeout,
 						});
 			} catch (e) {
 				if (e instanceof HTTPResponseError) {
@@ -86,7 +86,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 				}
 				if (e instanceof Error) {
 					switch (e.name) {
-						case 'AbortError': {
+						case 'TimeoutError': {
 							const errorCount = await accessError(targetData.url, targetData.error);
 
 							logger.info(`タイムアウト: ${targetData.url} 、エラー回数: ${String(errorCount)}`);
