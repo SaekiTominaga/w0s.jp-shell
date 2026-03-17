@@ -1,6 +1,14 @@
 export default {
+	browser: {
+		context: {
+			viewport: {
+				width: 400,
+				height: 300,
+			},
+		},
+		timeout: 30,
+	},
 	url: 'https://opac.lib.city.yokohama.lg.jp/winj/opac/top.do',
-	timeout: 45,
 	login: {
 		url: 'https://opac.lib.city.yokohama.lg.jp/winj/opac/login.do?dispatch=/opac/reserve-list.do',
 		cardSelector: '#usercd',
