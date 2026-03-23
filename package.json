@@ -11,7 +11,7 @@
 		"@w0s/env-value-type": "1.0.1",
 		"@w0s/sqlite-utility": "2.0.1",
 		"@w0s/string-convert": "3.0.3",
-		"better-sqlite3": "12.6.2",
+		"better-sqlite3": "12.8.0",
 		"dayjs": "1.11.20",
 		"jsdom": "28.1.0",
 		"kysely": "0.28.14",
