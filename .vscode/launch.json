@@ -42,16 +42,6 @@
 			"outputCapture": "std"
 		},
 		{
-			"name": "thumbImage",
-			"type": "node",
-			"request": "launch",
-			"skipFiles": ["<node_internals>/**"],
-			"program": "${workspaceFolder}/node/src/shell.ts",
-			"args": ["-c", "thumbImage", "-n", "サムネイル画像生成"],
-			"envFile": "${workspaceFolder}/.env.development",
-			"outputCapture": "std"
-		},
-		{
 			"name": "yokohamaLibrary",
 			"type": "node",
 			"request": "launch",
