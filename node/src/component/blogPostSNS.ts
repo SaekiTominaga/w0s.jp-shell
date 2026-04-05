@@ -68,7 +68,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 		logger.info(`Misskey 投稿: ${String(entryData.id)} <${postedUrl}>`);
 		notice.add(`Misskey 投稿: ${entryData.title} <${postedUrl}>`);
 	} else {
-		throw new Error('');
+		throw new Error(`すべての SNS サービスに投稿済みのデータがキューに残存（記事 ID: ${String(entryData.id)}）`);
 	}
 
 	const { deleteResult } = await dao.reset(entryData.id, sns);
