@@ -12,6 +12,16 @@
 			"outputCapture": "std"
 		},
 		{
+			"name": "blogPostSNS",
+			"type": "node",
+			"request": "launch",
+			"skipFiles": ["<node_internals>/**"],
+			"program": "${workspaceFolder}/node/src/shell.ts",
+			"args": ["-c", "blogPostSNS", "-n", "ブログ記事 SNS 投稿"],
+			"envFile": "${workspaceFolder}/.env.development",
+			"outputCapture": "std"
+		},
+		{
 			"name": "crawlerNews",
 			"type": "node",
 			"request": "launch",

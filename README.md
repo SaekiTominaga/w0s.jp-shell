@@ -11,6 +11,7 @@
 | 名称                                                              | 機能名          | 概要                                                                                                                                    |
 | ----------------------------------------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | [テスト](node/src/component/test.ts)                              | test            | 動作確認用。環境整備の際はまずはこれが動くことを目指す                                                                                  |
+| [ブログ記事 SNS 投稿](node/src/component/blogPostSNS.ts)          | blogPostSNS     | ブログ記事の投稿情報を SNS に流す                                                                                                       |
 | [ウェブ巡回（新着）](node/src/component/crawlerNews.ts)           | crawlerNews     | ウェブページをスクレイピングし（HTML ページのみ）、新着情報の差分を調べて通知する                                                       |
 | [ウェブ巡回（リソース）](node/src/component/crawlerResource.ts)   | crawlerResource | ウェブページを巡回し（HTML リソースに限らない）、レスポンスボディの差分を調べて通知する                                                 |
 | [JR 列車空席確認](node/src/component/jrSearchTrain.ts)            | jrSearchTrain   | JR CYBER STATION で在来線列車の空席があれば通知する                                                                                     |
