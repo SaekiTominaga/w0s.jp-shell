@@ -164,10 +164,6 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 					logger.error(`セレクター (${narrowingSelector}) に該当するノードが存在しない: ${targetData.url}`);
 					return;
 				}
-				if (contentsElement.textContent === null) {
-					logger.error(`セレクター (${narrowingSelector}) の中身が空: ${targetData.url}`);
-					return;
-				}
 
 				md5.update(contentsElement.innerHTML);
 			} else {

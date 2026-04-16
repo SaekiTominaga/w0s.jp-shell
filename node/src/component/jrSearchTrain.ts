@@ -127,7 +127,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 
 			const errorMessageElement = document.querySelector('.jcs_error_msg');
 			if (errorMessageElement !== null) {
-				throw new Error(errorMessageElement.textContent ?? '不明なエラーが発生');
+				throw new Error(errorMessageElement.textContent);
 			}
 
 			const vacancyTableElement = document.querySelector('#table_vacancy');
@@ -137,11 +137,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 			}
 
 			const vacancyTrain = Array.from(vacancyTableElement.querySelectorAll('tbody > tr'))
-				.filter((trElement) =>
-					Array.from(trElement.querySelectorAll('td.uk-text-center')).some(
-						(tdElement) => tdElement.textContent !== null && ['○', '△'].includes(tdElement.textContent),
-					),
-				)
+				.filter((trElement) => Array.from(trElement.querySelectorAll('td.uk-text-center')).some((tdElement) => ['○', '△'].includes(tdElement.textContent)))
 				.map((trElement) => trElement.querySelector('td:first-child .table_train_name')?.textContent);
 			logger.debug(vacancyTrain, '空席のある列車');
 

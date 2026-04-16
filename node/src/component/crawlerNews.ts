@@ -129,13 +129,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 								return;
 							}
 
-							const dateText = dateElement.textContent?.trim();
-							if (dateText === undefined) {
-								logger.error(`日付要素（${targetData.selector_date}）の文字列が取得できない: ${targetData.url}\n\n${response.body}`);
-								return;
-							}
-
-							date = parseDate(dateText);
+							date = parseDate(dateElement.textContent.trim());
 						}
 
 						let contentElement = wrapElement;
