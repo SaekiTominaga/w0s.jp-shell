@@ -1,6 +1,6 @@
 import SQLite from 'better-sqlite3';
-import { Kysely, sql, SqliteDialect, type DeleteResult, type Selectable, type UpdateResult } from 'kysely';
-import { sqliteToJS, jsToSQLiteComparison, jsToSQLiteAssignment } from '@w0s/sqlite-utility';
+import { type DeleteResult, Kysely, type Selectable, SqliteDialect, type UpdateResult, sql } from 'kysely';
+import { jsToSQLiteAssignment, jsToSQLiteComparison, sqliteToJS } from '@w0s/sqlite-utility';
 import type { DB, DEntry, DSnsQueue } from '../../../@types/db_blog.d.ts';
 
 /**

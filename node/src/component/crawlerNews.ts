@@ -4,7 +4,7 @@ import { env } from '@w0s/env-value-type';
 import type { DefaultFunctionArgs } from '../shell.ts';
 import CrawlerNewsDao from '../db/CrawlerNews.ts';
 import config from '../config/crawler.ts';
-import { requestFetch, requestBrowser, HTTPResponseError, type HTTPResponse } from '../util/httpAccess.ts';
+import { type HTTPResponse, HTTPResponseError, requestBrowser, requestFetch } from '../util/httpAccess.ts';
 import { getAnchorLink, getHtmlContent, parseDate } from '../util/crawler.ts';
 
 /**
