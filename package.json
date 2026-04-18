@@ -31,7 +31,7 @@
 		"@types/node": "^24.12.2",
 		"@types/nodemailer": "8.0.0",
 		"@types/whatwg-mimetype": "5.0.0",
-		"@w0s/eslint-config": "9.5.1",
+		"@w0s/eslint-config": "9.6.0",
 		"@w0s/tsconfig": "3.0.0",
 		"eslint": "^9.39.4",
 		"eslint-plugin-functional": "9.0.4",

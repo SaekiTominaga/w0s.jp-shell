@@ -6,7 +6,7 @@ import { env } from '@w0s/env-value-type';
 import type { DefaultFunctionArgs } from '../shell.ts';
 import CrawlerResourceDao from '../db/CrawlerResource.ts';
 import config from '../config/crawler.ts';
-import { requestFetch, requestBrowser, type HTTPResponse, HTTPResponseError } from '../util/httpAccess.ts';
+import { type HTTPResponse, HTTPResponseError, requestBrowser, requestFetch } from '../util/httpAccess.ts';
 import { sleep } from '../util/sleep.ts';
 
 /**
