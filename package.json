@@ -14,7 +14,7 @@
 		"@w0s/string-convert": "3.0.3",
 		"better-sqlite3": "12.9.0",
 		"dayjs": "1.11.20",
-		"ejs": "5.0.1",
+		"ejs": "5.0.2",
 		"jsdom": "28.1.0",
 		"kysely": "0.28.16",
 		"masto": "7.10.2",
