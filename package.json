@@ -3,7 +3,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"lint": "eslint node/src/**/*.ts",
+		"lint": "eslint node/src",
 		"pretest": "tsc --project node",
 		"test": "node --experimental-test-coverage --test node/src/**/*.test.ts"
 	},
