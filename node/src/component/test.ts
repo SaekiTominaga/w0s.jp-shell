@@ -1,4 +1,4 @@
-import { parseArgs } from 'node:util';
+import { inspect, parseArgs } from 'node:util';
 import type { DefaultFunctionArgs } from '../shell.ts';
 
 /**
@@ -8,7 +8,7 @@ import type { DefaultFunctionArgs } from '../shell.ts';
 const exec = (option: Readonly<DefaultFunctionArgs>): void => {
 	const { logger, notice } = option;
 
-	logger.info(parseArgs({ strict: false }).values, 'args');
+	logger.info(inspect(parseArgs({ strict: false }).values));
 
 	notice.add('test1');
 	notice.add('test2');

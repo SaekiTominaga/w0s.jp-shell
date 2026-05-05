@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { inspect } from 'node:util';
 import dayjs from 'dayjs';
 import { JSDOM } from 'jsdom';
 import { env } from '@w0s/env-value-type';
@@ -67,7 +68,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 
 	/* 駅名リストを取得 */
 	const stationList = await getStationList();
-	logger.debug(stationList, `駅名リスト`);
+	logger.debug(`駅名リスト: ${inspect(stationList)}`);
 
 	/* 空席検索 */
 	let requestCount = 0;
@@ -139,7 +140,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 			const vacancyTrain = Array.from(vacancyTableElement.querySelectorAll('tbody > tr'))
 				.filter((trElement) => Array.from(trElement.querySelectorAll('td.uk-text-center')).some((tdElement) => ['○', '△'].includes(tdElement.textContent)))
 				.map((trElement) => trElement.querySelector('td:first-child .table_train_name')?.textContent);
-			logger.debug(vacancyTrain, '空席のある列車');
+			logger.debug(`空席のある列車: ${inspect(vacancyTrain)}`);
 
 			if (vacancyTrain.length >= 1) {
 				notice.add(`${date.format('YYYY年M月D日')}の${vacancyTrain.map((train) => `「${String(train)}」`).join('')}に空席\n\n${config.topUrl}`);

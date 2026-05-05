@@ -1,3 +1,4 @@
+import { inspect } from 'node:util';
 import { webkit } from 'playwright';
 import { env } from '@w0s/env-value-type';
 import { convert as stringConvert } from '@w0s/string-convert';
@@ -48,7 +49,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 				waitUntil: 'domcontentloaded',
 			}); // Cookie を取得するためにいったん適当なページにアクセス
 			logger.info(`Cookie 取得用の画面にアクセス: ${page.url()} (${cookieGotoProcessTime.getTimeFormat()})`);
-			logger.debug(await browserContext.cookies(), 'Cookie');
+			logger.debug(`Cookie: ${inspect(await browserContext.cookies())}`);
 
 			const loginGotoProcessTime = new ProcessTime();
 			await page.goto(config.login.url, {
@@ -153,12 +154,12 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 		const targetReserveList = reserveList.filter((reserve) =>
 			registedList.some((registed) => registed.material_type === reserve.type && registed.title === reserve.title),
 		);
-		logger.debug(targetReserveList, '解析対象');
+		logger.debug(`解析対象: ${inspect(targetReserveList)}`);
 
 		const changeList = targetReserveList.filter(
 			(target) => target.state !== registedList.find((registed) => registed.material_type === target.type && registed.title === target.title)?.state,
 		);
-		logger.debug(changeList, '差分');
+		logger.debug(`差分: ${inspect(changeList)}`);
 
 		await dao.updateState(
 			changeList.map(

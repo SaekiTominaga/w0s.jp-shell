@@ -1,5 +1,5 @@
 import { parseArgs } from 'node:util';
-import type { Logger } from 'pino';
+import type { Logger } from 'winston';
 import { env } from '@w0s/env-value-type';
 import { getLogger } from './logger.ts';
 import Notice from './Notice.ts';
@@ -50,7 +50,7 @@ try {
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 	await (await import(`./component/${componentName}.ts`)).default({ logger, notice: componentNotice });
 } catch (e) {
-	logger.fatal(e);
+	logger.error(e);
 } finally {
 	/* 通知送信 */
 	await componentNotice.send();
