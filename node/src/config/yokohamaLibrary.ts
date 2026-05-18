@@ -23,7 +23,6 @@ export default {
 		stateSelector: '.column.info > div[style="display: flex;"] > p',
 	},
 	calendar: {
-		url: 'https://opac.lib.city.yokohama.lg.jp/winj/opac/calendar.do?submit_btn_reference=cal&cmb_ar=11',
-		cellSelector: '.calendar-area .hdg-lyt-calendar:first-child + table > tbody td',
+		url: 'https://www.city.yokohama.lg.jp/kurashi/kyodo-manabi/library/library_calendar.html#93864',
 	},
 };
