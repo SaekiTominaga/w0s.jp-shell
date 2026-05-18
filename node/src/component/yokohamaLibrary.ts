@@ -6,7 +6,6 @@ import type { DefaultFunctionArgs } from '../shell.ts';
 import config from '../config/yokohamaLibrary.ts';
 import YokohamaLibraryDao from '../db/YokohamaLibrary.ts';
 import ProcessTime from '../util/ProcessTime.ts';
-import { getClosedReason } from '../util/yokohamaLibrary.ts';
 import type { DReserve } from '../../../@types/db_yokohamalib.ts';
 
 /**
@@ -173,30 +172,10 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 		logger.info(`データ更新: ${String(changeList.length)} 件`);
 
 		if (changeList.length >= 1) {
-			/* 開館日カレンダー */
-			const calendarGotoProcessTime = new ProcessTime();
-			await page.goto(config.calendar.url, {
-				timeout: config.browser.timeout * 1000,
-				waitUntil: 'domcontentloaded',
-			});
-			logger.info(`カレンダー画面にアクセス: ${page.url()} (${calendarGotoProcessTime.getTimeFormat()})`);
-
-			const closedReason = (
-				await Promise.all(
-					(await page.locator(config.calendar.cellSelector).all()).map(async (tdElement): Promise<string | undefined> => {
-						const cellText = await tdElement.textContent();
-						if (cellText === null) {
-							return undefined;
-						}
-						return getClosedReason(cellText);
-					}),
-				)
-			).find((reason) => reason !== undefined);
-
 			notice.add(
 				`${changeList
 					.map((material) => `${material.state.startsWith('受取可') ? `💕 ${material.state}` : material.state} | ${material.type}${material.title}`)
-					.join('\n')}\n\n${config.url}\n\n${closedReason ?? ''}`.trim(),
+					.join('\n')}\n\n蔵書検索ページ: ${config.url}\n休館日情報: ${config.calendar.url}`,
 			);
 		}
 	} finally {
