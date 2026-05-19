@@ -16,7 +16,7 @@
 		"dayjs": "1.11.20",
 		"ejs": "5.0.2",
 		"jsdom": "28.1.0",
-		"kysely": "0.28.17",
+		"kysely": "0.29.0",
 		"masto": "7.11.1",
 		"nodemailer": "8.0.7",
 		"playwright": "1.59.1",
