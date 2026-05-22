@@ -64,8 +64,8 @@ importers:
         specifier: 28.0.0
         version: 28.0.0
       '@types/node':
-        specifier: ^25.9.1
-        version: 25.9.1
+        specifier: ^24.12.4
+        version: 24.12.4
       '@types/nodemailer':
         specifier: 8.0.0
         version: 8.0.0
@@ -1942,7 +1942,7 @@ snapshots:
 
   '@types/better-sqlite3@7.6.13':
     dependencies:
-      '@types/node': 24.12.4
+      '@types/node': 25.9.1
 
   '@types/ejs@3.1.5': {}
 
@@ -1950,7 +1950,7 @@ snapshots:
 
   '@types/jsdom@28.0.0':
     dependencies:
-      '@types/node': 24.12.4
+      '@types/node': 25.9.1
       '@types/tough-cookie': 4.0.5
       parse5: 7.3.0
       undici-types: 7.25.0
@@ -1969,7 +1969,7 @@ snapshots:
 
   '@types/nodemailer@8.0.0':
     dependencies:
-      '@types/node': 24.12.4
+      '@types/node': 25.9.1
 
   '@types/tough-cookie@4.0.5': {}
 
