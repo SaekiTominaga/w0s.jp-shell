@@ -12,6 +12,14 @@ blockExoticSubdeps: true
 publicHoistPattern:
   - 'eslint'
 
+## Peer Dependency Settings
+
+strictPeerDependencies: true
+
+## CLI Settings
+
+engineStrict: true
+
 ## Build Settings
 
 strictDepBuilds: true
