@@ -8,7 +8,7 @@
 		"test": "node --experimental-test-coverage --test node/src/**/*.test.ts"
 	},
 	"dependencies": {
-		"@atproto/api": "0.19.17",
+		"@atproto/api": "0.20.6",
 		"@w0s/env-value-type": "2.0.0",
 		"@w0s/sqlite-utility": "3.0.0",
 		"@w0s/string-convert": "4.0.0",
