@@ -23,11 +23,10 @@ const getMessage = async (templatePath: string, entryData: Readonly<EntryData>):
 			title: entryData.title,
 			url: entryData.url,
 			tags: entryData.tags?.map((tag) => {
-				const tagTrimmed = tag.trim();
-				if (tagTrimmed === '') {
+				if (tag === '') {
 					return '';
 				}
-				return `#${tagTrimmed}`;
+				return `#${tag}`;
 			}),
 			description: entryData.description,
 		})
