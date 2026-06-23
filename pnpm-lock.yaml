@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@atproto/api':
-        specifier: 0.20.6
-        version: 0.20.6
+        specifier: 0.20.15
+        version: 0.20.15
       '@w0s/env-value-type':
         specifier: 2.0.0
         version: 2.0.0
@@ -125,8 +125,8 @@ packages:
   '@asamuzakjp/nwsapi@2.3.9':
     resolution: {integrity: sha512-n8GuYSrI9bF7FFZ/SjhwevlHc8xaVlb/7HmHelnc/PZXBD2ZR49NnN9sMMuDdEGPeeRQ5d0hqlSlEpgCX3Wl0Q==}
 
-  '@atproto/api@0.20.6':
-    resolution: {integrity: sha512-WnFPcUl+qZdXmt27+Tg93BDIvBt/WpXfLIiBzBTp3ms9aszM5hAsfc7G8KEsnsmnRvcm0xRfiKEjIt5FxTKdYg==}
+  '@atproto/api@0.20.15':
+    resolution: {integrity: sha512-b9TuVNY9iWIaRXAeKegNCqRsK9tSpB68DE/j/ytVTxEMK+/m43B0DycJND9tnhRiNIY+i7MhwLqNHPak9YaDJg==}
     engines: {node: '>=22'}
 
   '@atproto/common-web@0.5.1':
@@ -1788,7 +1788,7 @@ snapshots:
 
   '@asamuzakjp/nwsapi@2.3.9': {}
 
-  '@atproto/api@0.20.6':
+  '@atproto/api@0.20.15':
     dependencies:
       '@atproto/common-web': 0.5.1
       '@atproto/lexicon': 0.7.2
