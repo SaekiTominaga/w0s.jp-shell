@@ -22,5 +22,6 @@ updates:
       - dependency-name: '*'
         update-types: ['version-update:semver-major']
       - dependency-name: '@types/node'
+      - dependency-name: 'playwright'
     labels:
       - 'dependencies'
