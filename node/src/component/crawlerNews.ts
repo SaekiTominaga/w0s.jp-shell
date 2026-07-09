@@ -1,7 +1,7 @@
 import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
 import { env } from '@w0s/env-value-type';
-import type { DefaultFunctionArgs } from '../shell.ts';
+import type { Context } from '../shell.ts';
 import CrawlerNewsDao from '../db/CrawlerNews.ts';
 import config from '../config/crawler.ts';
 import { type HTTPResponse, HTTPResponseError, requestBrowser, requestFetch } from '../util/httpAccess.ts';
@@ -41,8 +41,8 @@ const accessError = async (url: URL, error: number): Promise<number> => {
 	return nowError;
 };
 
-const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
-	const { logger, notice } = option;
+const exec = async (context: Readonly<Context>): Promise<void> => {
+	const { logger, notice } = context;
 
 	const argsParsedValues = parseArgs({
 		options: {

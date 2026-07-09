@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 import jsdom from 'jsdom';
 import { env } from '@w0s/env-value-type';
-import type { DefaultFunctionArgs } from '../shell.ts';
+import type { Context } from '../shell.ts';
 import CrawlerResourceDao from '../db/CrawlerResource.ts';
 import config from '../config/crawler.ts';
 import { type HTTPResponse, HTTPResponseError, requestBrowser, requestFetch } from '../util/httpAccess.ts';
@@ -46,14 +46,14 @@ const accessError = async (url: URL, error: number): Promise<number> => {
 /**
  * ファイル保存
  *
+ * @param context - Context
  * @param url - URL
  * @param responseBody - レスポンスボディ
- * @param commonOption - 共通オプション
  *
  * @returns ファイルディレクトリ
  */
-const saveFile = async (url: URL, responseBody: string, commonOption: Readonly<DefaultFunctionArgs>): Promise<string> => {
-	const { logger } = commonOption;
+const saveFile = async (context: Readonly<Context>, url: URL, responseBody: string): Promise<string> => {
+	const { logger } = context;
 
 	const date = new Date();
 
@@ -83,8 +83,8 @@ const saveFile = async (url: URL, responseBody: string, commonOption: Readonly<D
 	return fileDir;
 };
 
-const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
-	const { logger, notice } = option;
+const exec = async (context: Readonly<Context>): Promise<void> => {
+	const { logger, notice } = context;
 
 	const argsParsedValues = parseArgs({
 		options: {
@@ -181,7 +181,7 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 					dao.update(targetData, contentHash),
 
 					/* ファイル保存 */
-					saveFile(targetData.url, response.body, option),
+					saveFile(context, targetData.url, response.body),
 				]);
 
 				/* 通知 */

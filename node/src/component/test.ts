@@ -1,12 +1,12 @@
 import { inspect, parseArgs } from 'node:util';
-import type { DefaultFunctionArgs } from '../shell.ts';
+import type { Context } from '../shell.ts';
 
 /**
  * シェル機能のテスト用
  */
 
-const exec = (option: Readonly<DefaultFunctionArgs>): void => {
-	const { logger, notice } = option;
+const exec = (context: Readonly<Context>): void => {
+	const { logger, notice } = context;
 
 	logger.info(inspect(parseArgs({ strict: false }).values));
 

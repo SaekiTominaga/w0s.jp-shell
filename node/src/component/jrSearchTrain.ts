@@ -3,7 +3,7 @@ import { inspect } from 'node:util';
 import dayjs from 'dayjs';
 import { JSDOM } from 'jsdom';
 import { env } from '@w0s/env-value-type';
-import type { DefaultFunctionArgs } from '../shell.ts';
+import type { Context } from '../shell.ts';
 import config from '../config/jrSearchTrain.ts';
 import { sleep } from '../util/sleep.ts';
 
@@ -56,8 +56,8 @@ const getStationList = async (): Promise<{ id: string | undefined; name: string 
 	return stationList;
 };
 
-const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
-	const { logger, notice } = option;
+const exec = async (context: Readonly<Context>): Promise<void> => {
+	const { logger, notice } = context;
 
 	/* 検索列車リストを取得 */
 	const searchTrainList = await getSearchTrain();
