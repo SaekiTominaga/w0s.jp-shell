@@ -138,13 +138,11 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 				(reserve) => !registedList.some((registed) => registed.material_type === reserve.type && registed.title === reserve.title),
 			);
 			await dao.insert(
-				insertList.map(
-					(material): DReserve => ({
-						material_type: material.type,
-						title: material.title,
-						state: material.state,
-					}),
-				),
+				insertList.map((material): DReserve => ({
+					material_type: material.type,
+					title: material.title,
+					state: material.state,
+				})),
 			);
 			logger.info(`データ登録: ${String(insertList.length)} 件`);
 		}
@@ -161,13 +159,11 @@ const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
 		logger.debug(`差分: ${inspect(changeList)}`);
 
 		await dao.updateState(
-			changeList.map(
-				(material): DReserve => ({
-					material_type: material.type,
-					title: material.title,
-					state: material.state,
-				}),
-			),
+			changeList.map((material): DReserve => ({
+				material_type: material.type,
+				title: material.title,
+				state: material.state,
+			})),
 		);
 		logger.info(`データ更新: ${String(changeList.length)} 件`);
 
