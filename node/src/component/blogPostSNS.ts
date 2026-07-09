@@ -1,5 +1,5 @@
 import { env } from '@w0s/env-value-type';
-import type { DefaultFunctionArgs } from '../shell.ts';
+import type { Context } from '../shell.ts';
 import BlogDao from '../db/BlogSNS.ts';
 import { post as postBluesky } from '../sns/bluesky.ts';
 import { post as postMastodon } from '../sns/mastodon.ts';
@@ -13,8 +13,8 @@ const dao = new BlogDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_BLOG'
 const getEntryUrl = (id: number): string => `${env('BLOG_ORIGIN')}/entry/${String(id)}`;
 const getMisskeyNoteUrl = (id: string): string => `${env('MISSKEY_INSTANCE')}/notes/${id}`;
 
-const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
-	const { logger, notice } = option;
+const exec = async (context: Readonly<Context>): Promise<void> => {
+	const { logger, notice } = context;
 
 	const entryData = await dao.select();
 	if (entryData === undefined) {

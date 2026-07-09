@@ -2,7 +2,7 @@ import { inspect } from 'node:util';
 import { webkit } from 'playwright';
 import { env } from '@w0s/env-value-type';
 import { convert as stringConvert } from '@w0s/string-convert';
-import type { DefaultFunctionArgs } from '../shell.ts';
+import type { Context } from '../shell.ts';
 import config from '../config/yokohamaLibrary.ts';
 import YokohamaLibraryDao from '../db/YokohamaLibrary.ts';
 import ProcessTime from '../util/ProcessTime.ts';
@@ -20,8 +20,8 @@ interface Material {
 
 const dao = new YokohamaLibraryDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_YOKOHAMA_LIBRARY')}`);
 
-const exec = async (option: Readonly<DefaultFunctionArgs>): Promise<void> => {
-	const { logger, notice } = option;
+const exec = async (context: Readonly<Context>): Promise<void> => {
+	const { logger, notice } = context;
 
 	/* ブラウザで対象ページにアクセス */
 	const launchProcessTime = new ProcessTime();

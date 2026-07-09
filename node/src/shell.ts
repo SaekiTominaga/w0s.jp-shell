@@ -5,7 +5,7 @@ import { getLogger } from './logger.ts';
 import Notice from './Notice.ts';
 import ProcessTime from './util/ProcessTime.ts';
 
-export interface DefaultFunctionArgs {
+export interface Context {
 	logger: Logger;
 	notice: Notice;
 }
