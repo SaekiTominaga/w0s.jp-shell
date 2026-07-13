@@ -1,5 +1,5 @@
 import { inspect } from 'node:util';
-import { webkit } from 'playwright';
+import { chromium } from 'playwright';
 import { env } from '@w0s/env-value-type';
 import { convert as stringConvert } from '@w0s/string-convert';
 import type { Context } from '../shell.ts';
@@ -25,7 +25,7 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 
 	/* ブラウザで対象ページにアクセス */
 	const launchProcessTime = new ProcessTime();
-	const browser = await webkit.launch();
+	const browser = await chromium.launch();
 	logger.info(`Launched browser: ${browser.browserType().name()} ${browser.version()} (${launchProcessTime.getTimeFormat()})`);
 	try {
 		const newContextProcessTime = new ProcessTime();
