@@ -1,6 +1,6 @@
 import { AtpAgent, RichText } from '@atproto/api';
-import ejs from 'ejs';
 import { env } from '@w0s/env-value-type';
+import ejs from 'ejs';
 
 interface EntryData {
 	url: string;

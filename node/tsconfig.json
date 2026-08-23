@@ -1,8 +1,3 @@
 {
-	"extends": "@w0s/tsconfig/node",
-	"include": ["src/**/*.ts"],
-	"compilerOptions": {
-		/* Emit */
-		"noEmit": true
-	}
+	"extends": "../tsconfig.json"
 }

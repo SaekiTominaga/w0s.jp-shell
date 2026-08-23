@@ -1,5 +1,5 @@
-import ejs from 'ejs';
 import { env } from '@w0s/env-value-type';
+import ejs from 'ejs';
 import type { NotesCreate as MisskeyNotesCreate } from '../../../@types/misskey.d.ts';
 
 interface EntryData {

@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import { inspect } from 'node:util';
+import { env } from '@w0s/env-value-type';
 import dayjs from 'dayjs';
 import { JSDOM } from 'jsdom';
-import { env } from '@w0s/env-value-type';
-import type { Context } from '../shell.ts';
 import config from '../config/jrSearchTrain.ts';
+import type { Context } from '../shell.ts';
 import { sleep } from '../util/sleep.ts';
 
 interface Search {

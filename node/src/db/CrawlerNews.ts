@@ -1,6 +1,6 @@
+import { jsToSQLiteAssignment, jsToSQLiteComparison, sqliteToJS } from '@w0s/sqlite-utility';
 import SQLite from 'better-sqlite3';
 import { type Insertable, Kysely, type Selectable, SqliteDialect, sql } from 'kysely';
-import { jsToSQLiteAssignment, jsToSQLiteComparison, sqliteToJS } from '@w0s/sqlite-utility';
 import type { DB, DNews, DNewsData } from '../../../@types/db_crawler.d.ts';
 
 /**
