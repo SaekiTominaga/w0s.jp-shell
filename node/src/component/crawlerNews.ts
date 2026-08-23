@@ -1,11 +1,11 @@
 import { parseArgs } from 'node:util';
-import jsdom from 'jsdom';
 import { env } from '@w0s/env-value-type';
-import type { Context } from '../shell.ts';
-import CrawlerNewsDao from '../db/CrawlerNews.ts';
+import jsdom from 'jsdom';
 import config from '../config/crawler.ts';
-import { type HTTPResponse, HTTPResponseError, requestBrowser, requestFetch } from '../util/httpAccess.ts';
+import CrawlerNewsDao from '../db/CrawlerNews.ts';
+import type { Context } from '../shell.ts';
 import { getAnchorLink, getHtmlContent, parseDate } from '../util/crawler.ts';
+import { type HTTPResponse, HTTPResponseError, requestBrowser, requestFetch } from '../util/httpAccess.ts';
 
 /**
  * ウェブページを巡回し、新着情報の差分を調べて通知する

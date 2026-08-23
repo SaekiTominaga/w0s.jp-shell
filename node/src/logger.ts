@@ -1,7 +1,7 @@
+import { env } from '@w0s/env-value-type';
 import nodemailer from 'nodemailer';
 import winston from 'winston';
 import TransportStream from 'winston-transport';
-import { env } from '@w0s/env-value-type';
 
 const development = env('NODE_ENV') !== 'production';
 

@@ -1,0 +1,7 @@
+{
+	"extends": "@w0s/tsconfig/node",
+	"compilerOptions": {
+		/* Emit */
+		"noEmit": true
+	}
+}

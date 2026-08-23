@@ -1,8 +1,8 @@
+import { env } from '@w0s/env-value-type';
 import ejs from 'ejs';
 import { createRestAPIClient as mastodonRest } from 'masto';
 // eslint-disable-next-line import/extensions
 import type { Status, StatusVisibility } from 'masto/mastodon/entities/v1/status.js';
-import { env } from '@w0s/env-value-type';
 
 interface EntryData {
 	url: string;

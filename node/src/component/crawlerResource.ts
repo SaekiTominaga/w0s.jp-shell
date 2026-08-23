@@ -1,11 +1,11 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { parseArgs } from 'node:util';
-import jsdom from 'jsdom';
 import { env } from '@w0s/env-value-type';
-import type { Context } from '../shell.ts';
-import CrawlerResourceDao from '../db/CrawlerResource.ts';
+import jsdom from 'jsdom';
 import config from '../config/crawler.ts';
+import CrawlerResourceDao from '../db/CrawlerResource.ts';
+import type { Context } from '../shell.ts';
 import { type HTTPResponse, HTTPResponseError, requestBrowser, requestFetch } from '../util/httpAccess.ts';
 import { sleep } from '../util/sleep.ts';
 

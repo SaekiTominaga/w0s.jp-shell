@@ -1,5 +1,5 @@
-import nodemailer from 'nodemailer';
 import { env } from '@w0s/env-value-type';
+import nodemailer from 'nodemailer';
 
 export default class Notice {
 	readonly #title: string;
