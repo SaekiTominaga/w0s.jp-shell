@@ -15,7 +15,7 @@
 		"better-sqlite3": "12.11.1",
 		"dayjs": "1.11.21",
 		"ejs": "6.0.1",
-		"jsdom": "28.1.0",
+		"jsdom": "30.0.1",
 		"kysely": "0.29.3",
 		"masto": "7.12.0",
 		"nodemailer": "9.0.3",
@@ -27,7 +27,7 @@
 	"devDependencies": {
 		"@types/better-sqlite3": "7.6.13",
 		"@types/ejs": "3.1.5",
-		"@types/jsdom": "28.0.0",
+		"@types/jsdom": "30.0.0",
 		"@types/node": "^24.13.2",
 		"@types/nodemailer": "8.0.0",
 		"@types/whatwg-mimetype": "5.0.0",
