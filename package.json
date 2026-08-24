@@ -18,7 +18,7 @@
 		"jsdom": "30.0.1",
 		"kysely": "0.29.3",
 		"masto": "8.0.0",
-		"nodemailer": "9.0.3",
+		"nodemailer": "9.0.5",
 		"playwright": "1.62.1",
 		"whatwg-mimetype": "5.0.0",
 		"winston": "3.19.0",
