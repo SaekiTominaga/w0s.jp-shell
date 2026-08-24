@@ -76,8 +76,8 @@ importers:
         specifier: 9.9.2
         version: 9.9.2(@eslint/js@9.39.4)(eslint-plugin-functional@10.0.0(eslint@9.39.4)(typescript@6.0.3))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.67.0(eslint@9.39.4)(typescript@6.0.3))(eslint@9.39.4))(eslint-plugin-jsdoc@64.2.1(eslint@9.39.4))(eslint-plugin-safely-storage@1.1.0(eslint@9.39.4))(eslint@9.39.4)(globals@17.7.0)(typescript-eslint@8.67.0(eslint@9.39.4)(typescript@6.0.3))
       '@w0s/tsconfig':
-        specifier: 3.0.0
-        version: 3.0.0(typescript@6.0.3)
+        specifier: 3.1.1
+        version: 3.1.1(typescript@6.0.3)
       eslint:
         specifier: ^9.39.4
         version: 9.39.4
@@ -558,10 +558,10 @@ packages:
     resolution: {integrity: sha512-DIB7EnpCUmvpW7GyFmpbSWza493vjcj98AUA0lveWQKabmiDJkDMi0OlRVnWzVXGyXUNBraD08Sbcxneq7DuWw==}
     engines: {node: '>=22'}
 
-  '@w0s/tsconfig@3.0.0':
-    resolution: {integrity: sha512-l/zG0LpUdm/pFlje6ArXRw4mmfxdiEOAU+D5ckY4heUKO9xBdHo7jF8QUCw6P3VcUd5x4rTtYMsuTdyi05b51Q==}
+  '@w0s/tsconfig@3.1.1':
+    resolution: {integrity: sha512-vXdvOvBBJ6PLsi+StATyAQyZOWLdOKCENq8n71wAAyI50v9IApRvrs8WwFORzQ5GIa5Q/HJXb27irFlaAv3GKQ==}
     peerDependencies:
-      typescript: ^6.0.0
+      typescript: ^6.0.0 || ^7.0.0
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
@@ -2290,7 +2290,7 @@ snapshots:
 
   '@w0s/string-convert@4.0.0': {}
 
-  '@w0s/tsconfig@3.0.0(typescript@6.0.3)':
+  '@w0s/tsconfig@3.1.1(typescript@6.0.3)':
     dependencies:
       typescript: 6.0.3
 
