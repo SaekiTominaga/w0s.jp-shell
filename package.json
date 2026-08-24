@@ -13,7 +13,7 @@
 		"@w0s/sqlite-utility": "3.0.0",
 		"@w0s/string-convert": "4.0.0",
 		"better-sqlite3": "12.11.1",
-		"dayjs": "1.11.21",
+		"dayjs": "1.11.23",
 		"ejs": "6.0.1",
 		"jsdom": "30.0.1",
 		"kysely": "0.29.3",
