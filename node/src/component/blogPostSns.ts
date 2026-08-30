@@ -1,13 +1,12 @@
 import { env } from '@w0s/env-value-type';
-import BlogDao from '../db/BlogSNS.ts';
+import BlogDao from '../db/BlogSns.ts';
 import type { Context } from '../shell.ts';
 import { post as postBluesky } from '../sns/bluesky.ts';
 import { post as postMastodon } from '../sns/mastodon.ts';
 import { post as postMisskey } from '../sns/misskey.ts';
 
-/**
- * ブログ記事 SNS 投稿
- */
+/* ===== ブログ記事 SNS 投稿 ===== */
+
 const dao = new BlogDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_BLOG')}`);
 
 const getEntryUrl = (id: number): string => `${env('BLOG_ORIGIN')}/entry/${String(id)}`;
@@ -72,7 +71,7 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 	}
 
 	const { deleteResult } = await dao.reset(entryData.id, sns);
-	if (deleteResult.numDeletedRows !== BigInt(0)) {
+	if (deleteResult.numDeletedRows !== 0n) {
 		logger.info(`キューから ${String(deleteResult.numDeletedRows)} 件のデータを削除`);
 	}
 };

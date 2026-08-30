@@ -40,6 +40,8 @@ const getMessage = async (templatePath: string, entryData: Readonly<EntryData>):
  * @returns 投稿結果
  */
 export const post = async (entryData: Readonly<EntryData>): Promise<MisskeyNotesCreate> => {
+	const message = await getMessage(`${env('ROOT')}/template/sns/blog-misskey.ejs`, entryData);
+
 	const response = await fetch(`${env('MISSKEY_INSTANCE')}/api/notes/create`, {
 		method: 'POST',
 		headers: {
@@ -47,7 +49,7 @@ export const post = async (entryData: Readonly<EntryData>): Promise<MisskeyNotes
 		},
 		body: JSON.stringify({
 			i: env('MISSKEY_ACCESS_TOKEN'),
-			text: await getMessage(`${env('ROOT')}/template/sns/blog-misskey.ejs`, entryData),
+			text: message,
 			visibility: env('MISSKEY_VISIBILITY'),
 		}), // https://misskey.noellabo.jp/api-doc#tag/notes/POST/notes/create
 	});

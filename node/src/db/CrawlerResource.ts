@@ -1,7 +1,7 @@
 import { jsToSQLiteAssignment, jsToSQLiteComparison, sqliteToJS } from '@w0s/sqlite-utility';
 import SQLite from 'better-sqlite3';
 import { Kysely, SqliteDialect } from 'kysely';
-import type { DB, DResource } from '../../../@types/db_crawler.d.ts';
+import type { DB, DResource } from '../../../@types/dbCrawler.d.ts';
 
 /**
  * ウェブ巡回（リソース）

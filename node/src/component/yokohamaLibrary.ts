@@ -2,15 +2,13 @@ import { inspect } from 'node:util';
 import { env } from '@w0s/env-value-type';
 import { convert as stringConvert } from '@w0s/string-convert';
 import { chromium } from 'playwright';
-import type { DReserve } from '../../../@types/db_yokohamalib.ts';
+import type { DReserve } from '../../../@types/dbYokohamalib.d.ts';
 import config from '../config/yokohamaLibrary.ts';
 import YokohamaLibraryDao from '../db/YokohamaLibrary.ts';
 import type { Context } from '../shell.ts';
 import ProcessTime from '../util/ProcessTime.ts';
 
-/**
- * 横浜市立図書館　予約連絡
- */
+/* ===== 横浜市立図書館 予約連絡 ===== */
 
 interface Material {
 	type: string;
@@ -167,7 +165,7 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 		);
 		logger.info(`データ更新: ${String(changeList.length)} 件`);
 
-		if (changeList.length >= 1) {
+		if (changeList.length > 0) {
 			notice.add(
 				`${changeList
 					.map((material) => `${material.state.startsWith('受取可') ? `💕 ${material.state}` : material.state} | ${material.type}${material.title}`)

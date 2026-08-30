@@ -1,7 +1,7 @@
 import { firefox } from 'playwright';
 import { MIMEType } from 'whatwg-mimetype';
 
-export class HTTPResponseError extends Error {
+class HTTPResponseError extends Error {
 	readonly #status: number;
 
 	/**
@@ -10,7 +10,7 @@ export class HTTPResponseError extends Error {
 	constructor(status: number) {
 		super();
 
-		this.name = this.constructor.name;
+		this.name = 'HTTPResponseError';
 		this.#status = status;
 	}
 
@@ -19,7 +19,7 @@ export class HTTPResponseError extends Error {
 	}
 }
 
-export interface HTTPResponse {
+interface HTTPResponse {
 	html: boolean;
 	body: string;
 }
@@ -36,7 +36,7 @@ const isHtml = (contentType: string): boolean =>
  *
  * @returns レスポンス
  */
-export const requestFetch = async (url: URL, option: Readonly<{ timeout: number }>): Promise<HTTPResponse> => {
+const requestFetch = async (url: URL, option: Readonly<{ timeout: number }>): Promise<HTTPResponse> => {
 	const response = await fetch(url, {
 		signal: AbortSignal.timeout(option.timeout * 1000),
 	});
@@ -64,7 +64,7 @@ export const requestFetch = async (url: URL, option: Readonly<{ timeout: number 
  *
  * @returns レスポンス
  */
-export const requestBrowser = async (url: URL): Promise<HTTPResponse> => {
+const requestBrowser = async (url: URL): Promise<HTTPResponse> => {
 	const browser = await firefox.launch();
 
 	try {
@@ -91,9 +91,11 @@ export const requestBrowser = async (url: URL): Promise<HTTPResponse> => {
 
 		return {
 			html: isHtml(contentType),
-			body: await page.evaluate(() => document.documentElement.outerHTML),
+			body: await page.evaluate(() => globalThis.document.documentElement.outerHTML),
 		};
 	} finally {
 		await browser.close();
 	}
 };
+
+export { HTTPResponseError, type HTTPResponse, requestFetch, requestBrowser };

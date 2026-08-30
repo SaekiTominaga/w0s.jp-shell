@@ -13,11 +13,11 @@ await test('requestBrowser', async (t) => {
 	await t.test('404', async () => {
 		try {
 			await requestBrowser(new URL('https://example.com/404'));
-		} catch (e) {
-			if (e instanceof HTTPResponseError) {
-				assert.equal(e.name, 'HTTPResponseError');
-				assert.equal(e.message, '');
-				assert.equal(e.status, 404);
+		} catch (error) {
+			if (error instanceof HTTPResponseError) {
+				assert.equal(error.name, 'HTTPResponseError');
+				assert.equal(error.message, '');
+				assert.equal(error.status, 404);
 			}
 		}
 	});

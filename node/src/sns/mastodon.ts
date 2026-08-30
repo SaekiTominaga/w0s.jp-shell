@@ -1,7 +1,6 @@
 import { env } from '@w0s/env-value-type';
 import ejs from 'ejs';
 import { createRestAPIClient as mastodonRest } from 'masto';
-// eslint-disable-next-line import/extensions
 import type { Status, StatusVisibility } from 'masto/mastodon/entities/v1/status.js';
 
 interface EntryData {
@@ -42,13 +41,15 @@ const getMessage = async (templatePath: string, entryData: Readonly<EntryData>):
  * @returns 投稿結果
  */
 export const post = async (entryData: Readonly<EntryData>): Promise<Status> => {
+	const message = await getMessage(`${env('ROOT')}/template/sns/blog-mastodon.ejs`, entryData);
+
 	const mastodon = mastodonRest({
 		url: env('MASTODON_INSTANCE'),
 		accessToken: env('MASTODON_ACCESS_TOKEN'),
 	});
 
 	const postedStatus = await mastodon.v1.statuses.create({
-		status: await getMessage(`${env('ROOT')}/template/sns/blog-mastodon.ejs`, entryData),
+		status: message,
 		visibility: env('MASTODON_VISIBILITY') as StatusVisibility, // https://docs.joinmastodon.org/entities/Status/#visibility
 		language: 'ja',
 	});

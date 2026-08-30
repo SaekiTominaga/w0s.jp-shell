@@ -4,7 +4,7 @@ import { getLogger } from './logger.ts';
 import Notice from './Notice.ts';
 import ProcessTime from './util/ProcessTime.ts';
 
-export interface Context {
+interface Context {
 	logger: Logger;
 	notice: Notice;
 }
@@ -45,10 +45,10 @@ const notice = new Notice(noticeTitle);
 
 try {
 	/* コンポーネントの読み込みと実行 */
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+	// oxlint-disable-next-line typescript/no-unsafe-call typescript/no-unsafe-member-access
 	await (await import(`./component/${componentName}.ts`)).default({ logger, notice });
-} catch (e) {
-	logger.error(e);
+} catch (error) {
+	logger.error(error);
 } finally {
 	/* タイムアウト判定 */
 	const processingTime = processTime.getTime();
@@ -61,3 +61,5 @@ try {
 
 	logger.info(`End of process: ${String(processingTime)}s -----`);
 }
+
+export type { Context };

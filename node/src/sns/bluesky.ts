@@ -40,6 +40,8 @@ const getMessage = async (templatePath: string, entryData: Readonly<EntryData>):
  * @returns 投稿結果
  */
 export const post = async (entryData: Readonly<EntryData>): Promise<{ uri: string; cid: string }> => {
+	const message = await getMessage(`${env('ROOT')}/template/sns/blog-bluesky.ejs`, entryData);
+
 	const agent = new AtpAgent({
 		service: env('BLUESKY_INSTANCE'),
 	});
@@ -49,7 +51,7 @@ export const post = async (entryData: Readonly<EntryData>): Promise<{ uri: strin
 	});
 
 	const richText = new RichText({
-		text: await getMessage(`${env('ROOT')}/template/sns/blog-bluesky.ejs`, entryData),
+		text: message,
 	});
 	await richText.detectFacets(agent);
 
