@@ -4,7 +4,7 @@ import { JSDOM } from 'jsdom';
 import { getAnchorLink, getHtmlContent, parseDate } from './crawler.ts';
 
 before(() => {
-	global.document = new JSDOM().window.document;
+	globalThis.document = new JSDOM().window.document;
 });
 
 await test('parseDate', async (t) => {
@@ -84,34 +84,37 @@ await test('getHtmlContent', async (t) => {
 
 await test('getAnchorLink', async (t) => {
 	await t.test('no anchor', () => {
-		document.body.innerHTML = `<p></p>`;
+		globalThis.document.body.innerHTML = `<p></p>`;
 
-		assert.equal(getAnchorLink(document.createElement('p')!, new URL('http://example.com/')), undefined);
+		assert.equal(getAnchorLink(globalThis.document.createElement('p')!, new URL('http://example.com/')), undefined);
 	});
 
 	await t.test('single anchor', async (t2) => {
 		await t2.test('absolute URL', () => {
-			document.body.innerHTML = `<p><a href="http://example.com/path2/to2"></a></p>`;
+			globalThis.document.body.innerHTML = `<p><a href="http://example.com/path2/to2"></a></p>`;
 
-			assert.equal(getAnchorLink(document.querySelector('p')!, new URL('http://example.com/path/to'))?.toString(), 'http://example.com/path2/to2');
+			assert.equal(getAnchorLink(globalThis.document.querySelector('p')!, new URL('http://example.com/path/to'))?.toString(), 'http://example.com/path2/to2');
 		});
 
 		await t2.test('absolute path', () => {
-			document.body.innerHTML = `<p><a href="/path2/to2"></a></p>`;
+			globalThis.document.body.innerHTML = `<p><a href="/path2/to2"></a></p>`;
 
-			assert.equal(getAnchorLink(document.querySelector('p')!, new URL('http://example.com/path/to'))?.toString(), 'http://example.com/path2/to2');
+			assert.equal(getAnchorLink(globalThis.document.querySelector('p')!, new URL('http://example.com/path/to'))?.toString(), 'http://example.com/path2/to2');
 		});
 
 		await t2.test('relative path', () => {
-			document.body.innerHTML = `<p><a href="path2/to2"></a></p>`;
+			globalThis.document.body.innerHTML = `<p><a href="path2/to2"></a></p>`;
 
-			assert.equal(getAnchorLink(document.querySelector('p')!, new URL('http://example.com/path/to'))?.toString(), 'http://example.com/path/path2/to2');
+			assert.equal(
+				getAnchorLink(globalThis.document.querySelector('p')!, new URL('http://example.com/path/to'))?.toString(),
+				'http://example.com/path/path2/to2',
+			);
 		});
 	});
 
 	await t.test('multiple anchor', () => {
-		document.body.innerHTML = `<p><a href=""></a><a href=""></a></p>`;
+		globalThis.document.body.innerHTML = `<p><a href=""></a><a href=""></a></p>`;
 
-		assert.equal(getAnchorLink(document.querySelector('p')!, new URL('http://example.com/')), undefined);
+		assert.equal(getAnchorLink(globalThis.document.querySelector('p')!, new URL('http://example.com/')), undefined);
 	});
 });

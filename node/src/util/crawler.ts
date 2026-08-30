@@ -7,7 +7,7 @@ import type { DOMWindow } from 'jsdom';
  *
  * @returns 解析した日付データ（解析不能な場合は undefined）
  */
-export const parseDate = (dateText: string): Date | undefined => {
+const parseDate = (dateText: string): Date | undefined => {
 	const FORMAT_LIST: readonly RegExp[] = [
 		/^([0-9]{4})-(0[1-9]|[1-9][0-9]?)-(0[1-9]|[1-9][0-9]?)/v /* YYYY-MM-DD */,
 		/^([0-9]{4})\/(0[1-9]|[1-9][0-9]?)\/(0[1-9]|[1-9][0-9]?)/v /* YYYY/MM/DD */,
@@ -37,7 +37,7 @@ export const parseDate = (dateText: string): Date | undefined => {
  *
  * @returns Content of a HTMLElement
  */
-export const getHtmlContent = (window: DOMWindow, element: HTMLElement): string => {
+const getHtmlContent = (window: DOMWindow, element: HTMLElement): string => {
 	if (element instanceof window.HTMLAreaElement || element instanceof window.HTMLImageElement) {
 		return element.alt;
 	}
@@ -71,7 +71,7 @@ export const getHtmlContent = (window: DOMWindow, element: HTMLElement): string 
  *
  * @returns アンカーリンクの URL
  */
-export const getAnchorLink = (element: HTMLElement, base: URL): URL | undefined => {
+const getAnchorLink = (element: HTMLElement, base: URL): URL | undefined => {
 	const anchorElements = element.querySelectorAll<HTMLAnchorElement>('a[href]');
 	if (anchorElements.length !== 1) {
 		return undefined;
@@ -80,3 +80,5 @@ export const getAnchorLink = (element: HTMLElement, base: URL): URL | undefined 
 	/* メッセージ内にリンクが一つだけある場合のみ、その URL を対象ページとする */
 	return new URL(anchorElements.item(0).href.trim(), base);
 };
+
+export { parseDate, getHtmlContent, getAnchorLink };

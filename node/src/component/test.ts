@@ -1,9 +1,7 @@
 import { inspect, parseArgs } from 'node:util';
 import type { Context } from '../shell.ts';
 
-/**
- * シェル機能のテスト用
- */
+/* ===== シェル機能のテスト用 ===== */
 
 const exec = (context: Readonly<Context>): void => {
 	const { logger, notice } = context;

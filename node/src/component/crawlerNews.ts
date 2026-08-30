@@ -7,9 +7,8 @@ import type { Context } from '../shell.ts';
 import { getAnchorLink, getHtmlContent, parseDate } from '../util/crawler.ts';
 import { type HTTPResponse, HTTPResponseError, requestBrowser, requestFetch } from '../util/httpAccess.ts';
 
-/**
- * ウェブページを巡回し、新着情報の差分を調べて通知する
- */
+/* ===== ウェブページを巡回し、新着情報の差分を調べて通知する ===== */
+
 const dao = new CrawlerNewsDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_CRAWLER')}`);
 
 /**
@@ -72,20 +71,20 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 					: await requestFetch(targetData.url, {
 							timeout: config.fetchTimeout,
 						});
-			} catch (e) {
-				if (e instanceof HTTPResponseError) {
+			} catch (error) {
+				if (error instanceof HTTPResponseError) {
 					const errorCount = await accessError(targetData.url, targetData.error);
 
-					logger.info(`HTTP Status Code: ${String(e.status)} ${targetData.url} 、エラー回数: ${String(errorCount)}`);
+					logger.info(`HTTP Status Code: ${String(error.status)} ${targetData.url} 、エラー回数: ${String(errorCount)}`);
 
 					if (errorCount % config.reportErrorCount === 0) {
-						notice.add(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${String(e.status)}\nエラー回数: ${String(errorCount)}`);
+						notice.add(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${String(error.status)}\nエラー回数: ${String(errorCount)}`);
 					}
 
 					return;
 				}
-				if (e instanceof Error) {
-					switch (e.name) {
+				if (error instanceof Error) {
+					switch (error.name) {
 						case 'TimeoutError': {
 							const errorCount = await accessError(targetData.url, targetData.error);
 
@@ -100,7 +99,7 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 					}
 				}
 
-				throw e;
+				throw error;
 			}
 
 			if (!response.html) {
@@ -159,12 +158,12 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 								refer_url: referUrl?.toString(),
 							})
 						) {
-							logger.debug(`データ登録済み: ${contentText.substring(0, 30)}...`);
+							logger.debug(`データ登録済み: ${contentText.slice(0, 30)}...`);
 							return;
 						}
 
 						/* DB 書き込み */
-						logger.debug(`データ登録実行: ${contentText.substring(0, 30)}...`);
+						logger.debug(`データ登録実行: ${contentText.slice(0, 30)}...`);
 						await dao.insertData({
 							news_id: targetData.random_id,
 							date: date,
@@ -191,13 +190,13 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 						}
 					}),
 				);
-			} catch (e) {
-				if (e instanceof SyntaxError) {
-					logger.error(e.message);
+			} catch (error) {
+				if (error instanceof SyntaxError) {
+					logger.error(error.message);
 					return;
 				}
 
-				throw e;
+				throw error;
 			}
 
 			await accessSuccess(targetData.url, targetData.error);

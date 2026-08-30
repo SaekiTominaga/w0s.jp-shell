@@ -9,9 +9,8 @@ import type { Context } from '../shell.ts';
 import { type HTTPResponse, HTTPResponseError, requestBrowser, requestFetch } from '../util/httpAccess.ts';
 import { sleep } from '../util/sleep.ts';
 
-/**
- * ウェブページを巡回し、レスポンスボディの差分を調べて通知する
- */
+/* ===== ウェブページを巡回し、レスポンスボディの差分を調べて通知する ===== */
+
 const dao = new CrawlerResourceDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_CRAWLER')}`);
 
 /**
@@ -57,7 +56,7 @@ const saveFile = async (context: Readonly<Context>, url: URL, responseBody: stri
 
 	const date = new Date();
 
-	const fileDir = url.pathname === '/' ? url.hostname : `${url.hostname}${url.pathname.replace(/\/[^\/]*$/gv, '')}`;
+	const fileDir = url.pathname === '/' ? url.hostname : `${url.hostname}${url.pathname.replaceAll(/\/[^\/]*$/gv, '')}`;
 	const fileFullDir = `${env('ROOT')}/${env('CRAWLER_RESOURCE_SAVE_DIRECTORY')}/${fileDir}`;
 	const fileName = `${String(url.pathname.split('/').at(-1))}_${String(date.getFullYear())}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
 		date.getDate(),
@@ -121,20 +120,20 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 					: await requestFetch(targetData.url, {
 							timeout: config.fetchTimeout,
 						});
-			} catch (e) {
-				if (e instanceof HTTPResponseError) {
+			} catch (error) {
+				if (error instanceof HTTPResponseError) {
 					const errorCount = await accessError(targetData.url, targetData.error);
 
-					logger.info(`HTTP Status Code: ${String(e.status)} ${targetData.url} 、エラー回数: ${String(errorCount)}`);
+					logger.info(`HTTP Status Code: ${String(error.status)} ${targetData.url} 、エラー回数: ${String(errorCount)}`);
 
 					if (errorCount % config.reportErrorCount === 0) {
-						notice.add(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${String(e.status)}\nエラー回数: ${String(errorCount)}`);
+						notice.add(`${targetData.title}\n${targetData.url}\nHTTP Status Code: ${String(error.status)}\nエラー回数: ${String(errorCount)}`);
 					}
 
 					return;
 				}
-				if (e instanceof Error) {
-					switch (e.name) {
+				if (error instanceof Error) {
+					switch (error.name) {
 						case 'TimeoutError': {
 							const errorCount = await accessError(targetData.url, targetData.error);
 
@@ -149,7 +148,7 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 					}
 				}
 
-				throw e;
+				throw error;
 			}
 
 			const md5 = crypto.createHash('md5');

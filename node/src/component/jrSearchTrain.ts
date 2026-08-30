@@ -14,9 +14,8 @@ interface Search {
 	time?: string; // HH:mm
 }
 
-/**
- * JR 列車空席確認
- */
+/* ===== JR 列車空席確認 ===== */
+
 /**
  * 検索列車リストを取得
  *
@@ -44,7 +43,7 @@ const getStationList = async (): Promise<{ id: string | undefined; name: string 
 		.map((col) => {
 			const patternMatchGroups = /\["(?<shinkansen>[0-9]{10})","(?<id>[0-9]{4})","(?<yomi>.+?)","(?<name>.+?)"\],?/v.exec(col.trim())?.groups;
 			if (patternMatchGroups === undefined) {
-				return undefined;
+				return patternMatchGroups;
 			}
 
 			const { id, name, yomi, shinkansen } = patternMatchGroups;
@@ -137,12 +136,12 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 				return;
 			}
 
-			const vacancyTrain = Array.from(vacancyTableElement.querySelectorAll('tbody > tr'))
-				.filter((trElement) => Array.from(trElement.querySelectorAll('td.uk-text-center')).some((tdElement) => ['○', '△'].includes(tdElement.textContent)))
+			const vacancyTrain = [...vacancyTableElement.querySelectorAll('tbody > tr')]
+				.filter((trElement) => [...trElement.querySelectorAll('td.uk-text-center')].some((tdElement) => ['○', '△'].includes(tdElement.textContent)))
 				.map((trElement) => trElement.querySelector('td:first-child .table_train_name')?.textContent);
 			logger.debug(`空席のある列車: ${inspect(vacancyTrain)}`);
 
-			if (vacancyTrain.length >= 1) {
+			if (vacancyTrain.length > 0) {
 				notice.add(`${date.format('YYYY年M月D日')}の${vacancyTrain.map((train) => `「${String(train)}」`).join('')}に空席\n\n${config.topUrl}`);
 			}
 		}),

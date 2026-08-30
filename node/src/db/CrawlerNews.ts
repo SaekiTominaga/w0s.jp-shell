@@ -1,7 +1,7 @@
 import { jsToSQLiteAssignment, jsToSQLiteComparison, sqliteToJS } from '@w0s/sqlite-utility';
 import SQLite from 'better-sqlite3';
 import { type Insertable, Kysely, type Selectable, SqliteDialect, sql } from 'kysely';
-import type { DB, DNews, DNewsData } from '../../../@types/db_crawler.d.ts';
+import type { DB, DNews, DNewsData } from '../../../@types/dbCrawler.d.ts';
 
 /**
  * ウェブ巡回（ニュース）
