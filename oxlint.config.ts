@@ -14,11 +14,5 @@ export default defineConfig({
 				'unicorn/no-null': 'off',
 			},
 		},
-		{
-			files: ['node/src/logger.ts'],
-			rules: {
-				'no-console': 'off',
-			},
-		},
 	],
 });

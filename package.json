@@ -4,7 +4,6 @@
 	"type": "module",
 	"scripts": {
 		"lint": "oxlint",
-		"pretest": "tsc --project node",
 		"test": "node --experimental-test-coverage --test node/src/**/*.test.ts"
 	},
 	"dependencies": {
@@ -31,11 +30,11 @@
 		"@types/node": "^24.13.2",
 		"@types/nodemailer": "8.0.0",
 		"@types/whatwg-mimetype": "5.0.0",
-		"@w0s/oxlint-config": "^1.0.3",
+		"@w0s/oxlint-config": "^1.0.5",
 		"@w0s/tsconfig": "3.1.1",
-		"eslint-plugin-safely-storage": "1.1.0",
 		"oxfmt": "^0.64.0",
 		"oxlint": "^1.80.0",
+		"oxlint-plugin-safely-storage": "^1.0.0",
 		"oxlint-tsgolint": "^7.0.2001",
 		"typescript": "7.0.2"
 	},
