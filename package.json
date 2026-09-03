@@ -32,7 +32,7 @@
 		"@types/whatwg-mimetype": "5.0.0",
 		"@w0s/oxlint-config": "^1.0.6",
 		"@w0s/tsconfig": "3.1.1",
-		"oxfmt": "^0.64.0",
+		"oxfmt": "^0.65.0",
 		"oxlint": "^1.80.0",
 		"oxlint-plugin-safely-storage": "^1.0.0",
 		"oxlint-tsgolint": "^7.0.2001",
