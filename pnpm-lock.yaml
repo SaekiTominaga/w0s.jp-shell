@@ -18,8 +18,8 @@ importers:
         specifier: 3.0.0
         version: 3.0.0
       '@w0s/string-convert':
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.1
+        version: 4.0.1
       better-sqlite3:
         specifier: 12.11.1
         version: 12.11.1
@@ -628,8 +628,8 @@ packages:
     resolution: {integrity: sha512-W91HrAcpgvW75rodJarM/Dn+AQOGZKDmefYv6jjDd5bNu29h+8ElLdCMp16eacQwy3ikT8awBI1F3VFGQ26M6g==}
     engines: {node: '>=22'}
 
-  '@w0s/string-convert@4.0.0':
-    resolution: {integrity: sha512-DIB7EnpCUmvpW7GyFmpbSWza493vjcj98AUA0lveWQKabmiDJkDMi0OlRVnWzVXGyXUNBraD08Sbcxneq7DuWw==}
+  '@w0s/string-convert@4.0.1':
+    resolution: {integrity: sha512-YTlbEQxHV3QsPI79TjDVsBQIKacpNKb7dJG3tEMAXQXyeM7zgdTmCKF8K+hObbviLtM8RX3W8/BtfZioYCZ7bA==}
     engines: {node: '>=22'}
 
   '@w0s/tsconfig@3.1.1':
@@ -1398,7 +1398,7 @@ snapshots:
 
   '@w0s/sqlite-utility@3.0.0': {}
 
-  '@w0s/string-convert@4.0.0': {}
+  '@w0s/string-convert@4.0.1': {}
 
   '@w0s/tsconfig@3.1.1(typescript@7.0.2)':
     dependencies:
