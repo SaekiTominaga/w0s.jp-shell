@@ -30,7 +30,7 @@
 		"@types/node": "24.13.2",
 		"@types/nodemailer": "8.0.0",
 		"@types/whatwg-mimetype": "5.0.0",
-		"@w0s/oxlint-config": "1.0.6",
+		"@w0s/oxlint-config": "1.0.7",
 		"@w0s/tsconfig": "3.1.1",
 		"oxfmt": "0.65.0",
 		"oxlint": "1.80.0",
