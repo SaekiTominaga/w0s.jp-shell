@@ -1,5 +1,5 @@
 import { env } from '@w0s/env-value-type';
-import nodemailer from 'nodemailer';
+import { createTransport } from 'nodemailer';
 
 export default class Notice {
 	readonly #title: string;
@@ -30,7 +30,7 @@ export default class Notice {
 			return;
 		}
 
-		const transporter = nodemailer.createTransport({
+		const transporter = createTransport({
 			port: env('MAIL_PORT', 'number'),
 			host: env('MAIL_SMTP'),
 			auth: {
