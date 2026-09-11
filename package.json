@@ -4,7 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"lint": "oxlint",
-		"test": "node --experimental-test-coverage --test node/src/**/*.test.ts"
+		"test": "node --experimental-test-coverage --test \"node/src/**/*.test.ts\""
 	},
 	"dependencies": {
 		"@atproto/api": "0.20.42",
