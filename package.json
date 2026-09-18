@@ -29,7 +29,7 @@
 		"@types/jsdom": "=30.0.0",
 		"@types/node": "=24.13.2",
 		"@types/whatwg-mimetype": "=5.0.0",
-		"@w0s/oxlint-config": "=1.0.8",
+		"@w0s/oxlint-config": "=1.0.9",
 		"@w0s/tsconfig": "=3.1.1",
 		"oxfmt": "=0.67.0",
 		"oxlint": "=1.82.0",
