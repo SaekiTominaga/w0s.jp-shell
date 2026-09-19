@@ -174,8 +174,8 @@ importers:
         specifier: '=1.0.9'
         version: 1.0.9(oxlint-plugin-safely-storage@1.0.0(@oxlint/plugins@1.80.0)(oxlint@1.82.0(oxlint-tsgolint@7.0.2001)))(oxlint-tsgolint@7.0.2001)(oxlint@1.82.0(oxlint-tsgolint@7.0.2001))
       '@w0s/tsconfig':
-        specifier: '=3.1.1'
-        version: 3.1.1(typescript@7.0.2)
+        specifier: '=3.2.1'
+        version: 3.2.1(typescript@7.0.2)
       oxfmt:
         specifier: '=0.67.0'
         version: 0.67.0
@@ -727,8 +727,8 @@ packages:
     resolution: {integrity: sha512-uFF80xDhcGJTOnq1sfb5/mSTF/sEZ/LRgpKnuGwnQOzUkQp9lrj5wAj1KkMPIMfMgIXz3BFOsprAP/dSIQ/mlg==}
     engines: {node: '>=22'}
 
-  '@w0s/tsconfig@3.1.1':
-    resolution: {integrity: sha512-vXdvOvBBJ6PLsi+StATyAQyZOWLdOKCENq8n71wAAyI50v9IApRvrs8WwFORzQ5GIa5Q/HJXb27irFlaAv3GKQ==}
+  '@w0s/tsconfig@3.2.1':
+    resolution: {integrity: sha512-SXBvG3PrOCRI2VNF45qaTcWrnH1qE3IGYeg2SNt2sJGjw9XIJkOfYQeKGlM0T1I3y/1SngQyVBTUk54Nz/VVBA==}
     peerDependencies:
       typescript: ^6.0.0 || ^7.0.0
 
@@ -1491,7 +1491,7 @@ snapshots:
 
   '@w0s/string-convert@4.0.2': {}
 
-  '@w0s/tsconfig@3.1.1(typescript@7.0.2)':
+  '@w0s/tsconfig@3.2.1(typescript@7.0.2)':
     dependencies:
       typescript: 7.0.2
 
