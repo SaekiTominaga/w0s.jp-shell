@@ -1,44 +1,46 @@
+export type Visibility = 'public' | 'home' | 'followers' | 'specified';
+
 /* https://misskey.noellabo.jp/api-doc#tag/notes/post/notescreate */
-export type NotesCreate = Readonly<{
-	createdNote: Readonly<{
+export interface NotesCreate {
+	createdNote: {
 		id: string;
 		createdAt: string;
 		deletedAt?: string;
 		text: string;
 		cw?: string;
 		userId: string;
-		user: Readonly<object>;
+		user: object;
 		replyId?: string;
 		renoteId?: string;
-		reply?: Readonly<object>;
-		renote?: Readonly<object>;
+		reply?: object;
+		renote?: object;
 		isHidden?: boolean;
-		visibility: 'public' | 'home' | 'followers' | 'specified';
-		mentions?: readonly string[];
-		visibleUserIds?: readonly string[];
-		fileIds?: readonly string[];
-		files?: readonly Readonly<object>[];
-		tags?: readonly string[];
-		poll?: Readonly<object>;
-		emojis?: Readonly<object>;
+		visibility: Visibility;
+		mentions?: string[];
+		visibleUserIds?: string[];
+		fileIds?: string[];
+		files?: object[];
+		tags?: string[];
+		poll?: object;
+		emojis?: object;
 		channelId?: string;
-		channel?: Readonly<object>;
+		channel?: object;
 		localOnly?: boolean;
 		reactionAcceptance: string;
-		reactionEmojis: Readonly<object>;
-		reactions: Readonly<object>;
+		reactionEmojis: object;
+		reactions: object;
 		reactionCount: number;
 		renoteCount: number;
 		repliesCount: number;
 		uri?: string;
 		url?: string;
-		reactionAndUserPairCache?: readonly string[];
+		reactionAndUserPairCache?: string[];
 		clippedCount?: number;
 		myReaction?: string;
-	}>;
-	error: Readonly<{
+	};
+	error: {
 		code: string;
 		message: string;
 		id: string;
-	}>;
-}>;
+	};
+}
