@@ -12,12 +12,12 @@
 			"outputCapture": "std"
 		},
 		{
-			"name": "blogPostSNS",
+			"name": "blogPostSns",
 			"type": "node",
 			"request": "launch",
 			"skipFiles": ["<node_internals>/**"],
 			"program": "${workspaceFolder}/node/src/shell.ts",
-			"args": ["-c", "blogPostSNS", "-n", "ブログ記事 SNS 投稿"],
+			"args": ["-c", "blogPostSns", "-n", "ブログ記事 SNS 投稿"],
 			"envFile": "${workspaceFolder}/.env.development",
 			"outputCapture": "std"
 		},
@@ -48,6 +48,16 @@
 			"skipFiles": ["<node_internals>/**"],
 			"program": "${workspaceFolder}/node/src/shell.ts",
 			"args": ["-c", "jrSearchTrain", "-n", "JR 列車空席確認"],
+			"envFile": "${workspaceFolder}/.env.development",
+			"outputCapture": "std"
+		},
+		{
+			"name": "kumetaCalendar",
+			"type": "node",
+			"request": "launch",
+			"skipFiles": ["<node_internals>/**"],
+			"program": "${workspaceFolder}/node/src/shell.ts",
+			"args": ["-c", "kumetaCalendar", "-n", "久米田康治カレンダー"],
 			"envFile": "${workspaceFolder}/.env.development",
 			"outputCapture": "std"
 		},
