@@ -72,7 +72,7 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 			},
 			{
 				message: message,
-				visibility: env('MASTODON_VISIBILITY') as MastodonStatusVisibility,
+				visibility: env('MASTODON_BLOG_VISIBILITY') as MastodonStatusVisibility,
 			},
 		);
 
@@ -122,7 +122,7 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 			},
 			{
 				message: message,
-				visibility: env('MISSKEY_VISIBILITY') as MisskeyVisibility,
+				visibility: env('MISSKEY_BLOG_VISIBILITY') as MisskeyVisibility,
 			},
 		);
 
