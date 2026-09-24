@@ -126,7 +126,7 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 	/* 新しく登録されたイベントを SNS へ投稿 */
 	await Promise.all(
 		targetEvents
-			.filter((event) => event.start.date >= new Date())
+			.filter((event) => dayjs(event.start.date).isAfter(dayjs().subtract(3, 'day'))) // 3日以上前のイベントは投稿しない
 			.map(async (event) => {
 				const postData = {
 					summary: event.summary,
