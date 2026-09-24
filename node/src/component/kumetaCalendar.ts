@@ -6,7 +6,7 @@ import sanitizeHtml from 'sanitize-html';
 import { type IcsDateObject, convertIcsCalendar } from 'ts-ics';
 import CalendarDao from '../db/Calendar.ts';
 import type { Context } from '../shell.ts';
-import { postMastodon } from '../util/sns.ts';
+import { postBluesky, postMastodon } from '../util/sns.ts';
 
 /* ===== 久米田康治カレンダー ===== */
 
@@ -86,6 +86,33 @@ const mastodon = async (event: { summary: string; date: string; description: str
 	);
 };
 
+const bluesky = async (event: {
+	summary: string;
+	date: string;
+	description: string | undefined;
+	location: string | undefined;
+}): Promise<{ uri: string; cid: string }> => {
+	const message = (
+		await ejs.renderFile(`${env('ROOT')}/template/sns/kumeta-calendar-bluesky.ejs`, {
+			summary: event.summary,
+			date: event.date,
+			description: event.description,
+			location: event.location,
+		})
+	).trim();
+
+	return postBluesky(
+		{
+			instance: env('BLUESKY_KUMETACALENDAR_INSTANCE'),
+			id: env('BLUESKY_KUMETACALENDAR_ID'),
+			password: env('BLUESKY_KUMETACALENDAR_PASSWORD'),
+		},
+		{
+			message: message,
+		},
+	);
+};
+
 const exec = async (context: Readonly<Context>): Promise<void> => {
 	const { logger } = context;
 
@@ -135,11 +162,10 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 					location: event.location,
 				};
 
-				const result = await mastodon(postData);
+				const [mastodonResult, blueskyResult] = await Promise.all([mastodon(postData), bluesky(postData)]);
 
-				const postedUrl = result.url ?? result.uri;
-
-				logger.info(`Mastodon 投稿: ${event.summary} <${postedUrl}>`);
+				logger.info(`Mastodon 投稿: ${event.summary} <${mastodonResult.url ?? mastodonResult.uri}>`);
+				logger.info(`Bluesky 投稿: ${event.summary} <${blueskyResult.uri}>`);
 			}),
 	);
 };
