@@ -181,7 +181,7 @@ importers:
         version: 5.0.0
       '@w0s/oxlint-config':
         specifier: '=1.0.9'
-        version: 1.0.9(oxlint-plugin-safely-storage@1.0.0(@oxlint/plugins@1.80.0)(oxlint@1.83.0(oxlint-tsgolint@7.0.2001)))(oxlint-tsgolint@7.0.2001)(oxlint@1.83.0(oxlint-tsgolint@7.0.2001))
+        version: 1.0.9(oxlint-plugin-safely-storage@1.0.2(@oxlint/plugins@1.80.0)(oxlint@1.83.0(oxlint-tsgolint@7.0.2001)))(oxlint-tsgolint@7.0.2001)(oxlint@1.83.0(oxlint-tsgolint@7.0.2001))
       '@w0s/tsconfig':
         specifier: '=3.2.2'
         version: 3.2.2(typescript@7.0.2)
@@ -192,8 +192,8 @@ importers:
         specifier: '=1.83.0'
         version: 1.83.0(oxlint-tsgolint@7.0.2001)
       oxlint-plugin-safely-storage:
-        specifier: '=1.0.0'
-        version: 1.0.0(@oxlint/plugins@1.80.0)(oxlint@1.83.0(oxlint-tsgolint@7.0.2001))
+        specifier: '=1.0.2'
+        version: 1.0.2(@oxlint/plugins@1.80.0)(oxlint@1.83.0(oxlint-tsgolint@7.0.2001))
       oxlint-tsgolint:
         specifier: '=7.0.2001'
         version: 7.0.2001
@@ -1026,8 +1026,8 @@ packages:
       vite-plus:
         optional: true
 
-  oxlint-plugin-safely-storage@1.0.0:
-    resolution: {integrity: sha512-B/b4RrFKhbjae5cLMoEcMznL1/yrnapVR+DMEuZl21PDeEbvqUIMu56nXApYOJDq82T45hg5Ba3Hpsq0z/zAew==}
+  oxlint-plugin-safely-storage@1.0.2:
+    resolution: {integrity: sha512-ow0OE6j0vdzTWCwtWxpfIjM0CKjujq153nr3LL3k6JftWRAKPE2OdmE/Vx10fSnoGwq467Ap+CHuwHP/PCD6ng==}
     peerDependencies:
       '@oxlint/plugins': ^1.80.0
       oxlint: ^1.80.0
@@ -1583,10 +1583,10 @@ snapshots:
 
   '@w0s/env-value-type@2.0.2': {}
 
-  '@w0s/oxlint-config@1.0.9(oxlint-plugin-safely-storage@1.0.0(@oxlint/plugins@1.80.0)(oxlint@1.83.0(oxlint-tsgolint@7.0.2001)))(oxlint-tsgolint@7.0.2001)(oxlint@1.83.0(oxlint-tsgolint@7.0.2001))':
+  '@w0s/oxlint-config@1.0.9(oxlint-plugin-safely-storage@1.0.2(@oxlint/plugins@1.80.0)(oxlint@1.83.0(oxlint-tsgolint@7.0.2001)))(oxlint-tsgolint@7.0.2001)(oxlint@1.83.0(oxlint-tsgolint@7.0.2001))':
     dependencies:
       oxlint: 1.83.0(oxlint-tsgolint@7.0.2001)
-      oxlint-plugin-safely-storage: 1.0.0(@oxlint/plugins@1.80.0)(oxlint@1.83.0(oxlint-tsgolint@7.0.2001))
+      oxlint-plugin-safely-storage: 1.0.2(@oxlint/plugins@1.80.0)(oxlint@1.83.0(oxlint-tsgolint@7.0.2001))
       oxlint-tsgolint: 7.0.2001
 
   '@w0s/sqlite-utility@3.0.2': {}
@@ -1880,7 +1880,7 @@ snapshots:
       '@oxfmt/binding-win32-ia32-msvc': 0.68.0
       '@oxfmt/binding-win32-x64-msvc': 0.68.0
 
-  oxlint-plugin-safely-storage@1.0.0(@oxlint/plugins@1.80.0)(oxlint@1.83.0(oxlint-tsgolint@7.0.2001)):
+  oxlint-plugin-safely-storage@1.0.2(@oxlint/plugins@1.80.0)(oxlint@1.83.0(oxlint-tsgolint@7.0.2001)):
     dependencies:
       '@oxlint/plugins': 1.80.0
       oxlint: 1.83.0(oxlint-tsgolint@7.0.2001)
