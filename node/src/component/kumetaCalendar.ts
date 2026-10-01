@@ -6,7 +6,7 @@ import 'dayjs/locale/ja.js';
 import ejs from 'ejs';
 import type { Status as MastodonStatus, StatusVisibility as MastodonStatusVisibility } from 'masto/mastodon/entities/v1/status.js';
 import sanitizeHtml from 'sanitize-html';
-import { type IcsDateObject, convertIcsCalendar } from 'ts-ics';
+import { type IcsDateObject, type IcsEvent, convertIcsCalendar } from 'ts-ics';
 import CalendarDao from '../db/Calendar.ts';
 import type { Context } from '../shell.ts';
 import { postBluesky, postMastodon } from '../util/sns.ts';
@@ -157,7 +157,7 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 		logger.debug(`DB に保存されていないイベント: ${String(targetEvents.length)}件`);
 
 		/* 新しく登録されたイベントを DB に保存 */
-		const insertResult = await dao.insertKumeta(
+		const dbInsertResult = await dao.insertKumeta(
 			targetEvents.map((event) => ({
 				uid: event.uid,
 				summary: event.summary,
@@ -165,15 +165,15 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 				end: event.end?.date,
 			})),
 		);
-		if (insertResult !== undefined) {
-			logger.info(`DB に ${insertResult.numInsertedOrUpdatedRows} 件の新着データを登録`);
+		if (dbInsertResult !== undefined) {
+			logger.info(`DB に新着データを登録: ${String(dbInsertResult.numInsertedOrUpdatedRows)}件`);
 		}
 
 		/* 新しく登録されたイベントを SNS へ投稿 */
 		await Promise.all(
 			targetEvents
 				.filter((event) => dayjs(event.start.date).isAfter(dayjs().subtract(3, 'day'))) // 指定時間以上前のイベントは投稿しない
-				.map(async (event) => {
+				.map(async (event): Promise<void> => {
 					const postData = {
 						summary: event.summary,
 						date: snsFormatDate(event.start, event.end),
@@ -194,10 +194,10 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 		const targetUids = new Set(savedEvents.filter((event) => !event.reminder).map((event) => event.uid)); // リマインダーが行われていないイベントの UID
 		logger.debug(`リマインダーが行われていないイベント: ${String(targetUids.size)}件`);
 
-		await Promise.all(
+		const postedEvents = await Promise.all(
 			allEvents
 				.filter((event) => targetUids.has(event.uid) && dayjs(event.start.date).isBefore(dayjs().add(1, 'hour'))) // 現在時刻から指定時間以内に始まるイベントのみを対象とする
-				.map(async (event) => {
+				.map(async (event): Promise<IcsEvent> => {
 					const postData = {
 						summary: event.summary,
 						date: snsFormatDate(event.start, event.end),
@@ -211,8 +211,15 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 
 					logger.info(`Mastodon 投稿: ${event.summary} <${mastodonResult.url ?? mastodonResult.uri}>`);
 					logger.info(`Bluesky 投稿: ${event.summary} <${blueskyResult.uri}>`);
+
+					return event;
 				}),
 		);
+
+		const dbUpdateResult = await dao.updateKumetaReminder(postedEvents.map((event) => event.uid));
+		if (dbUpdateResult !== undefined) {
+			logger.info(`DB のリマインダーフラグ変更: ${String(dbUpdateResult.numUpdatedRows)}件`);
+		}
 	}
 };
 

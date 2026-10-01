@@ -1,6 +1,6 @@
 import { jsToSQLiteAssignment, jsToSQLiteComparison, sqliteToJS } from '@w0s/sqlite-utility';
 import SQLite from 'better-sqlite3';
-import { type InsertResult, type Insertable, Kysely, type Selectable, SqliteDialect } from 'kysely';
+import { type InsertResult, type Insertable, Kysely, type Selectable, SqliteDialect, type UpdateResult } from 'kysely';
 import type { DB, DKumeta } from '../../../@types/dbCalendar.d.ts';
 
 /**
@@ -75,6 +75,30 @@ export default class CalendarDao {
 				reminder: jsToSQLiteAssignment(false),
 			})),
 		);
+
+		return query.executeTakeFirst();
+	}
+
+	/**
+	 * 「久米田康治カレンダー」のリマインダーフラグを変更する
+	 *
+	 * @param uids - 対象イベントの UID
+	 *
+	 * @returns 更新結果
+	 */
+	async updateKumetaReminder(uids: readonly string[]): Promise<UpdateResult | undefined> {
+		if (uids.length === 0) {
+			return undefined;
+		}
+
+		const query = this.db
+			.updateTable('d_kumeta')
+			.set({ reminder: jsToSQLiteAssignment(true) })
+			.where(
+				'uid',
+				'in',
+				uids.map((uid) => jsToSQLiteComparison(uid)),
+			);
 
 		return query.executeTakeFirst();
 	}
