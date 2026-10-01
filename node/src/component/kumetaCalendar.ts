@@ -1,8 +1,10 @@
 import { env } from '@w0s/env-value-type';
 import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime.js';
 // oxlint-disable-next-line import/no-unassigned-import
 import 'dayjs/locale/ja.js';
+import dayjsRelativeTime from 'dayjs/plugin/relativeTime.js';
+import dayjsTimezone from 'dayjs/plugin/timezone.js';
+import dayjsUtc from 'dayjs/plugin/utc.js';
 import ejs from 'ejs';
 import type { Status as MastodonStatus, StatusVisibility as MastodonStatusVisibility } from 'masto/mastodon/entities/v1/status.js';
 import sanitizeHtml from 'sanitize-html';
@@ -13,7 +15,9 @@ import { postBluesky, postMastodon } from '../util/sns.ts';
 
 /* ===== 久米田康治カレンダー ===== */
 
-dayjs.extend(relativeTime);
+dayjs.extend(dayjsRelativeTime);
+dayjs.extend(dayjsTimezone);
+dayjs.extend(dayjsUtc);
 dayjs.locale('ja');
 
 const snsFormatDate = (start: IcsDateObject, end: IcsDateObject | null | undefined): string => {
@@ -139,7 +143,20 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 
 	const icsCalendar = convertIcsCalendar(undefined, await response.text());
 
-	const allEvents = icsCalendar.events?.toSorted((a, b) => a.start.date.getTime() - b.start.date.getTime()); // イベントデータ
+	const allEvents = icsCalendar.events
+		?.map((event) => {
+			/* タイムゾーン修正 */
+			const timezone = 'Asia/Tokyo';
+			if (event.start.type === 'DATE') {
+				event.start.date = dayjs.utc(event.start.date).tz(timezone, true).toDate();
+			}
+			if (event.end?.type === 'DATE') {
+				event.end.date = dayjs.utc(event.end.date).tz(timezone, true).toDate();
+			}
+
+			return event;
+		})
+		.toSorted((a, b) => a.start.date.getTime() - b.start.date.getTime()); // イベントデータ
 	if (allEvents === undefined) {
 		return;
 	}
