@@ -37,7 +37,7 @@
 		"oxfmt": "=0.70.0",
 		"oxlint": "=1.85.0",
 		"oxlint-plugin-safely-storage": "=1.0.2",
-		"oxlint-tsgolint": "=7.0.2002",
+		"oxlint-tsgolint": "=7.0.2003",
 		"typescript": "=7.0.2"
 	},
 	"packageManager": "pnpm@12.3.4"
