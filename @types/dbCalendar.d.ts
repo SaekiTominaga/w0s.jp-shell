@@ -4,7 +4,10 @@ type Transform<T> = TypeTransform<NullTransform<T>>;
 
 export interface DKumeta {
 	uid: string;
+	summary: string;
 	start: Date;
+	end: Date | undefined;
+	reminder: boolean;
 }
 
 export interface DB {

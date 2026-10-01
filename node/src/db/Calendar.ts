@@ -35,10 +35,10 @@ export default class CalendarDao {
 	 *
 	 * @returns イベントデータ
 	 */
-	async selectKumeta(uids: readonly string[]): Promise<Selectable<Omit<DKumeta, 'start'>>[]> {
+	async selectKumeta(uids: readonly string[]): Promise<Selectable<Omit<DKumeta, 'summary' | 'start' | 'end'>>[]> {
 		const query = this.db
 			.selectFrom(['d_kumeta'])
-			.select(['uid'])
+			.select(['uid', 'reminder'])
 			.where(
 				'uid',
 				'in',
@@ -50,6 +50,7 @@ export default class CalendarDao {
 
 		return rows.map((row) => ({
 			uid: sqliteToJS(row.uid),
+			reminder: sqliteToJS(row.reminder, 'boolean'),
 		}));
 	}
 
@@ -60,11 +61,18 @@ export default class CalendarDao {
 	 *
 	 * @returns 挿入結果
 	 */
-	async insertKumeta(datas: readonly Readonly<Insertable<DKumeta>>[]): Promise<InsertResult> {
+	async insertKumeta(datas: readonly Readonly<Insertable<Omit<DKumeta, 'reminder'>>>[]): Promise<InsertResult | undefined> {
+		if (datas.length === 0) {
+			return undefined;
+		}
+
 		const query = this.db.insertInto('d_kumeta').values(
 			datas.map((data) => ({
 				uid: jsToSQLiteAssignment(data.uid),
+				summary: jsToSQLiteAssignment(data.summary),
 				start: jsToSQLiteAssignment(data.start),
+				end: jsToSQLiteAssignment(data.end),
+				reminder: jsToSQLiteAssignment(false),
 			})),
 		);
 
