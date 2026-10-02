@@ -164,14 +164,25 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 
 	const dao = new CalendarDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_CALENDAR')}`);
 
-	const savedEvents = await dao.selectKumeta(allEvents.map((event) => event.uid)); // DB に保存されているイベントデータ（の断片）
+	const savedEvents = await dao.selectKumeta(); // DB に保存されているイベントデータ（の断片）
+	const savedUids = savedEvents.map((event) => event.uid);
+
+	/* 削除されたイベントを整理 */
+	{
+		const allUids = new Set(allEvents.map((event) => event.uid));
+		const diffUids = savedUids.filter((savedUid) => !allUids.has(savedUid)); // DB 側にのみ存在するイベントの UID
+		logger.debug(`削除されたイベント: ${String(diffUids.length)}件`);
+
+		const dbDeleteResult = await dao.deleteKumeta(diffUids);
+		if (dbDeleteResult !== undefined) {
+			logger.info(`DB からデータを削除: ${String(dbDeleteResult.numDeletedRows)}件`);
+		}
+	}
 
 	/* イベントの新規登録 */
 	{
-		const savedUids = new Set(savedEvents.map((event) => event.uid));
-
-		const targetEvents = allEvents.filter((event) => !savedUids.has(event.uid)); // DB に保存されていないイベントデータ
-		logger.debug(`DB に保存されていないイベント: ${String(targetEvents.length)}件`);
+		const targetEvents = allEvents.filter((event) => !savedUids.includes(event.uid)); // DB に保存されていないイベントデータ
+		logger.debug(`新着イベント: ${String(targetEvents.length)}件`);
 
 		/* 新しく登録されたイベントを DB に保存 */
 		const dbInsertResult = await dao.insertKumeta(
@@ -209,7 +220,7 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 	/* リマインダーを SNS へ投稿 */
 	{
 		const targetUids = new Set(savedEvents.filter((event) => !event.reminder).map((event) => event.uid)); // リマインダーが行われていないイベントの UID
-		logger.debug(`リマインダーが行われていないイベント: ${String(targetUids.size)}件`);
+		logger.debug(`リマインダー未実施イベント: ${String(targetUids.size)}件`);
 
 		const postedEvents = await Promise.all(
 			allEvents

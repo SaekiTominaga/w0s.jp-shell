@@ -1,6 +1,6 @@
 import { jsToSQLiteAssignment, jsToSQLiteComparison, sqliteToJS } from '@w0s/sqlite-utility';
 import SQLite from 'better-sqlite3';
-import { type InsertResult, type Insertable, Kysely, type Selectable, SqliteDialect, type UpdateResult } from 'kysely';
+import { type DeleteResult, type InsertResult, type Insertable, Kysely, type Selectable, SqliteDialect, type UpdateResult } from 'kysely';
 import type { DB, DKumeta } from '../../../@types/dbCalendar.d.ts';
 
 /**
@@ -31,20 +31,10 @@ export default class CalendarDao {
 	/**
 	 * 「久米田康治カレンダー」の保管済みデータを取得する
 	 *
-	 * @param uids - イベントの UID
-	 *
 	 * @returns イベントデータ
 	 */
-	async selectKumeta(uids: readonly string[]): Promise<Selectable<Omit<DKumeta, 'summary' | 'start' | 'end'>>[]> {
-		const query = this.db
-			.selectFrom(['d_kumeta'])
-			.select(['uid', 'reminder'])
-			.where(
-				'uid',
-				'in',
-				uids.map((uid) => jsToSQLiteComparison(uid)),
-			)
-			.orderBy('start');
+	async selectKumeta(): Promise<Selectable<Omit<DKumeta, 'summary' | 'start' | 'end'>>[]> {
+		const query = this.db.selectFrom(['d_kumeta']).select(['uid', 'reminder']).orderBy('start');
 
 		const rows = await query.execute();
 
@@ -99,6 +89,27 @@ export default class CalendarDao {
 				'in',
 				uids.map((uid) => jsToSQLiteComparison(uid)),
 			);
+
+		return query.executeTakeFirst();
+	}
+
+	/**
+	 * 「久米田康治カレンダー」の保管済みデータを削除する
+	 *
+	 * @param uids - イベントの UID
+	 *
+	 * @returns 削除結果
+	 */
+	async deleteKumeta(uids: readonly string[]): Promise<DeleteResult | undefined> {
+		if (uids.length === 0) {
+			return undefined;
+		}
+
+		const query = this.db.deleteFrom('d_kumeta').where(
+			'uid',
+			'in',
+			uids.map((uid) => jsToSQLiteComparison(uid)),
+		);
 
 		return query.executeTakeFirst();
 	}
