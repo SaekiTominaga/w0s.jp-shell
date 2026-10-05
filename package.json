@@ -20,7 +20,7 @@
 		"nodemailer": "=10.0.10",
 		"playwright": "=1.62.1",
 		"sanitize-html": "=2.17.7",
-		"ts-ics": "=2.4.6",
+		"ts-ics": "=2.4.7",
 		"whatwg-mimetype": "=5.0.0",
 		"winston": "=3.19.0",
 		"winston-transport": "=4.9.0"
