@@ -149,8 +149,8 @@ importers:
         specifier: '=2.17.7'
         version: 2.17.7
       ts-ics:
-        specifier: '=2.4.6'
-        version: 2.4.6
+        specifier: '=2.4.7'
+        version: 2.4.7
       whatwg-mimetype:
         specifier: '=5.0.0'
         version: 5.0.0
@@ -1178,8 +1178,8 @@ packages:
     resolution: {integrity: sha512-5OX1tzOjxWEgsr/YEUWSuPrQ00deKLh6D7OTWcvNHm12/7QPyRh8SYpyWvA4IZv8H/+GQWQEh/kwo95Q9OVW1A==}
     engines: {node: '>=14.0.0'}
 
-  ts-ics@2.4.6:
-    resolution: {integrity: sha512-s/au7fIeVQ1OJvhWPHiN5WMZqvJ4+6NDHnep3YcZCXDdjH8iwmBo0szJVRufF98t+dJk2d+ssgNjwP8PGfVMsw==}
+  ts-ics@2.4.7:
+    resolution: {integrity: sha512-Xw+gfyY3K36yue+EQ3s9zMH1R5oai9dbbdKcpGdWBGcU0pee+BcfX1aRgvdysyVP3qauQi3Y/qR9p/Z2e6CKxA==}
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
@@ -2049,7 +2049,7 @@ snapshots:
 
   ts-custom-error@3.3.1: {}
 
-  ts-ics@2.4.6:
+  ts-ics@2.4.7:
     dependencies:
       '@standard-schema/spec': 1.1.0
 
