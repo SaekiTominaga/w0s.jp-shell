@@ -22,7 +22,4 @@ export default {
 		titleSelector: '.link-image .title',
 		stateSelector: '.column.info > div[style="display: flex;"] > p',
 	},
-	calendar: {
-		url: 'https://www.city.yokohama.lg.jp/kurashi/kyodo-manabi/library/library_calendar.html#93864',
-	},
 };
