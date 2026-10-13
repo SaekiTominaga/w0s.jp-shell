@@ -20,8 +20,93 @@ interface Material {
 
 const dao = new YokohamaLibraryDao(`${env('ROOT')}/${env('SQLITE_DIR')}/${env('SQLITE_YOKOHAMA_LIBRARY')}`);
 
+/**
+ * 休館日取得
+ *
+ * @param context - Context
+ * @param calendarPath - 休館日ページの URL ないしファイルパス
+ *
+ * @returns 今日が休館日かどうか
+ */
+const isClosed = async (context: Readonly<Context>, calendarPath: string): Promise<boolean> => {
+	const { logger } = context;
+
+	let content: string;
+	if (URL.canParse(calendarPath)) {
+		const response = await fetch(calendarPath);
+		if (!response.ok) {
+			throw new Error(`\`${response.url}\` is ${String(response.status)} ${response.statusText}`);
+		}
+
+		content = await response.text();
+	} else {
+		content = (await fs.promises.readFile(calendarPath)).toString();
+	}
+	logger.debug(`休館日ページ: ${content.trim()}`);
+
+	/* DOM 化 */
+	const { document } = new JSDOM(content).window;
+
+	const $tableRows = document.querySelectorAll<HTMLTableRowElement>('.h2bg:has([id="93864"]) + .wysiwyg_wp tbody > tr');
+
+	return [...$tableRows].some(($tableRow) => {
+		const $tableDatas = $tableRow.querySelectorAll('td');
+		if ($tableDatas.length === 0) {
+			/* 1列目（表見出し）をスキップ */
+			return false;
+		}
+
+		const date = $tableDatas.item(0).textContent;
+		const name = $tableDatas.item(1).textContent;
+		const reason = $tableDatas.item(2).textContent;
+		logger.debug(`| ${date} | ${name} | ${reason} |`);
+
+		if (!/全館|港北図書館/u.test(name)) {
+			return false;
+		}
+
+		const today = new Date();
+		const nowYear = today.getFullYear();
+		const todayDate = new Date(nowYear, today.getMonth(), today.getDate()); // 本日の 0:00 時点のデータ
+		let start: Date | undefined;
+		let end: Date | undefined;
+
+		const matchGroup1 = /^((?<year>[0-9]{4})年)?(?<month>[0-9]{1,2})月(?<day>[0-9]{1,2})日（.曜日）$/u.exec(date)?.groups;
+		if (matchGroup1 !== undefined) {
+			start = new Date(Number(matchGroup1['year'] ?? nowYear), Number(matchGroup1['month']) - 1, Number(matchGroup1['day']));
+			end = start;
+		}
+
+		const matchGroup2 =
+			/^((?<startYear>[0-9]{4})年)?(?<startMonth>[0-9]{1,2})月(?<startDay>[0-9]{1,2})日（.曜日）から((?<endYear>[0-9]{4})年)?(?<endMonth>[0-9]{1,2})月(?<endDay>[0-9]{1,2})日（.曜日）まで$/u.exec(
+				date,
+			)?.groups;
+		if (matchGroup2 !== undefined) {
+			start = new Date(Number(matchGroup2['startYear'] ?? nowYear), Number(matchGroup2['startMonth']) - 1, Number(matchGroup2['startDay']));
+			end = new Date(Number(matchGroup2['endYear'] ?? nowYear), Number(matchGroup2['endMonth']) - 1, Number(matchGroup2['endDay']));
+		}
+
+		const matchGroup3 =
+			/^((?<startYear>[0-9]{4})年)?(?<startMonth>[0-9]{1,2})月(?<startDay>[0-9]{1,2})日（.曜日）、((?<endYear>[0-9]{4})年)?(?<endMonth>[0-9]{1,2})月(?<endDay>[0-9]{1,2})日（.曜日）$/u.exec(
+				date,
+			)?.groups;
+		if (matchGroup3 !== undefined) {
+			start = new Date(Number(matchGroup3['startYear'] ?? nowYear), Number(matchGroup3['startMonth']) - 1, Number(matchGroup3['startDay']));
+			end = new Date(Number(matchGroup3['endYear'] ?? nowYear), Number(matchGroup3['endMonth']) - 1, Number(matchGroup3['endDay']));
+		}
+
+		if (start === undefined || end === undefined) {
+			throw new Error(`想定外の日付表現: ${date}`);
+		}
+
+		return start <= todayDate && end >= todayDate;
+	});
+};
+
 const exec = async (context: Readonly<Context>): Promise<void> => {
 	const { logger, notice } = context;
+
+	const changeList: Material[] = [];
 
 	/* ブラウザで対象ページにアクセス */
 	const launchProcessTime = new ProcessTime();
@@ -153,8 +238,10 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 		);
 		logger.debug(`解析対象: ${inspect(targetReserveList)}`);
 
-		const changeList = targetReserveList.filter(
-			(target) => target.state !== registedList.find((registed) => registed.material_type === target.type && registed.title === target.title)?.state,
+		changeList.push(
+			...targetReserveList.filter(
+				(target) => target.state !== registedList.find((registed) => registed.material_type === target.type && registed.title === target.title)?.state,
+			),
 		);
 		logger.debug(`差分: ${inspect(changeList)}`);
 
@@ -166,95 +253,23 @@ const exec = async (context: Readonly<Context>): Promise<void> => {
 			})),
 		);
 		logger.info(`データ更新: ${String(changeList.length)} 件`);
-
-		if (changeList.length > 0) {
-			notice.add(
-				`${changeList
-					.map((material) => `${material.state.startsWith('受取可') ? `💕 ${material.state}` : material.state} | ${material.type}${material.title}`)
-					.join('\n')}\n\n蔵書検索ページ: ${config.url}`,
-			);
-		}
 	} finally {
 		await browser.close();
 		logger.info('Browser closed');
 	}
 
-	/* 休館日取得 */
-	{
-		const endpoint = env('YOKOHAMA_LIBRARY_CALENDAR');
+	if (changeList.length > 0) {
+		const calendarPath = env('YOKOHAMA_LIBRARY_CALENDAR');
 
-		let content: string;
-		if (URL.canParse(endpoint)) {
-			const response = await fetch(endpoint);
-			if (!response.ok) {
-				throw new Error(`\`${response.url}\` is ${String(response.status)} ${response.statusText}`);
-			}
-
-			content = await response.text();
-		} else {
-			content = (await fs.promises.readFile(endpoint)).toString();
+		if (await isClosed(context, calendarPath)) {
+			notice.add(`❌ 本日休館 <${calendarPath}>\n----------`);
 		}
-		logger.debug(`開館時間・休館日ページ: ${content.trim()}`);
 
-		/* DOM 化 */
-		const { document } = new JSDOM(content).window;
-
-		const $tableRows = document.querySelectorAll<HTMLTableRowElement>('.h2bg:has([id="93864"]) + .wysiwyg_wp tbody > tr');
-
-		$tableRows.forEach(($tableRow) => {
-			const $tableDatas = $tableRow.querySelectorAll('td');
-			if ($tableDatas.length === 0) {
-				/* 1列目（表見出し）をスキップ */
-				return;
-			}
-
-			const date = $tableDatas.item(0).textContent;
-			const name = $tableDatas.item(1).textContent;
-			const reason = $tableDatas.item(2).textContent;
-			logger.debug(`| ${date} | ${name} | ${reason} |`);
-
-			if (!/全館|港北図書館/u.test(name)) {
-				return;
-			}
-
-			const today = new Date();
-			const nowYear = today.getFullYear();
-			const todayDate = new Date(nowYear, today.getMonth(), today.getDate()); // 本日の 0:00 時点のデータ
-			let start: Date | undefined;
-			let end: Date | undefined;
-
-			const matchGroup1 = /^((?<year>[0-9]{4})年)?(?<month>[0-9]{1,2})月(?<day>[0-9]{1,2})日（.曜日）$/u.exec(date)?.groups;
-			if (matchGroup1 !== undefined) {
-				start = new Date(Number(matchGroup1['year'] ?? nowYear), Number(matchGroup1['month']) - 1, Number(matchGroup1['day']));
-				end = start;
-			}
-
-			const matchGroup2 =
-				/^((?<startYear>[0-9]{4})年)?(?<startMonth>[0-9]{1,2})月(?<startDay>[0-9]{1,2})日（.曜日）から((?<endYear>[0-9]{4})年)?(?<endMonth>[0-9]{1,2})月(?<endDay>[0-9]{1,2})日（.曜日）まで$/u.exec(
-					date,
-				)?.groups;
-			if (matchGroup2 !== undefined) {
-				start = new Date(Number(matchGroup2['startYear'] ?? nowYear), Number(matchGroup2['startMonth']) - 1, Number(matchGroup2['startDay']));
-				end = new Date(Number(matchGroup2['endYear'] ?? nowYear), Number(matchGroup2['endMonth']) - 1, Number(matchGroup2['endDay']));
-			}
-
-			const matchGroup3 =
-				/^((?<startYear>[0-9]{4})年)?(?<startMonth>[0-9]{1,2})月(?<startDay>[0-9]{1,2})日（.曜日）、((?<endYear>[0-9]{4})年)?(?<endMonth>[0-9]{1,2})月(?<endDay>[0-9]{1,2})日（.曜日）$/u.exec(
-					date,
-				)?.groups;
-			if (matchGroup3 !== undefined) {
-				start = new Date(Number(matchGroup3['startYear'] ?? nowYear), Number(matchGroup3['startMonth']) - 1, Number(matchGroup3['startDay']));
-				end = new Date(Number(matchGroup3['endYear'] ?? nowYear), Number(matchGroup3['endMonth']) - 1, Number(matchGroup3['endDay']));
-			}
-
-			if (start === undefined || end === undefined) {
-				throw new Error(`想定外の日付表現: ${date}`);
-			}
-
-			if (start <= todayDate && end >= todayDate) {
-				notice.add(`❌ 本日休館（${reason}） ${endpoint}`);
-			}
-		});
+		notice.add(
+			`${changeList
+				.map((material) => `${material.state.startsWith('受取可') ? `💕 ${material.state}` : material.state} | ${material.type}${material.title}`)
+				.join('\n')}\n\n蔵書検索ページ: ${config.url}`,
+		);
 	}
 };
 
