@@ -140,8 +140,8 @@ importers:
         specifier: '=8.0.0'
         version: 8.0.0
       nodemailer:
-        specifier: '=10.0.16'
-        version: 10.0.16
+        specifier: '=10.1.0'
+        version: 10.1.0
       playwright:
         specifier: '=1.62.1'
         version: 1.62.1
@@ -988,8 +988,8 @@ packages:
     resolution: {integrity: sha512-W5ZNO5KRPB5TkYmGVD9F6YqhsglXJzE6etpbmT+f6EQElhiX/UTG551cnsRGvLG3fyZEg9HwaDmNmj5nwJ4z9g==}
     engines: {node: '>=10'}
 
-  nodemailer@10.0.16:
-    resolution: {integrity: sha512-VL9xKErxN+el77o8eBOuYKUPMyEx7F9hfnDCuiUKJRp9v3wnWMOudYgP/SWbwSHy8rUL4cylobuXtki1LpQS7A==}
+  nodemailer@10.1.0:
+    resolution: {integrity: sha512-fXW8AulB25aOTuwfRYV6lqHyfz2VM4rr4SGXH03mE7x5znEUpzL5mu6anARUpZN7744Ziwkmr4AxSLPJsBQspg==}
     engines: {node: '>=20.0.0'}
 
   once@1.4.0:
@@ -1804,7 +1804,7 @@ snapshots:
     dependencies:
       semver: 7.8.5
 
-  nodemailer@10.0.16: {}
+  nodemailer@10.1.0: {}
 
   once@1.4.0:
     dependencies:
