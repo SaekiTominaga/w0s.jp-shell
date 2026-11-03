@@ -18,7 +18,7 @@
 		"kysely": "=0.29.7",
 		"masto": "=8.0.0",
 		"nodemailer": "=10.2.1",
-		"playwright": "=1.62.1",
+		"playwright": "=1.64.1",
 		"sanitize-html": "=2.18.1",
 		"ts-ics": "=2.4.7",
 		"whatwg-mimetype": "=5.0.0",
