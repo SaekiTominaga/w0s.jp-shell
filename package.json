@@ -13,7 +13,7 @@
 		"@w0s/string-convert": "=4.0.2",
 		"better-sqlite3": "=13.0.3",
 		"dayjs": "=1.11.23",
-		"ejs": "=6.0.1",
+		"ejs": "=7.0.2",
 		"jsdom": "=31.0.1",
 		"kysely": "=0.29.7",
 		"masto": "=8.0.0",
