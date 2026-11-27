@@ -69,4 +69,8 @@ await test('snsFormatHtml', async (t) => {
 line2`,
 		);
 	});
+
+	await t.test('unescape', () => {
+		assert.equal(snsFormatHtml('&lt;&gt;'), `<>`);
+	});
 });
