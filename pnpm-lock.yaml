@@ -172,6 +172,9 @@ importers:
       '@w0s/env-value-type':
         specifier: '=2.0.2'
         version: 2.0.2
+      '@w0s/html-escape':
+        specifier: '=5.0.2'
+        version: 5.0.2
       '@w0s/sqlite-utility':
         specifier: '=3.0.2'
         version: 3.0.2
@@ -734,6 +737,10 @@ packages:
 
   '@w0s/env-value-type@2.0.2':
     resolution: {integrity: sha512-0pQpVF6gSkTxijQghYpBOVtTpBBGlaHm9+fZtoLk17GGc3XNPNEH/Pevl4RdkA/WQ1xlBzGKHd0l6kURlpkC2A==}
+    engines: {node: '>=22'}
+
+  '@w0s/html-escape@5.0.2':
+    resolution: {integrity: sha512-nlKss3JZ2RxtHVFZ5kshc+1CHi7pmdcW8D2hKAPe9Y9iTHVshTk5mfWkGNklSHSrAyPWBFmZf0lbWsc0UY4Xyg==}
     engines: {node: '>=22'}
 
   '@w0s/oxlint-config@1.0.9':
@@ -1416,6 +1423,8 @@ snapshots:
     optional: true
 
   '@w0s/env-value-type@2.0.2': {}
+
+  '@w0s/html-escape@5.0.2': {}
 
   '@w0s/oxlint-config@1.0.9(oxlint-plugin-safely-storage@1.0.2(@oxlint/plugins@1.80.0)(oxlint@1.90.0(oxlint-tsgolint@7.0.2005)))(oxlint-tsgolint@7.0.2005)(oxlint@1.90.0(oxlint-tsgolint@7.0.2005))':
     dependencies:

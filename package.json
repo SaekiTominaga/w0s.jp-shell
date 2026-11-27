@@ -9,6 +9,7 @@
 	"dependencies": {
 		"@atproto/api": "=0.30.3",
 		"@w0s/env-value-type": "=2.0.2",
+		"@w0s/html-escape": "=5.0.2",
 		"@w0s/sqlite-utility": "=3.0.2",
 		"@w0s/string-convert": "=4.0.2",
 		"better-sqlite3": "=13.0.3",

@@ -1,4 +1,5 @@
 import { env } from '@w0s/env-value-type';
+import { unescape } from '@w0s/html-escape';
 import dayjs from 'dayjs';
 // oxlint-disable-next-line import/no-unassigned-import
 import 'dayjs/locale/ja.js';
@@ -68,10 +69,12 @@ const snsFormatHtml = (html: string | undefined): string | undefined => {
 		allowedIframeHostnames: undefined,
 	});
 
-	return sanitized
-		.split('<br />')
-		.map((line) => line.trim())
-		.join('\n');
+	return unescape(
+		sanitized
+			.split('<br />')
+			.map((line) => line.trim())
+			.join('\n'),
+	);
 };
 
 const mastodon = async (
