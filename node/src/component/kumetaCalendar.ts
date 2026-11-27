@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { env } from '@w0s/env-value-type';
 import dayjs from 'dayjs';
 // oxlint-disable-next-line import/no-unassigned-import
@@ -134,14 +135,21 @@ const bluesky = async (
 const exec = async (context: Readonly<Context>): Promise<void> => {
 	const { logger } = context;
 
-	const calendarUrl = env('KUMETA_CALENDAR_URL');
+	const calendarPath = env('KUMETA_CALENDAR_PATH');
 
-	const response = await fetch(calendarUrl);
-	if (!response.ok) {
-		throw new Error(`HTTP Status Code: ${String(response.status)} <${calendarUrl}>`);
+	let calendarData: string;
+	if (URL.canParse(calendarPath)) {
+		const response = await fetch(calendarPath);
+		if (!response.ok) {
+			throw new Error(`HTTP Status Code: ${String(response.status)} <${calendarPath}>`);
+		}
+
+		calendarData = await response.text();
+	} else {
+		calendarData = (await fs.promises.readFile(calendarPath)).toString();
 	}
 
-	const icsCalendar = convertIcsCalendar(undefined, await response.text());
+	const icsCalendar = convertIcsCalendar(undefined, calendarData);
 
 	const allEvents = icsCalendar.events
 		?.map((event) => {
