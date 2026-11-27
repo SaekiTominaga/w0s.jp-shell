@@ -19,7 +19,7 @@
 		"masto": "=8.0.0",
 		"nodemailer": "=10.5.0",
 		"playwright": "=1.64.1",
-		"sanitize-html": "=2.18.1",
+		"sanitize-html": "=2.18.2",
 		"ts-ics": "=2.4.8",
 		"whatwg-mimetype": "=5.0.0",
 		"winston": "=3.19.0",
